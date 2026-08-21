@@ -6,10 +6,12 @@ import { useToast } from '../context/ToastContext';
 import { PrivacyAmount, PrivacyPeekButton } from '../components/common/PrivacyAmount';
 import { PatientAutocomplete } from '../components/common/PatientAutocomplete';
 import { PackageCalculator, calculateValuePerSession } from '../components/common/PackageCalculator';
+import { getTodayDateString } from '../lib/utils';
 import { DatePicker } from '../components/common/DatePicker';
 import { KunjunganCard } from '../components/common/KunjunganCard';
 import { EmptyState } from '../components/common/EmptyState';
 import { ImportModal } from '../components/common/ImportModal';
+import { ConfirmModal } from '../components/common/ConfirmModal';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -31,6 +33,7 @@ import {
   ArrowLeft,
   FileSpreadsheet,
   Pencil,
+  Trash2,
 } from 'lucide-react';
 
 export function PaketPage({ onNavigate }) {
@@ -53,6 +56,10 @@ export function PaketPage({ onNavigate }) {
   const [editTerpakai, setEditTerpakai] = useState('');
   const [editTanggalBeli, setEditTanggalBeli] = useState('');
   const [editStatusPaket, setEditStatusPaket] = useState('aktif');
+
+  // Edit kunjungan state
+  const [editingKunjungan, setEditingKunjungan] = useState(null);
+  const [deleteKunjunganId, setDeleteKunjunganId] = useState(null);
 
   // Detail drawer
   const [selectedPaket, setSelectedPaket] = useState(null);
@@ -150,7 +157,7 @@ export function PaketPage({ onNavigate }) {
   const [noTelp, setNoTelp] = useState('');
   const [totalKunjungan, setTotalKunjungan] = useState(5);
   const [hargaPaket, setHargaPaket] = useState(1500000);
-  const [tanggalBeli, setTanggalBeli] = useState(new Date().toISOString().split('T')[0]);
+  const [tanggalBeli, setTanggalBeli] = useState(getTodayDateString());
   const [simPrice, setSimPrice] = useState(1500000);
   const [simSessions, setSimSessions] = useState(5);
   const [errorMsg, setErrorMsg] = useState('');
@@ -273,6 +280,44 @@ export function PaketPage({ onNavigate }) {
       }
     } catch (err) {
       setErrorMsg(err.message || 'Gagal memperbarui paket');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveEditKunjungan = async (e) => {
+    e.preventDefault();
+    if (!editingKunjungan || saving) return;
+    setSaving(true);
+    try {
+      await api.updateKunjungan(editingKunjungan.kunjungan_id, {
+        nama_pasien: editingKunjungan.nama_pasien,
+        no_telp: editingKunjungan.no_telp || '',
+        tanggal_kunjungan: editingKunjungan.tanggal_kunjungan,
+        biaya: Number(editingKunjungan.biaya || 0),
+        metode_pembayaran: (editingKunjungan.metode_pembayaran || 'cash').toLowerCase(),
+        status: (editingKunjungan.status || 'menunggu').toLowerCase(),
+      });
+      setEditingKunjungan(null);
+      showToast('Perubahan kunjungan berhasil disimpan', 'success');
+      await loadData();
+    } catch (err) {
+      showToast(err.message || 'Gagal menyimpan perubahan kunjungan', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleConfirmDeleteKunjungan = async () => {
+    if (!deleteKunjunganId || saving) return;
+    setSaving(true);
+    try {
+      await api.deleteKunjungan(deleteKunjunganId);
+      setDeleteKunjunganId(null);
+      showToast('Kunjungan berhasil dihapus', 'success');
+      await loadData();
+    } catch (err) {
+      showToast(err.message || 'Gagal menghapus kunjungan', 'error');
     } finally {
       setSaving(false);
     }
@@ -629,6 +674,15 @@ export function PaketPage({ onNavigate }) {
                       updatingId={updatingKunjunganId}
                       pendingStatus={pendingKunjunganStatus}
                       onUpdateStatus={handleUpdateKunjunganStatus}
+                      onEdit={(k) =>
+                        setEditingKunjungan({
+                          ...k,
+                          tanggal_kunjungan: k.tanggal_kunjungan
+                            ? String(k.tanggal_kunjungan).split('T')[0]
+                            : '',
+                        })
+                      }
+                      onDelete={(id) => setDeleteKunjunganId(id)}
                     />
                   ))}
                 </div>
@@ -727,7 +781,7 @@ export function PaketPage({ onNavigate }) {
       {/* ─── Modal: Edit Paket Kunjungan ─── */}
       {showEditModal && editPaketData && createPortal(
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in-50">
-          <Card className="border-2 border-primary/40 rounded-3xl max-w-lg w-full shadow-2xl my-auto">
+          <Card className="p-0 border-2 border-primary/40 rounded-3xl max-w-lg w-full shadow-2xl shrink-0 overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
               <div>
                 <CardTitle className="text-xl font-black flex items-center gap-2.5">
@@ -849,6 +903,156 @@ export function PaketPage({ onNavigate }) {
                       <><Spinner className="mr-2" />Menyimpan...</>
                     ) : (
                       <><CheckCircle2 className="size-5" />Simpan Perubahan</>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>,
+        document.body
+      )}
+
+      {/* ─── Delete Kunjungan Confirmation Modal ─── */}
+      <ConfirmModal
+        isOpen={Boolean(deleteKunjunganId)}
+        onClose={() => setDeleteKunjunganId(null)}
+        onConfirm={handleConfirmDeleteKunjungan}
+        title="Hapus Catatan Kunjungan"
+        description="Apakah Anda yakin ingin menghapus data kunjungan ini? Tindakan ini tidak dapat dibatalkan."
+        confirmText="Ya, Hapus"
+        cancelText="Batal"
+        variant="destructive"
+        icon={Trash2}
+        isLoading={saving}
+      />
+
+      {/* ─── Modal: Edit Kunjungan ─── */}
+      {editingKunjungan && createPortal(
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in-50">
+          <Card className="p-0 border-2 border-primary/40 rounded-3xl max-w-lg w-full shadow-2xl shrink-0 overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-3">
+              <CardTitle className="text-xl font-black">
+                Edit Kunjungan ({editingKunjungan.kunjungan_id})
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setEditingKunjungan(null)}
+                className="text-muted-foreground font-black text-xl"
+              >
+                ✕
+              </Button>
+            </CardHeader>
+
+            <CardContent className="p-6 space-y-4">
+              <form onSubmit={handleSaveEditKunjungan} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                    Nama Pasien
+                  </label>
+                  <Input
+                    type="text"
+                    value={editingKunjungan.nama_pasien || ''}
+                    onChange={(e) =>
+                      setEditingKunjungan({ ...editingKunjungan, nama_pasien: e.target.value })
+                    }
+                    className="font-bold h-12 rounded-xl"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                    Tanggal Kunjungan
+                  </label>
+                  <DatePicker
+                    value={editingKunjungan.tanggal_kunjungan}
+                    onChange={(dateVal) =>
+                      setEditingKunjungan({ ...editingKunjungan, tanggal_kunjungan: dateVal })
+                    }
+                    placeholder="Pilih tanggal kunjungan..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                    Biaya (Rp)
+                  </label>
+                  <Input
+                    type="number"
+                    value={editingKunjungan.biaya}
+                    onChange={(e) =>
+                      setEditingKunjungan({ ...editingKunjungan, biaya: e.target.value })
+                    }
+                    className="font-bold h-12 rounded-xl"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                    Metode Pembayaran
+                  </label>
+                  <Select
+                    value={editingKunjungan.metode_pembayaran || 'cash'}
+                    onValueChange={(val) =>
+                      setEditingKunjungan({ ...editingKunjungan, metode_pembayaran: val })
+                    }
+                  >
+                    <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
+                      <SelectValue placeholder="Pilih metode..." />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl">
+                      <SelectItem value="cash">Tunai / Cash</SelectItem>
+                      <SelectItem value="transfer">Transfer Bank</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                    Status Pembayaran
+                  </label>
+                  <Select
+                    value={editingKunjungan.status || 'menunggu'}
+                    onValueChange={(val) =>
+                      setEditingKunjungan({ ...editingKunjungan, status: val })
+                    }
+                  >
+                    <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
+                      <SelectValue placeholder="Pilih status..." />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl">
+                      <SelectItem value="lunas">Lunas</SelectItem>
+                      <SelectItem value="menunggu">Menunggu</SelectItem>
+                      <SelectItem value="belum bayar">Belum Bayar</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={saving}
+                    onClick={() => setEditingKunjungan(null)}
+                    className="w-1/2 py-5 font-bold rounded-xl"
+                  >
+                    Batal
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={saving}
+                    className="w-1/2 py-5 font-bold rounded-xl shadow-md"
+                  >
+                    {saving ? (
+                      <>
+                        <Spinner className="mr-2" />
+                        Menyimpan...
+                      </>
+                    ) : (
+                      'Simpan Perubahan'
                     )}
                   </Button>
                 </div>

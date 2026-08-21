@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { getTodayDateString } from '../lib/utils';
 import { PatientAutocomplete } from '../components/common/PatientAutocomplete';
 import { DatePicker } from '../components/common/DatePicker';
 import { Button } from '../components/ui/button';
@@ -27,7 +28,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
   const [namaPasien, setNamaPasien] = useState(() => prefill?.nama_pasien || '');
   const [noTelp, setNoTelp] = useState(() => String(prefill?.no_telp || ''));
   const [tanggalKunjungan, setTanggalKunjungan] = useState(
-    new Date().toISOString().split('T')[0]
+    getTodayDateString()
   );
   const [biaya, setBiaya] = useState(() =>
     prefill?.biaya != null ? Number(prefill.biaya) : 300000

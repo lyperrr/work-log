@@ -8,6 +8,7 @@ import { KunjunganCard } from '../components/common/KunjunganCard';
 import { EmptyState } from '../components/common/EmptyState';
 import { ImportModal } from '../components/common/ImportModal';
 import { ConfirmModal } from '../components/common/ConfirmModal';
+import { getTodayDateString } from '../lib/utils';
 import { DatePicker } from '../components/common/DatePicker';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -92,7 +93,7 @@ export function RiwayatPage() {
     return () => { active = false; };
   }, [api, showToast]);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayDateString();
   const currentYearMonth = todayStr.substring(0, 7);
 
   const filteredList = (Array.isArray(kunjunganList) ? kunjunganList : []).filter((k) => {
@@ -445,7 +446,7 @@ export function RiwayatPage() {
       {/* Edit Modal */}
       {editingItem && createPortal(
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in-50">
-          <Card className="border-2 border-primary/40 rounded-3xl max-w-lg w-full shadow-2xl my-auto">
+          <Card className="p-0 border-2 border-primary/40 rounded-3xl max-w-lg w-full shadow-2xl shrink-0 overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-3">
               <CardTitle className="text-xl font-black">
                 Edit Kunjungan ({editingItem.kunjungan_id})
@@ -463,7 +464,7 @@ export function RiwayatPage() {
             <CardContent className="p-6 space-y-4">
               <form onSubmit={handleSaveEdit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1">
+                  <label className="block text-sm font-bold text-foreground mb-1.5">
                     Nama Pasien
                   </label>
                   <Input
@@ -472,28 +473,26 @@ export function RiwayatPage() {
                     onChange={(e) =>
                       setEditingItem({ ...editingItem, nama_pasien: e.target.value })
                     }
-                    className="font-bold"
+                    className="font-bold h-12 rounded-xl"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1">
+                  <label className="block text-sm font-bold text-foreground mb-1.5">
                     Tanggal Kunjungan
                   </label>
-                  <Input
-                    type="date"
+                  <DatePicker
                     value={editingItem.tanggal_kunjungan}
-                    onChange={(e) =>
-                      setEditingItem({ ...editingItem, tanggal_kunjungan: e.target.value })
+                    onChange={(dateVal) =>
+                      setEditingItem({ ...editingItem, tanggal_kunjungan: dateVal })
                     }
-                    className="font-bold"
-                    required
+                    placeholder="Pilih tanggal kunjungan..."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1">
+                  <label className="block text-sm font-bold text-foreground mb-1.5">
                     Biaya (Rp)
                   </label>
                   <Input
@@ -502,9 +501,50 @@ export function RiwayatPage() {
                     onChange={(e) =>
                       setEditingItem({ ...editingItem, biaya: e.target.value })
                     }
-                    className="font-bold"
+                    className="font-bold h-12 rounded-xl"
                     required
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                    Metode Pembayaran
+                  </label>
+                  <Select
+                    value={editingItem.metode_pembayaran || 'cash'}
+                    onValueChange={(val) =>
+                      setEditingItem({ ...editingItem, metode_pembayaran: val })
+                    }
+                  >
+                    <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
+                      <SelectValue placeholder="Pilih metode..." />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl">
+                      <SelectItem value="cash">Tunai / Cash</SelectItem>
+                      <SelectItem value="transfer">Transfer Bank</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                    Status Pembayaran
+                  </label>
+                  <Select
+                    value={editingItem.status || 'menunggu'}
+                    onValueChange={(val) =>
+                      setEditingItem({ ...editingItem, status: val })
+                    }
+                  >
+                    <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
+                      <SelectValue placeholder="Pilih status..." />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl">
+                      <SelectItem value="lunas">Lunas</SelectItem>
+                      <SelectItem value="menunggu">Menunggu</SelectItem>
+                      <SelectItem value="belum bayar">Belum Bayar</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex gap-3 pt-2">

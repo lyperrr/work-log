@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { usePrivacy } from '../context/PrivacyContext';
 import { useSettings } from '../context/SettingsContext';
+import { getTodayDateString, formatDateLocal } from '../lib/utils';
 import { PrivacyAmount, PrivacyPeekButton } from '../components/common/PrivacyAmount';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
@@ -89,7 +90,7 @@ export function DashboardPage({ onNavigate }) {
       : 'Pengguna';
 
   const getCleanDate = (d) => (d ? String(d).split('T')[0] : '');
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayDateString();
   const currentYearMonth = todayStr.substring(0, 7); // e.g. "2026-08"
 
   const displayKunjunganList = dataScope === 'current_month'
@@ -105,12 +106,12 @@ export function DashboardPage({ onNavigate }) {
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     const start = new Date(d.setDate(diff));
-    return start.toISOString().split('T')[0];
+    return formatDateLocal(start);
   };
 
   const getStartOfMonth = () => {
     const d = new Date();
-    return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+    return formatDateLocal(new Date(d.getFullYear(), d.getMonth(), 1));
   };
 
   const startOfWeek = getStartOfWeek();
