@@ -126,29 +126,35 @@ export function PatientAutocomplete({
               </div>
             ) : suggestions.length > 0 ? (
               <ul className="divide-y divide-border">
-                {suggestions.map((p) => (
-                  <li key={p.pasien_id}>
-                    <button
-                      type="button"
-                      onClick={() => handleSelect(p)}
-                      className="w-full text-left px-5 py-4 hover:bg-primary/10 focus:bg-primary/10 transition-colors flex items-center justify-between group touch-btn"
-                    >
-                      <div>
-                        <div className="font-bold text-base md:text-lg text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
-                          <CheckCircle2 className="size-5 text-emerald-500 shrink-0" />
-                          {p.nama_pasien}
+                {suggestions.map((p) => {
+                  const rawPhone = (p.no_telp || '').toString();
+                  const isPhoneErr = rawPhone.startsWith('#ERROR') || rawPhone.startsWith('#REF!') || rawPhone.startsWith('#VALUE!');
+                  const cleanPhone = isPhoneErr ? '' : rawPhone;
+
+                  return (
+                    <li key={p.pasien_id}>
+                      <button
+                        type="button"
+                        onClick={() => handleSelect({ ...p, no_telp: cleanPhone })}
+                        className="w-full text-left px-5 py-4 hover:bg-primary/10 focus:bg-primary/10 transition-colors flex items-center justify-between group touch-btn"
+                      >
+                        <div>
+                          <div className="font-bold text-base md:text-lg text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+                            <CheckCircle2 className="size-5 text-emerald-500 shrink-0" />
+                            {p.nama_pasien}
+                          </div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5 pl-7">
+                            <Phone className="size-4" />
+                            {cleanPhone || 'Tanpa no. telepon'}
+                          </div>
                         </div>
-                        <div className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5 pl-7">
-                          <Phone className="size-4" />
-                          {p.no_telp || 'Tanpa no. telepon'}
-                        </div>
-                      </div>
-                      <span className="text-xs bg-primary/10 text-primary font-bold px-3 py-1 rounded-full border border-primary/20">
-                        Pasien Lama
-                      </span>
-                    </button>
-                  </li>
-                ))}
+                        <span className="text-xs bg-primary/10 text-primary font-bold px-3 py-1 rounded-full border border-primary/20">
+                          Pasien Lama
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             ) : null}
 
@@ -171,15 +177,17 @@ export function PatientAutocomplete({
           Nomor Telepon / WhatsApp <span className="text-destructive">*</span>
         </label>
         <input
-          type="tel"
+          type="text"
           value={phoneValue}
           onChange={(e) => onPhoneChange(e.target.value)}
-          placeholder="Contoh: 081234567890"
+          placeholder="Contoh: +62 812-3456-7890 / (021) 555-1234"
           className="w-full h-[52px] px-4 text-base md:text-lg border-2 border-input rounded-xl bg-background text-foreground font-bold focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground shadow-xs touch-input"
           required
         />
         <p className="text-xs text-muted-foreground mt-1">
-          {phoneValue ? 'Terisi otomatis dari data pasien.' : 'Diisi untuk kontak & identifikasi pasien.'}
+          {phoneValue
+            ? 'Bebas menggunakan simbol (+, -, spasi, kurung). Terisi otomatis dari data pasien.'
+            : 'Mendukung format simbol seperti +62, strip (-), spasi, dan tanda kurung.'}
         </p>
       </div>
     </div>

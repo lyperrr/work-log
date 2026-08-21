@@ -22,14 +22,14 @@ import {
 } from 'lucide-react';
 
 const SAMPLE_PAKET_CSV = `Nama Pasien,No Telp,Total Kunjungan,Harga Paket,Tanggal Beli
-Siti Nurhaliza,08123456001,5,1500000,2026-08-01
-Budi Santoso,08198765432,10,2500000,2026-08-05
-Asep Sunandar,08219031410,5,1500000,2026-08-10`;
+Siti Nurhaliza,+62 812-3456-001,5,1500000,2026-08-01
+Budi Santoso,(021) 9876-5432,10,2500000,2026-08-05
+Asep Sunandar,+62 821-9031-410,5,1500000,2026-08-10`;
 
 const SAMPLE_KUNJUNGAN_CSV = `Nama Pasien,No Telp,Tanggal Kunjungan,Biaya,Metode Pembayaran,Status,ID Paket (Opsional)
-Siti Nurhaliza,08123456001,2026-08-15,300000,cash,lunas,PKT-0001
-Budi Santoso,08198765432,2026-08-16,250000,transfer,menunggu,
-Dewi Sartika,08134567890,2026-08-18,300000,cash,belum bayar,`;
+Siti Nurhaliza,+62 812-3456-001,2026-08-15,300000,cash,lunas,PKT-0001
+Budi Santoso,(021) 9876-5432,2026-08-16,250000,transfer,menunggu,
+Dewi Sartika,+62 813-4567-890,2026-08-18,300000,cash,belum bayar,`;
 
 export function ImportModal({
   isOpen,

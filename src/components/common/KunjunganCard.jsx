@@ -127,7 +127,19 @@ export function KunjunganCard({
           <span className="flex items-center gap-1.5">
             <Phone className="size-4 text-primary shrink-0" />
             <strong className="font-bold text-foreground">No. Telp:</strong>
-            <span className="text-foreground/90 font-semibold">{item.no_telp || '-'}</span>
+            {item.no_telp ? (
+              <a
+                href={`https://wa.me/${String(item.no_telp).replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary font-bold hover:underline"
+                title="Hubungi via WhatsApp"
+              >
+                {item.no_telp}
+              </a>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )}
           </span>
           <span className="flex items-center gap-1.5">
             <Calendar className="size-4 text-primary shrink-0" />
