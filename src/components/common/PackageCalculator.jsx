@@ -73,7 +73,7 @@ export function PackageCalculator({
             placeholder="1500000"
             step="10000"
             min="0"
-            className="py-3.5 text-lg border-2 rounded-xl font-bold touch-input"
+            className="font-bold touch-input"
           />
         )}
       </div>
@@ -96,7 +96,7 @@ export function PackageCalculator({
             placeholder="5"
             step="1"
             min="1"
-            className={`py-3.5 text-lg border-2 rounded-xl font-bold touch-input ${!isSessionsValid ? 'border-destructive focus:ring-destructive' : ''
+            className={`font-bold touch-input ${!isSessionsValid ? 'border-destructive focus:ring-destructive' : ''
               }`}
           />
         )}
