@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Alert, AlertDescription } from '../ui/alert';
@@ -13,11 +12,8 @@ import {
   CheckCircle2,
   AlertCircle,
   X,
-  FileText,
   Package,
   Calendar,
-  Layers,
-  ArrowRight,
   Info,
 } from 'lucide-react';
 
@@ -166,7 +162,7 @@ export function ImportModal({
 
       setParsedData(items);
       setParsingError('');
-    } catch (err) {
+    } catch {
       setParsingError('Gagal membaca format data. Pastikan format berupa CSV atau tabel Excel.');
       setParsedData([]);
     }

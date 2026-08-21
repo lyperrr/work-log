@@ -77,15 +77,15 @@ export function EmptyState({
     variant === 'card'
       ? 'bg-card border-2 border-dashed border-border/80 rounded-3xl p-8 sm:p-12 text-center shadow-xs'
       : variant === 'simple'
-      ? 'p-6 sm:p-8 text-center bg-secondary/30 rounded-2xl border border-border/60'
-      : 'p-6 text-center';
+        ? 'p-6 sm:p-8 text-center bg-secondary/30 rounded-2xl border border-border/60'
+        : 'p-6 text-center';
 
   return (
     <div className={`flex flex-col items-center justify-center ${containerClasses} ${className}`}>
       {/* Icon Badge */}
       <div className="size-16 sm:size-20 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mb-4 shadow-xs animate-in zoom-in-95 duration-200">
         {typeof IconComp === 'function' || typeof IconComp === 'object' ? (
-          <IconComp className="size-8 sm:size-10 stroke-[2]" />
+          <IconComp className="size-8 sm:size-10 stroke-2" />
         ) : (
           IconComp
         )}

@@ -28,6 +28,13 @@ export function PatientAutocomplete({
   }, []);
 
   const latestSearchRef = useRef('');
+  const onPhoneChangeRef = useRef(onPhoneChange);
+  const onSelectPatientRef = useRef(onSelectPatient);
+
+  useEffect(() => {
+    onPhoneChangeRef.current = onPhoneChange;
+    onSelectPatientRef.current = onSelectPatient;
+  });
 
   // Debounced search (450ms): hanya panggil API jika value sudah >= 2 karakter
   useEffect(() => {
@@ -35,11 +42,15 @@ export function PatientAutocomplete({
     latestSearchRef.current = query;
 
     if (query.length < 2) {
-      setSuggestions([]);
-      setIsOpen(false);
-      setIsNewPatient(false);
-      setLoadingSearch(false);
-      return;
+      const resetTimer = setTimeout(() => {
+        if (latestSearchRef.current.length < 2) {
+          setSuggestions([]);
+          setIsOpen(false);
+          setIsNewPatient(false);
+          setLoadingSearch(false);
+        }
+      }, 0);
+      return () => clearTimeout(resetTimer);
     }
 
     const timer = setTimeout(async () => {
@@ -61,8 +72,8 @@ export function PatientAutocomplete({
         // which left noTelp empty and caused "Nomor Telepon wajib diisi" error.
         if (exactMatch) {
           const phone = String(exactMatch.no_telp || '');
-          if (onPhoneChange) onPhoneChange(phone);
-          if (onSelectPatient) onSelectPatient(exactMatch);
+          if (onPhoneChangeRef.current) onPhoneChangeRef.current(phone);
+          if (onSelectPatientRef.current) onSelectPatientRef.current(exactMatch);
           setIsOpen(false);
         }
       } catch {
@@ -95,7 +106,7 @@ export function PatientAutocomplete({
   return (
     <div className="space-y-4" ref={containerRef}>
       <div className="relative">
-        <label className="block text-base font-bold text-foreground mb-1.5 flex items-center gap-2">
+        <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
           <User className="size-5 text-primary shrink-0" />
           Nama Pasien <span className="text-destructive">*</span>
         </label>
@@ -106,7 +117,7 @@ export function PatientAutocomplete({
             onChange={handleInputChange}
             onFocus={() => value.trim().length >= 1 && setIsOpen(true)}
             placeholder="Ketik nama pasien (cth: Budi)"
-            className="w-full h-[52px] px-4 text-base md:text-lg border-2 border-input rounded-xl bg-background text-foreground font-bold focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground shadow-xs touch-input"
+            className="w-full h-13 px-4 text-base md:text-lg border-2 border-input rounded-xl bg-background text-foreground font-bold focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground shadow-xs touch-input"
             required
           />
           {loadingSearch ? (
@@ -172,7 +183,7 @@ export function PatientAutocomplete({
 
       {/* No Telp Input */}
       <div>
-        <label className="block text-base font-bold text-foreground mb-1.5 flex items-center gap-2">
+        <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
           <Phone className="size-5 text-primary shrink-0" />
           Nomor Telepon / WhatsApp <span className="text-destructive">*</span>
         </label>
@@ -181,7 +192,7 @@ export function PatientAutocomplete({
           value={phoneValue}
           onChange={(e) => onPhoneChange(e.target.value)}
           placeholder="Contoh: +62 812-3456-7890 / (021) 555-1234"
-          className="w-full h-[52px] px-4 text-base md:text-lg border-2 border-input rounded-xl bg-background text-foreground font-bold focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground shadow-xs touch-input"
+          className="w-full h-13 px-4 text-base md:text-lg border-2 border-input rounded-xl bg-background text-foreground font-bold focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground shadow-xs touch-input"
           required
         />
         <p className="text-xs text-muted-foreground mt-1">

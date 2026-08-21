@@ -57,7 +57,7 @@ export function PackageCalculator({
     <div className="space-y-4">
       {/* 1. Package Price Input */}
       <div>
-        <label className="block text-base font-bold text-foreground mb-1.5 flex items-center gap-2">
+        <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
           <DollarSign className="size-5 text-primary shrink-0" />
           Harga Total Paket (Rp)
         </label>
@@ -80,7 +80,7 @@ export function PackageCalculator({
 
       {/* 2. Total Sessions Input */}
       <div>
-        <label className="block text-base font-bold text-foreground mb-1.5 flex items-center gap-2">
+        <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
           <Layers className="size-5 text-primary shrink-0" />
           Total Sesi / Kunjungan
         </label>
