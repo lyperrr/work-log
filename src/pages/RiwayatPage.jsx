@@ -55,9 +55,9 @@ export function RiwayatPage() {
   };
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('semua');
-  const [metodeFilter, setMetodeFilter] = useState('semua');
-  const [jenisFilter, setJenisFilter] = useState('semua');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [metodeFilter, setMetodeFilter] = useState('');
+  const [jenisFilter, setJenisFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -90,11 +90,11 @@ export function RiwayatPage() {
       if (!matchName && !matchId) return false;
     }
 
-    if (statusFilter !== 'semua' && (k.status || '').toLowerCase() !== statusFilter.toLowerCase()) {
+    if (statusFilter && statusFilter !== 'semua' && (k.status || '').toLowerCase() !== statusFilter.toLowerCase()) {
       return false;
     }
 
-    if (metodeFilter !== 'semua' && (k.metode_pembayaran || '').toLowerCase() !== metodeFilter.toLowerCase()) {
+    if (metodeFilter && metodeFilter !== 'semua' && (k.metode_pembayaran || '').toLowerCase() !== metodeFilter.toLowerCase()) {
       return false;
     }
 
@@ -171,9 +171,9 @@ export function RiwayatPage() {
 
   const resetFilters = () => {
     setSearchQuery('');
-    setStatusFilter('semua');
-    setMetodeFilter('semua');
-    setJenisFilter('semua');
+    setStatusFilter('');
+    setMetodeFilter('');
+    setJenisFilter('');
     setStartDate('');
     setEndDate('');
     showToast('Filter pencarian di-reset', 'info');
@@ -237,13 +237,14 @@ export function RiwayatPage() {
             </div>
 
             {/* Status Filter using shadcn Select */}
+            {/* Status Filter */}
             <div>
               <label className="block text-xs font-bold text-muted-foreground mb-1 uppercase">
                 Status Pembayaran
               </label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full h-12 text-base font-semibold border border-input rounded-xl bg-background touch-input">
-                  <SelectValue placeholder="Semua Status" />
+                  <SelectValue placeholder="Pilih status..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="semua">Semua Status</SelectItem>
@@ -254,14 +255,14 @@ export function RiwayatPage() {
               </Select>
             </div>
 
-            {/* Metode Filter using shadcn Select */}
+            {/* Metode Filter */}
             <div>
               <label className="block text-xs font-bold text-muted-foreground mb-1 uppercase">
                 Metode Pembayaran
               </label>
               <Select value={metodeFilter} onValueChange={setMetodeFilter}>
                 <SelectTrigger className="w-full h-12 text-base font-semibold border border-input rounded-xl bg-background touch-input">
-                  <SelectValue placeholder="Semua Metode" />
+                  <SelectValue placeholder="Pilih metode..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="semua">Semua Metode</SelectItem>
@@ -271,14 +272,14 @@ export function RiwayatPage() {
               </Select>
             </div>
 
-            {/* Jenis Transaksi using shadcn Select */}
+            {/* Jenis Transaksi */}
             <div>
               <label className="block text-xs font-bold text-muted-foreground mb-1 uppercase">
                 Jenis Transaksi
               </label>
               <Select value={jenisFilter} onValueChange={setJenisFilter}>
                 <SelectTrigger className="w-full h-12 text-base font-semibold border border-input rounded-xl bg-background touch-input">
-                  <SelectValue placeholder="Semua Transaksi" />
+                  <SelectValue placeholder="Pilih jenis transaksi..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="semua">Semua Transaksi</SelectItem>

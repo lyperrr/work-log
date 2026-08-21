@@ -22,13 +22,38 @@ function SelectGroup({
 
 function SelectValue({
   className,
+  placeholder,
   ...props
 }) {
   return (
     <SelectPrimitive.Value
       data-slot="select-value"
-      className={cn("flex flex-1 text-left", className)}
-      {...props} />
+      className={cn("flex flex-1 text-left truncate font-medium", className)}
+      {...props}
+    >
+      {(value) => {
+        if (!value || value === '' || value === 'semua' || value === 'all' || value === 'none') {
+          return (
+            <span className="text-muted-foreground font-medium">
+              {placeholder || 'Pilih...'}
+            </span>
+          );
+        }
+        const LABELS = {
+          lunas: 'Lunas',
+          menunggu: 'Menunggu Konfirmasi',
+          'belum bayar': 'Belum Bayar',
+          cash: 'Tunai / Cash',
+          transfer: 'Transfer Bank',
+          reguler: 'Kunjungan Reguler',
+          paket: 'Bagian dari Paket',
+        };
+        if (typeof value === 'string' && LABELS[value.toLowerCase()]) {
+          return LABELS[value.toLowerCase()];
+        }
+        return value;
+      }}
+    </SelectPrimitive.Value>
   );
 }
 
