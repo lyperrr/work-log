@@ -26,14 +26,23 @@ export function AuthProvider({ children }) {
       .then(() => {
         setSessionChecked(true);
       })
-      .catch(() => {
-        // Account deleted or unreachable — clear stale session
+      .catch((err) => {
+        // If offline or network error, retain user session so PWA standalone mode works offline
+        const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+        const isNetworkErr = err?.message?.toLowerCase().includes('failed to fetch') || err?.message?.toLowerCase().includes('network');
+        if (isOffline || isNetworkErr) {
+          console.warn('Network or offline state during validateSession; retaining cached session:', err);
+          setSessionChecked(true);
+          return;
+        }
+        // Account explicitly deleted or session invalid on backend
         setCurrentUser(null);
         localStorage.removeItem('app_user');
         setSessionChecked(true);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run once on mount only
+
 
   const login = async (email, password) => {
     const user = await authService.loginUser(email, password);
