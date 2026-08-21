@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { usePrivacy } from '../../context/PrivacyContext';
 import { useToast } from '../../context/ToastContext';
 import { ConfirmModal } from '../common/ConfirmModal';
 import { Button } from '../ui/button';
@@ -15,7 +14,6 @@ import {
 
 export function Navbar({ activeTab, setActiveTab }) {
   const { currentUser, logout } = useAuth();
-  const { hideIncome, toggleHideIncome } = usePrivacy();
   const { showToast } = useToast();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 

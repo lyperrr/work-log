@@ -15,15 +15,12 @@ export function AuthProvider({ children }) {
 
   // Tracks whether the server-side session check has completed.
   // Prevents rendering protected content before we know the session is valid.
-  const [sessionChecked, setSessionChecked] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(() => !currentUser?.user_id);
 
   // On mount: if there's a stored session, verify the user still exists in the DB.
   // If the account was deleted from the spreadsheet, auto-logout immediately.
   useEffect(() => {
-    if (!currentUser?.user_id) {
-      setSessionChecked(true);
-      return;
-    }
+    if (!currentUser?.user_id) return;
 
     authService.validateSession(currentUser.user_id)
       .then(() => {
