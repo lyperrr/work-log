@@ -10,7 +10,20 @@ export const pasienService = {
     if (searchQuery) params.search_query = searchQuery;
     const res = await apiGet('getPasien', params);
     if (!res.success) throw new Error(res.message || 'Gagal mengambil data pasien');
-    return res.data || [];
+    const list = res.data || [];
+    return list
+      .map((p) => {
+        const phone = (p.no_telp || '').toString();
+        const name = (p.nama_pasien || '').toString();
+        const isPhoneErr = phone.startsWith('#ERROR') || phone.startsWith('#REF!') || phone.startsWith('#VALUE!');
+        const isNameErr = name.startsWith('#ERROR') || name.startsWith('#REF!') || name.startsWith('#VALUE!');
+        return {
+          ...p,
+          nama_pasien: isNameErr ? '' : name,
+          no_telp: isPhoneErr ? '' : phone,
+        };
+      })
+      .filter((p) => p.nama_pasien && p.nama_pasien.trim().length > 0);
   },
 
   /** Search pasien berdasarkan nama. */
