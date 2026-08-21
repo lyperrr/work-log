@@ -282,18 +282,33 @@ export function KunjunganFormPage({ onSaved, prefill }) {
                   Gunakan Paket Aktif Pasien Ini?
                 </label>
                 <Select value={selectedPaketId} onValueChange={setSelectedPaketId}>
-                  <SelectTrigger className="w-full h-13 px-4 bg-card border-2 border-primary/40 font-bold text-base md:text-lg rounded-xl">
+                  <SelectTrigger className="w-full min-h-13 py-2.5 px-4 bg-card border-2 border-primary/40 font-bold text-base md:text-lg rounded-xl">
                     <SelectValue placeholder="Pilih paket..." />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl">
-                    <SelectItem value="none">
-                      Tidak Menggunakan Paket (Bayar Mandiri / Eceran)
+                  <SelectContent className="rounded-2xl max-w-[calc(100vw-2rem)] sm:max-w-lg">
+                    <SelectItem value="none" className="py-2.5">
+                      <span className="font-bold text-sm md:text-base text-foreground">
+                        Tidak Menggunakan Paket (Bayar Mandiri / Eceran)
+                      </span>
                     </SelectItem>
-                    {activePaketList.map((pkt) => (
-                      <SelectItem key={pkt.paket_id} value={pkt.paket_id}>
-                        {pkt.paket_id} - Sisa {pkt.sisa_kunjungan} dari {pkt.total_kunjungan} Kunjungan
-                      </SelectItem>
-                    ))}
+                    {activePaketList.map((pkt) => {
+                      const patientName = pkt.nama_pasien || namaPasien || 'Pasien';
+                      return (
+                        <SelectItem key={pkt.paket_id} value={pkt.paket_id} className="py-2.5">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 w-full text-left">
+                            <div className="flex items-center gap-2 font-black text-sm md:text-base truncate">
+                              <span className="font-mono text-primary font-bold text-xs bg-primary/15 px-2 py-0.5 rounded-md border border-primary/20 shrink-0">
+                                {pkt.paket_id}
+                              </span>
+                              <span className="truncate text-foreground font-black">{patientName}</span>
+                            </div>
+                            <div className="text-xs font-bold text-muted-foreground shrink-0">
+                              Sisa <span className="font-black text-primary">{pkt.sisa_kunjungan}</span> dari {pkt.total_kunjungan} Sesi
+                            </div>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground font-medium">
