@@ -285,12 +285,20 @@ html, body {
     inset: auto !important;
   }
 
-  /* Remove scrollbars, flex restrictions, and max heights from parent cards */
-  #printable-report-root * {
+  /* Remove scrollbars, flex restrictions, borders, shadows, and rounded corners from ALL portal parent nodes during print */
+  #printable-report-root,
+  #printable-report-root *,
+  #printable-report-root div {
     max-height: none !important;
     height: auto !important;
     overflow: visible !important;
     transform: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    border-color: transparent !important;
+    outline: none !important;
   }
 
   /* The actual PDF report document - FULL PAGE PRINT layout without outer card frames */
@@ -303,7 +311,7 @@ html, body {
     background: #ffffff !important;
     color: #000000 !important;
     box-shadow: none !important;
-    border: none !important;
+    border: 0 !important;
     border-radius: 0 !important;
     outline: none !important;
   }

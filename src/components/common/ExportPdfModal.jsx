@@ -134,7 +134,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
     >
       <Card
         onClick={(e) => e.stopPropagation()}
-        className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-3xl md:max-w-4xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[92vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${
+        className={`p-0 border-0 sm:border border-border rounded-t-3xl sm:rounded-2xl max-w-none sm:max-w-3xl md:max-w-4xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[92vh] shadow-xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform print:border-0 print:shadow-none print:rounded-none print:bg-white ${
           isMounted
             ? 'translate-y-0 opacity-100 scale-100'
             : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
@@ -355,9 +355,9 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
           </div>
 
           {/* ─── LIVE PRINTABLE PDF REPORT PREVIEW AREA ─── */}
-               <div
+            <div
               id="printable-report-area"
-              className="bg-white text-gray-900 p-6 sm:p-8 rounded-2xl border-2 border-gray-300 shadow-md font-sans text-xs space-y-5 select-text print:p-0! print:border-0! print:border-none! print:rounded-none! print:shadow-none!"
+              className="bg-white text-gray-900 p-6 sm:p-8 border border-gray-200 rounded-xl font-sans text-xs space-y-5 select-text print:p-0 print:m-0 print:border-0 print:border-none print:rounded-none print:shadow-none"
             >
               {/* ─── 1. KOP SURAT OFFICIAL HEADER ─── */}
               <div className="text-center pb-3 border-b-4 border-double border-gray-900">
@@ -391,8 +391,8 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
                 </div>
               </div>
 
-              {/* ─── 3. EXECUTIVE SUMMARY CARDS (NO ROUNDED CARD BOX ON PRINT) ─── */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 p-3.5 rounded-xl border border-gray-300 text-gray-800 print:bg-transparent! print:p-0! print:border-0! print:border-y! print:border-gray-300! print:rounded-none! print:shadow-none! print:py-2.5">
+              {/* ─── 3. EXECUTIVE SUMMARY CARDS (FLAT FORMAL SUMMARY ON PRINT) ─── */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200 text-gray-800 print:bg-transparent print:p-0 print:border-y print:border-gray-300 print:rounded-none print:shadow-none print:py-2">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-gray-500 block">Total Kunjungan</span>
                   <span className="text-base font-black text-gray-900">{summary.totalKunjungan} Transaksi</span>
@@ -423,7 +423,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
 
               {/* ─── 4. DETAILED TRANSACTION TABLE ─── */}
               {filteredList.length === 0 ? (
-                <div className="text-center py-8 border border-dashed border-gray-300 rounded-xl text-gray-500 print:border-0! print:py-4! print:rounded-none! print:text-gray-800">
+                <div className="text-center py-8 border border-dashed border-gray-300 rounded-lg text-gray-500 print:border-0 print:py-4 print:rounded-none print:text-gray-800">
                   Tidak ada transaksi kunjungan pada periode ini.
                 </div>
               ) : (
