@@ -1,6 +1,6 @@
 {
-  "name": "Kinesis WorkLog",
-  "short_name": "WorkLog",
+  "name": "Kinesis Corpus",
+  "short_name": "Rekap Kerja",
   "description": "Aplikasi Rekap Kunjungan dan Paket Pasien Kinesis Corpus",
   "start_url": "/",
   "scope": "/",

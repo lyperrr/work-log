@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kinesis-worklog-pwa-v1';
+const CACHE_NAME = 'kinesis-corpus-work-log-pwa-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

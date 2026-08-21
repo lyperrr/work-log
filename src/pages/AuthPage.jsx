@@ -26,13 +26,24 @@ export function AuthPage() {
     setLoading(true);
 
     try {
+      const cleanEmail = (email || '').trim().toLowerCase();
+      const cleanPassword = (password || '').trim();
+      const cleanUsername = (username || '').trim();
+
+      if (!cleanEmail || !cleanPassword) {
+        throw new Error('Email dan password wajib diisi');
+      }
+
       if (activeTab === 'login') {
-        await login(email, password);
+        await login(cleanEmail, cleanPassword);
       } else {
-        if (password.length < 6) {
+        if (!cleanUsername) {
+          throw new Error('Nama lengkap / username wajib diisi');
+        }
+        if (cleanPassword.length < 6) {
           throw new Error('Password minimal 6 karakter');
         }
-        await register(username, email, password);
+        await register(cleanUsername, cleanEmail, cleanPassword);
       }
     } catch (err) {
       setErrorMsg(err.message || 'Terjadi kesalahan');

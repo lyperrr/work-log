@@ -67,6 +67,9 @@ export const apiPost = async (action, user_id, data = {}, extra = {}) => {
   const url = getGasUrl();
   const res = await fetch(url, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8',
+    },
     redirect: 'follow',
     body: JSON.stringify({ action, user_id, data, ...extra }),
   });
