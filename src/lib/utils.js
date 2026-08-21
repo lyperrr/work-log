@@ -10,9 +10,18 @@ export function cn(...inputs) {
  */
 export function formatDateLocal(dateInput) {
   if (!dateInput) return '';
-  if (typeof dateInput === 'string') return dateInput.split('T')[0];
+
+  const str = String(dateInput).trim();
+
+  // Jika sudah berupa string polos 'YYYY-MM-DD', langsung kembalikan
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    return str;
+  }
+
+  // Jika berupa ISO String (contoh: "2026-05-28T17:00:00.000Z"), konversi jam UTC ke waktu lokal user
   const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
-  if (isNaN(d.getTime())) return '';
+  if (isNaN(d.getTime())) return str.substring(0, 10);
+
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
