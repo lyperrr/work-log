@@ -101,7 +101,7 @@ export function AuthPage() {
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1.5 flex items-center gap-1.5">
                     <User className="size-4 text-primary" />
-                    Nama Pengguna (Username)
+                    Nama Pengguna
                   </label>
                   <Input
                     type="text"
@@ -130,7 +130,7 @@ export function AuthPage() {
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5 flex items-center gap-1.5">
                   <Lock className="size-4 text-primary" />
-                  Kata Sandi (Password)
+                  Kata Sandi
                 </label>
                 <Input
                   type="password"

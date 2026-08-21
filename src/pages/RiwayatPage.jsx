@@ -4,6 +4,7 @@ import { usePrivacy } from '../context/PrivacyContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { KunjunganCard } from '../components/common/KunjunganCard';
+import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 import { DatePicker } from '../components/common/DatePicker';
 import { Button } from '../components/ui/button';
@@ -344,26 +345,19 @@ export function RiwayatPage() {
             ))}
           </div>
         ) : filteredList.length === 0 ? (
-          <Card className="border-2 border-dashed border-border/80 rounded-2xl p-8">
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <History className="size-6 text-muted-foreground" />
-                </EmptyMedia>
-                <EmptyTitle className="font-bold text-base">Tidak Ada Data Kunjungan</EmptyTitle>
-                <EmptyDescription>
-                  {searchQuery || statusFilter !== 'semua' || metodeFilter !== 'semua' || jenisFilter !== 'semua' || startDate || endDate
-                    ? 'Tidak ditemukan data yang sesuai dengan filter pencarian Anda.'
-                    : 'Belum ada data riwayat kunjungan pasien yang tersimpan.'}
-                </EmptyDescription>
-              </EmptyHeader>
-              {(searchQuery || statusFilter !== 'semua' || metodeFilter !== 'semua' || jenisFilter !== 'semua' || startDate || endDate) && (
-                <Button variant="outline" size="sm" onClick={resetFilters} className="font-bold">
-                  Reset Filter
-                </Button>
-              )}
-            </Empty>
-          </Card>
+          <EmptyState
+            type={
+              searchQuery || statusFilter !== 'semua' || metodeFilter !== 'semua' || jenisFilter !== 'semua' || startDate || endDate
+                ? 'search'
+                : 'riwayat'
+            }
+            query={searchQuery}
+            onReset={
+              searchQuery || statusFilter !== 'semua' || metodeFilter !== 'semua' || jenisFilter !== 'semua' || startDate || endDate
+                ? resetFilters
+                : undefined
+            }
+          />
         ) : (
           filteredList.map((item) => (
             <KunjunganCard

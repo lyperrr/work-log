@@ -8,6 +8,7 @@ import { PatientAutocomplete } from '../components/common/PatientAutocomplete';
 import { PackageCalculator, calculateValuePerSession } from '../components/common/PackageCalculator';
 import { DatePicker } from '../components/common/DatePicker';
 import { KunjunganCard } from '../components/common/KunjunganCard';
+import { EmptyState } from '../components/common/EmptyState';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -245,26 +246,18 @@ export function PaketPage({ onNavigate }) {
             ))}
           </>
         ) : paketList.length === 0 ? (
-          <div className="col-span-full bg-card border-2 border-dashed border-border rounded-3xl p-8">
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <Package className="size-6 text-muted-foreground" />
-                </EmptyMedia>
-                <EmptyTitle className="font-bold text-base">Belum Ada Paket Kunjungan</EmptyTitle>
-                <EmptyDescription>
-                  Belum ada paket kunjungan yang dibuat. Klik tombol &quot;Buat Paket Baru&quot; untuk mendaftarkan paket pasien.
-                </EmptyDescription>
-              </EmptyHeader>
-              <Button
-                size="sm"
-                onClick={() => { setShowModal(true); setErrorMsg(''); setSuccessMsg(''); }}
-                className="mt-2 font-bold"
-              >
-                <PlusCircle className="size-4 mr-1.5" />
-                Buat Paket Baru
-              </Button>
-            </Empty>
+          <div className="col-span-full">
+            <EmptyState
+              type="paket"
+              action={{
+                label: 'Buat Paket Baru',
+                onClick: () => {
+                  setShowModal(true);
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                },
+              }}
+            />
           </div>
         ) : (
           paketList.map((pkt) => {
@@ -449,8 +442,6 @@ export function PaketPage({ onNavigate }) {
                 {onNavigate && (
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="text-xs font-bold h-8"
                     onClick={() => {
                       // Pass patient & paket context so KunjunganFormPage pre-fills the form.
                       // biaya = nilai per sesi (harga_paket / total_kunjungan)
@@ -475,11 +466,12 @@ export function PaketPage({ onNavigate }) {
 
               {/* Kunjungan Cards */}
               {paketKunjungan.length === 0 ? (
-                <div className="text-center py-10 text-muted-foreground space-y-2">
-                  <Clock className="size-10 mx-auto opacity-30" />
-                  <p className="text-sm font-semibold">Belum ada kunjungan tercatat</p>
-                  <p className="text-xs">Catat kunjungan dari tab &quot;Catat Kunjungan&quot; dan pilih paket ini</p>
-                </div>
+                <EmptyState
+                  type="riwayat"
+                  title="Belum Ada Kunjungan"
+                  description="Catat kunjungan dari tab 'Catat Kunjungan' dan pilih paket ini."
+                  variant="simple"
+                />
               ) : (
                 <div className="space-y-3">
                   {paketKunjungan.map((item) => (

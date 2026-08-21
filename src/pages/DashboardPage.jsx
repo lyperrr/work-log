@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Badge } from '../components/ui/badge';
 import { Skeleton } from '../components/ui/skeleton';
 import { Spinner } from '../components/ui/spinner';
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '../components/ui/empty';
+import { EmptyState } from '../components/common/EmptyState';
 
 import {
   TrendingUp,
@@ -436,23 +436,20 @@ export function DashboardPage({ onNavigate }) {
               ))}
             </div>
           ) : displayKunjunganList.length === 0 ? (
-            <Empty className="py-8 border-2 border-dashed border-border/80 rounded-2xl">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <Calendar className="size-5 text-muted-foreground" />
-                </EmptyMedia>
-                <EmptyTitle className="font-bold text-base">Belum Ada Kunjungan Bulan Ini</EmptyTitle>
-                <EmptyDescription>
-                  {dataScope === 'current_month'
-                    ? 'Belum ada kunjungan tercatat untuk bulan ini (mode reset bulanan aktif).'
-                    : 'Belum ada data kunjungan yang tercatat.'}
-                </EmptyDescription>
-              </EmptyHeader>
-              <Button size="sm" onClick={() => onNavigate('catat')} className="mt-2 font-bold">
-                <PlusCircle className="size-4 mr-1.5" />
-                Catat Kunjungan
-              </Button>
-            </Empty>
+            <EmptyState
+              type="riwayat"
+              title="Belum Ada Kunjungan"
+              description={
+                dataScope === 'current_month'
+                  ? 'Belum ada kunjungan tercatat untuk bulan ini (mode reset bulanan aktif).'
+                  : 'Belum ada data kunjungan yang tercatat.'
+              }
+              variant="simple"
+              action={{
+                label: 'Catat Kunjungan Baru',
+                onClick: () => onNavigate('catat'),
+              }}
+            />
           ) : (
             displayKunjunganList.slice(0, 4).map((k) => (
               <div
