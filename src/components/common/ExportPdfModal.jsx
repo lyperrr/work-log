@@ -355,15 +355,9 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
           </div>
 
           {/* ─── LIVE PRINTABLE PDF REPORT PREVIEW AREA ─── */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-muted-foreground px-1 no-print">
-              <span>Pratinjau Halaman Cetak PDF:</span>
-              <Badge variant="outline" className="font-mono text-[10px]">{filteredList.length} Transaksi</Badge>
-            </div>
-
-            <div
+               <div
               id="printable-report-area"
-              className="bg-white text-gray-900 p-6 sm:p-8 rounded-2xl border-2 border-gray-300 shadow-md font-sans text-xs space-y-5 select-text print:p-0 print:border-0! print:rounded-none! print:shadow-none!"
+              className="bg-white text-gray-900 p-6 sm:p-8 rounded-2xl border-2 border-gray-300 shadow-md font-sans text-xs space-y-5 select-text print:p-0! print:border-0! print:border-none! print:rounded-none! print:shadow-none!"
             >
               {/* ─── 1. KOP SURAT OFFICIAL HEADER ─── */}
               <div className="text-center pb-3 border-b-4 border-double border-gray-900">
@@ -385,7 +379,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
               <div className="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 pb-3 gap-2">
                 <div>
                   <h2 className="text-base font-black uppercase tracking-wide text-gray-900">
-                    LAPORAN REKAPITULASI KUNJUNGAN & KEUANGAN
+                    LAPORAN REKAPITULASI KUNJUNGAN &amp; KEUANGAN
                   </h2>
                   <p className="text-xs text-gray-700 font-bold mt-0.5">
                     Periode: <span className="text-primary-800 underline">{dateLabel}</span>
@@ -393,12 +387,12 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
                 </div>
                 <div className="text-right text-[11px] text-gray-500 font-mono">
                   <div>Dicetak Pada: {formatDateLocal(new Date())}</div>
-                  <div>Status Data: Valid & Terverifikasi</div>
+                  <div>Status Data: Valid &amp; Terverifikasi</div>
                 </div>
               </div>
 
-              {/* ─── 3. EXECUTIVE SUMMARY CARDS ─── */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 p-3.5 rounded-xl border border-gray-300 text-gray-800">
+              {/* ─── 3. EXECUTIVE SUMMARY CARDS (NO ROUNDED CARD BOX ON PRINT) ─── */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 p-3.5 rounded-xl border border-gray-300 text-gray-800 print:bg-transparent! print:p-0! print:border-0! print:border-y! print:border-gray-300! print:rounded-none! print:shadow-none! print:py-2.5">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-gray-500 block">Total Kunjungan</span>
                   <span className="text-base font-black text-gray-900">{summary.totalKunjungan} Transaksi</span>
@@ -429,7 +423,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
 
               {/* ─── 4. DETAILED TRANSACTION TABLE ─── */}
               {filteredList.length === 0 ? (
-                <div className="text-center py-8 border border-dashed border-gray-300 rounded-xl text-gray-500">
+                <div className="text-center py-8 border border-dashed border-gray-300 rounded-xl text-gray-500 print:border-0! print:py-4! print:rounded-none! print:text-gray-800">
                   Tidak ada transaksi kunjungan pada periode ini.
                 </div>
               ) : (
@@ -528,7 +522,6 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
                 </div>
               </div>
             </div>
-          </div>
         </CardContent>
       </Card>
     </div>,
