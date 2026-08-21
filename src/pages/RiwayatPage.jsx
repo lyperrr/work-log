@@ -254,7 +254,7 @@ export function RiwayatPage() {
 
       {/* Filter Control Box using shadcn Card, Input, Select, and Button */}
       <Card>
-        <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4 space-y-2">
+        <CardHeader className="space-y-2">
           <div className="flex items-center justify-between gap-2 w-full">
             <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-foreground min-w-0">
               <Filter className="size-4.5 text-primary shrink-0" />
@@ -464,7 +464,7 @@ export function RiwayatPage() {
       {editingItem && createPortal(
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
           <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-6 shrink-0">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 shrink-0">
               <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
                 <Pencil className="size-5 sm:size-6 text-primary shrink-0" />
                 <span>Edit Kunjungan ({editingItem.kunjungan_id})</span>
@@ -479,7 +479,7 @@ export function RiwayatPage() {
               </Button>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 pb-24 sm:pb-6">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 pb-24 sm:pb-5">
               <form onSubmit={handleSaveEdit} className="space-y-4">
                 <div>
                   <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">

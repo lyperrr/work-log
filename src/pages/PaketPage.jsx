@@ -690,7 +690,7 @@ export function PaketPage({ onNavigate }) {
       {showModal && createPortal(
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
           <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-6 shrink-0">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 shrink-0">
               <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
                 <Package className="size-6 sm:size-7 text-primary" />
                 Buat Paket Kunjungan Baru
@@ -705,7 +705,7 @@ export function PaketPage({ onNavigate }) {
               </Button>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 pb-24 sm:pb-6">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 pb-24 sm:pb-5">
               {errorMsg && (
                 <Alert variant="destructive" className="rounded-2xl border-2">
                   <AlertCircle className="h-5 w-5" />
@@ -776,7 +776,7 @@ export function PaketPage({ onNavigate }) {
       {showEditModal && editPaketData && createPortal(
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
           <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-6 shrink-0">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 shrink-0">
               <div>
                 <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
                   <Pencil className="size-5 sm:size-6 text-primary" />
@@ -794,7 +794,7 @@ export function PaketPage({ onNavigate }) {
               </Button>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 pb-24 sm:pb-6">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 pb-24 sm:pb-5">
               {errorMsg && (
                 <Alert variant="destructive" className="rounded-2xl border-2">
                   <AlertCircle className="h-5 w-5" />
@@ -924,7 +924,7 @@ export function PaketPage({ onNavigate }) {
       {editingKunjungan && createPortal(
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
           <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-6 shrink-0">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 shrink-0">
               <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
                 <Pencil className="size-5 sm:size-6 text-primary shrink-0" />
                 <span>Edit Kunjungan ({editingKunjungan.kunjungan_id})</span>
@@ -939,7 +939,7 @@ export function PaketPage({ onNavigate }) {
               </Button>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 pb-24 sm:pb-6">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 pb-24 sm:pb-5">
               <form onSubmit={handleSaveEditKunjungan} className="space-y-4">
                 <div>
                   <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
