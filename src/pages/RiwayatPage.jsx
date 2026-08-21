@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { usePrivacy } from '../context/PrivacyContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { PrivacyAmount, PrivacyPeekButton } from '../components/common/PrivacyAmount';
+import { KunjunganCard } from '../components/common/KunjunganCard';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 import { DatePicker } from '../components/common/DatePicker';
 import { Button } from '../components/ui/button';
@@ -105,6 +105,11 @@ export function RiwayatPage() {
     if (endDate && kDate > endDate) return false;
 
     return true;
+  }).sort((a, b) => {
+    const dateA = a.tanggal_kunjungan ? String(a.tanggal_kunjungan).split('T')[0] : '';
+    const dateB = b.tanggal_kunjungan ? String(b.tanggal_kunjungan).split('T')[0] : '';
+    if (dateA !== dateB) return dateB.localeCompare(dateA);
+    return String(b.kunjungan_id || '').localeCompare(String(a.kunjungan_id || ''));
   });
 
   const handleUpdateStatus = async (id, newStatus) => {
@@ -360,199 +365,27 @@ export function RiwayatPage() {
             </Empty>
           </Card>
         ) : (
-          filteredList.map((item) => {
-            const isLunas = item.status === 'lunas';
-            const isMenunggu = item.status === 'menunggu';
-
-            return (
-              <div
-                key={item.kunjungan_id}
-                className="bg-card border border-border/80 hover:border-primary/50 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-200 space-y-3.5 overflow-hidden"
-              >
-                {/* Header Row: Patient Info + Payment Method Badge */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-base shrink-0">
-                      {item.nama_pasien.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10px] font-mono font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-md border border-border">
-                          {item.kunjungan_id}
-                        </span>
-                        {item.info_paket && (
-                          <Badge variant="secondary" className="bg-primary/15 text-primary font-bold text-[10px]">
-                            <Package className="w-3 h-3 mr-1" />
-                            {item.info_paket}
-                          </Badge>
-                        )}
-                      </div>
-                      <h3 className="text-base font-bold text-foreground mt-0.5 truncate">
-                        {item.nama_pasien}
-                      </h3>
-                    </div>
-                  </div>
-
-                  <Badge variant="outline" className="uppercase font-bold text-[10px] sm:text-[11px] tracking-wider shrink-0 bg-background">
-                    <CreditCard className="w-3 h-3 mr-1 text-primary" />
-                    Metode: {item.metode_pembayaran}
-                  </Badge>
-                </div>
-
-                {/* Dedicated Biaya Highlight Bar (Clickable to reveal/hide) */}
-                <div
-                  onClick={() => toggleRiwayatPeek(item.kunjungan_id)}
-                  className="flex items-center justify-between py-2.5 px-3.5 rounded-xl bg-secondary/60 hover:bg-secondary/90 border border-border/60 cursor-pointer select-none transition-all group/biaya"
-                  title="Klik untuk melihat/menyembunyikan biaya"
-                >
-                  <div className="flex items-center gap-2">
-                    <PrivacyPeekButton
-                      isRevealed={Boolean(peekRiwayatMap[item.kunjungan_id])}
-                      onToggle={() => toggleRiwayatPeek(item.kunjungan_id)}
-                    />
-                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider group-hover/biaya:text-foreground">
-                      Biaya:
-                    </span>
-                  </div>
-                  <PrivacyAmount
-                    amount={item.biaya}
-                    isRevealed={Boolean(peekRiwayatMap[item.kunjungan_id])}
-                    onToggle={() => toggleRiwayatPeek(item.kunjungan_id)}
-                    className="text-lg sm:text-xl font-black text-primary tracking-tight"
-                  />
-                </div>
-
-                {/* Spacious Sub-row: Phone & Date Info (Slightly Larger Font Size) */}
-                <div className="flex flex-wrap items-center justify-between text-xs sm:text-sm text-foreground font-medium px-1 gap-2 border-t border-border/40 pt-2.5">
-                  <span className="flex items-center gap-1.5">
-                    <Phone className="size-4 text-primary shrink-0" />
-                    <strong className="font-bold text-foreground">No. Telp:</strong>
-                    <span className="text-foreground/90 font-semibold">{item.no_telp || '-'}</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="size-4 text-primary shrink-0" />
-                    <strong className="font-bold text-foreground">Tgl Kunjungan:</strong>
-                    <span className="text-foreground/90 font-semibold">
-                      {item.tanggal_kunjungan ? String(item.tanggal_kunjungan).split('T')[0] : '-'}
-                    </span>
-                  </span>
-                </div>
-
-                {/* Status Section Header & Controls */}
-                <div className="space-y-1.5 pt-1">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-1">
-                    <span>Status Pembayaran:</span>
-                    <Badge
-                      variant={isLunas ? 'success' : isMenunggu ? 'warning' : 'destructive'}
-                      className="capitalize text-[10px] py-0 px-2"
-                    >
-                      {item.status}
-                    </Badge>
-                  </div>
-
-                  {/* Status Toggle Buttons */}
-                  {(() => {
-                    // Use pending (optimistic) status while API is in flight so the
-                    // indicator slides to the target button immediately on click.
-                    const isUpdatingThis = updatingId === item.kunjungan_id;
-                    const effectiveStatus = isUpdatingThis && pendingStatus[item.kunjungan_id]
-                      ? pendingStatus[item.kunjungan_id]
-                      : item.status;
-                    const effLunas    = effectiveStatus === 'lunas';
-                    const effMenunggu = effectiveStatus === 'menunggu';
-                    const effBelum    = !effLunas && !effMenunggu;
-
-                    const btnBase = 'relative py-1.5 px-1 rounded-lg text-xs font-bold text-center flex items-center justify-center gap-1 transition-all duration-300';
-
-                    return (
-                      <div className="grid grid-cols-3 gap-1 bg-secondary/80 p-1 rounded-xl border border-border/80">
-                        {/* Menunggu */}
-                        <button
-                          type="button"
-                          disabled={Boolean(updatingId)}
-                          onClick={() => handleUpdateStatus(item.kunjungan_id, 'menunggu')}
-                          className={`${btnBase} ${
-                            effMenunggu
-                              ? isUpdatingThis
-                                ? 'bg-amber-500 text-white shadow-xs animate-pulse'
-                                : 'bg-amber-500 text-white shadow-xs'
-                              : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          {isUpdatingThis && effMenunggu && <Spinner className="size-3" />}
-                          Menunggu
-                        </button>
-
-                        {/* Lunas */}
-                        <button
-                          type="button"
-                          disabled={Boolean(updatingId)}
-                          onClick={() => handleUpdateStatus(item.kunjungan_id, 'lunas')}
-                          className={`${btnBase} ${
-                            effLunas
-                              ? isUpdatingThis
-                                ? 'bg-emerald-600 text-white shadow-xs animate-pulse'
-                                : 'bg-emerald-600 text-white shadow-xs'
-                              : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          {isUpdatingThis && effLunas && <Spinner className="size-3" />}
-                          Lunas
-                        </button>
-
-                        {/* Belum Bayar */}
-                        <button
-                          type="button"
-                          disabled={Boolean(updatingId)}
-                          onClick={() => handleUpdateStatus(item.kunjungan_id, 'belum bayar')}
-                          className={`${btnBase} ${
-                            effBelum
-                              ? isUpdatingThis
-                                ? 'bg-rose-600 text-white shadow-xs animate-pulse'
-                                : 'bg-rose-600 text-white shadow-xs'
-                              : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          {isUpdatingThis && effBelum && <Spinner className="size-3" />}
-                          Belum Bayar
-                        </button>
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* Actions (Edit / Delete) */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      setEditingItem({
-                        ...item,
-                        tanggal_kunjungan: item.tanggal_kunjungan
-                          ? String(item.tanggal_kunjungan).split('T')[0]
-                          : '',
-                      })
-                    }
-                    className="w-full font-bold"
-                  >
-                    <Edit className="size-3.5 mr-1 text-primary" />
-                    Edit
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => setDeleteTargetId(item.kunjungan_id)}
-                    className="w-full font-bold"
-                  >
-                    <Trash2 className="size-3.5 mr-1" />
-                    Hapus
-                  </Button>
-                </div>
-              </div>
-            );
-          })
+          filteredList.map((item) => (
+            <KunjunganCard
+              key={item.kunjungan_id}
+              item={item}
+              showPatientName={true}
+              isRevealed={Boolean(peekRiwayatMap[item.kunjungan_id])}
+              onTogglePeek={() => toggleRiwayatPeek(item.kunjungan_id)}
+              updatingId={updatingId}
+              pendingStatus={pendingStatus}
+              onUpdateStatus={handleUpdateStatus}
+              onEdit={(k) =>
+                setEditingItem({
+                  ...k,
+                  tanggal_kunjungan: k.tanggal_kunjungan
+                    ? String(k.tanggal_kunjungan).split('T')[0]
+                    : '',
+                })
+              }
+              onDelete={(id) => setDeleteTargetId(id)}
+            />
+          ))
         )}
       </div>
 

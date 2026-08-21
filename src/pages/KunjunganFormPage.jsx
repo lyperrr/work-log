@@ -17,22 +17,28 @@ import {
   CheckCircle2,
   AlertCircle,
   PlusCircle,
+  Info,
 } from 'lucide-react';
 
-export function KunjunganFormPage({ onSaved }) {
+export function KunjunganFormPage({ onSaved, prefill }) {
   const { showToast } = useToast();
   const { api } = useAuth();
 
-  const [namaPasien, setNamaPasien] = useState('');
-  const [noTelp, setNoTelp] = useState('');
+  const [namaPasien, setNamaPasien] = useState(() => prefill?.nama_pasien || '');
+  const [noTelp, setNoTelp] = useState(() => String(prefill?.no_telp || ''));
   const [tanggalKunjungan, setTanggalKunjungan] = useState(
     new Date().toISOString().split('T')[0]
   );
-  const [biaya, setBiaya] = useState(300000);
+  const [biaya, setBiaya] = useState(() =>
+    prefill?.biaya != null ? Number(prefill.biaya) : 300000
+  );
   const [metodePembayaran, setMetodePembayaran] = useState('cash');
   const [status, setStatus] = useState('menunggu');
 
-  const [selectedPaketId, setSelectedPaketId] = useState('none');
+  // Pre-select paket from prefill; updated after allPakets loads
+  const [selectedPaketId, setSelectedPaketId] = useState(
+    prefill?.paket_id || 'none'
+  );
   const [allPakets, setAllPakets] = useState([]);
   const [allVisits, setAllVisits] = useState([]);
   const [activePaketList, setActivePaketList] = useState([]);
@@ -57,7 +63,9 @@ export function KunjunganFormPage({ onSaved }) {
     };
   }, [api]);
 
-  // In-memory filter active pakets for current patient name
+  // In-memory filter active pakets for current patient name.
+  // When a prefill is provided (coming from PaketPage), we also ensure the
+  // specific prefill.paket_id is pre-selected once allPakets has loaded.
   useEffect(() => {
     if (!namaPasien || !namaPasien.trim()) {
       setActivePaketList([]);
@@ -72,8 +80,28 @@ export function KunjunganFormPage({ onSaved }) {
         Number(p.sisa_kunjungan || 0) > 0
     );
     setActivePaketList(filtered);
-    setSelectedPaketId(filtered.length > 0 ? filtered[0].paket_id : 'none');
-  }, [namaPasien, allPakets]);
+
+    // If a paket was pre-selected via prefill, keep it selected as long as
+    // it's in the filtered list. Otherwise fall back to the first active one.
+    if (prefill?.paket_id && filtered.some((p) => p.paket_id === prefill.paket_id)) {
+      setSelectedPaketId(prefill.paket_id);
+    } else {
+      setSelectedPaketId(filtered.length > 0 ? filtered[0].paket_id : 'none');
+    }
+  }, [namaPasien, allPakets]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Dynamically update `biaya` whenever the selected Paket changes
+  useEffect(() => {
+    if (selectedPaketId && selectedPaketId !== 'none') {
+      const targetPaket = allPakets.find((p) => p.paket_id === selectedPaketId);
+      if (targetPaket && Number(targetPaket.total_kunjungan) > 0) {
+        const perSessionVal = Math.round(
+          Number(targetPaket.harga_paket || 0) / Number(targetPaket.total_kunjungan)
+        );
+        setBiaya(perSessionVal);
+      }
+    }
+  }, [selectedPaketId, allPakets]);
 
   const handlePatientNameChange = (val) => {
     setNamaPasien(val);
@@ -81,18 +109,16 @@ export function KunjunganFormPage({ onSaved }) {
 
   const handleSelectPatient = (patient) => {
     if (patient) {
-      // Always set noTelp from patient record — normalize to string in case
-      // Sheets returned the phone number as a Number type.
-      // Previously only set when truthy, leaving phone empty for patients
-      // with no stored phone and causing "Nomor Telepon wajib diisi" error.
       setNoTelp(String(patient.no_telp || ''));
 
-      // Auto-fill biaya dari kunjungan terakhir pasien ini
-      const lastVisit = allVisits.find(
-        (k) => (k.nama_pasien || '').toLowerCase().trim() === (patient.nama_pasien || '').toLowerCase().trim()
-      );
-      if (lastVisit && lastVisit.biaya !== undefined && lastVisit.biaya !== null) {
-        setBiaya(Number(lastVisit.biaya));
+      // Auto-fill biaya dari kunjungan terakhir HANYA jika tidak sedang memakai paket
+      if (selectedPaketId === 'none') {
+        const lastVisit = allVisits.find(
+          (k) => (k.nama_pasien || '').toLowerCase().trim() === (patient.nama_pasien || '').toLowerCase().trim()
+        );
+        if (lastVisit && lastVisit.biaya !== undefined && lastVisit.biaya !== null) {
+          setBiaya(Number(lastVisit.biaya));
+        }
       }
     }
   };
@@ -196,6 +222,27 @@ export function KunjunganFormPage({ onSaved }) {
             </Alert>
           )}
 
+          {/* Context banner shown when form is opened from a paket card */}
+          {prefill?.paket_id && (
+            <div className="flex items-center gap-3 bg-primary/8 border border-primary/25 rounded-2xl px-4 py-3">
+              <div className="size-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                <Package className="size-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-black text-primary uppercase tracking-wide">
+                  Melanjutkan Paket
+                </p>
+                <p className="text-sm font-bold text-foreground truncate">
+                  {prefill.nama_pasien} &nbsp;
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {prefill.paket_id}
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
+
+
           {successMsg && (
             <Alert className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-2 border-emerald-500/30 rounded-2xl">
               <CheckCircle2 className="h-5 w-5 text-emerald-600" />
@@ -268,6 +315,21 @@ export function KunjunganFormPage({ onSaved }) {
                 min="0"
                 className="w-full h-[52px] px-4 text-base md:text-lg border-2 border-input rounded-xl bg-background font-bold touch-input shadow-xs"
               />
+              {selectedPaketId !== 'none' && (() => {
+                const curPkt = allPakets.find((p) => p.paket_id === selectedPaketId);
+                if (!curPkt) return null;
+                const hp = Number(curPkt.harga_paket || 0);
+                const tk = Number(curPkt.total_kunjungan || 1);
+                const calc = Math.round(hp / tk);
+                return (
+                  <p className="text-xs text-muted-foreground font-medium mt-1.5 flex items-center gap-1.5 bg-primary/5 p-2 rounded-lg border border-primary/20">
+                    <Info className="size-4 text-primary shrink-0" />
+                    <span>
+                      Dihitung otomatis: <strong>Harga Paket (Rp {hp.toLocaleString('id-ID')})</strong> ÷ <strong>{tk} Sesi</strong> = <strong>Rp {calc.toLocaleString('id-ID')} / sesi</strong>.
+                    </span>
+                  </p>
+                );
+              })()}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

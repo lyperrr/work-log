@@ -43,9 +43,15 @@ export function DashboardPage({ onNavigate }) {
           api.getKunjunganList(),
           api.getPaketList(),
         ]);
+        const sortDesc = (arr, idKey) =>
+          (arr || []).slice().sort((a, b) => {
+            const keyA = a.created_at || a[idKey] || '';
+            const keyB = b.created_at || b[idKey] || '';
+            return String(keyB).localeCompare(String(keyA));
+          });
         if (!cancelled) {
-          setKunjunganList(kunjungan);
-          setPaketList(paket);
+          setKunjunganList(sortDesc(kunjungan, 'kunjungan_id'));
+          setPaketList(sortDesc(paket, 'paket_id'));
         }
       } catch (err) {
         console.error('Dashboard fetch error:', err);

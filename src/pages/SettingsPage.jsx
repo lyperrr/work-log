@@ -128,7 +128,7 @@ export function SettingsPage() {
       {/* 2. Privacy Mode Control */}
       <Card>
         <CardHeader className="flex-row items-center gap-2">
-          {hideIncome ? <EyeOff className="size-5 text-amber-500" /> : <Eye className="size-5 text-primary" />}
+          {hideIncome ? <EyeOff className="size-5 shrink-0 text-amber-500" /> : <Eye className="size-5 shrink-0 text-primary" />}
           <CardTitle>Mode Privasi (Sembunyikan Nominal Uang)</CardTitle>
         </CardHeader>
 
@@ -157,11 +157,11 @@ export function SettingsPage() {
               ) : (
                 <Eye className="size-4 text-primary" />
               )}
-              <span>{hideIncome ? 'Mode Privasi: AKTIF' : 'Mode Privasi: NONAKTIF'}</span>
+              <span>{hideIncome ? 'AKTIF' : 'NONAKTIF'}</span>
             </div>
 
             <Badge variant={hideIncome ? 'warning' : 'default'} className="font-mono">
-              {hideIncome ? '••••••' : 'Rp (Ditampilkan)'}
+              {hideIncome ? 'Rp (Tidak Terlihat)' : 'Rp (Terlihat)'}
             </Badge>
           </Button>
         </CardContent>
@@ -169,7 +169,7 @@ export function SettingsPage() {
       {/* 2. Rentang Tampilan Data (Data Scope Filter) */}
       <Card>
         <CardHeader className="flex-row items-center gap-2">
-          <Calendar className="size-5 text-primary" />
+          <Calendar className="size-5 shrink-0 text-primary" />
           <CardTitle>Rentang Tampilan Data (Reset Tiap Bulan)</CardTitle>
         </CardHeader>
 
@@ -247,7 +247,7 @@ export function SettingsPage() {
       <div className="bg-secondary/40 border border-border rounded-3xl p-4 text-center text-xs text-muted-foreground space-y-1">
         <div className="flex items-center justify-center gap-1.5 font-bold text-foreground">
           <ShieldCheck className="size-4 text-primary" />
-          <span>Work Log - v1.0</span>
+          <span>Rekap Kerja - v1.0</span>
         </div>
       </div>
 
