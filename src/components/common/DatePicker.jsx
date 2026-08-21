@@ -31,7 +31,7 @@ export function DatePicker({ value, onChange, placeholder = "Pilih tanggal..." }
     <div className="w-full">
       <Popover>
         <PopoverTrigger
-          className="w-full h-[52px] flex items-center justify-between text-left font-bold text-base border-2 border-input rounded-xl touch-btn px-4 bg-background text-foreground hover:bg-accent/50 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all shadow-xs cursor-pointer"
+          className="w-full h-[52px] flex items-center justify-between text-left font-bold text-base border border-input rounded-xl touch-btn px-4 bg-background text-foreground hover:bg-accent/50 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all shadow-xs cursor-pointer"
         >
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <CalendarIcon className="h-5 w-5 text-primary shrink-0" />
@@ -57,7 +57,7 @@ export function DatePicker({ value, onChange, placeholder = "Pilih tanggal..." }
         <PopoverContent
           align="start"
           sideOffset={8}
-          className="w-[calc(100vw-2rem)] max-w-xs p-3 bg-card border-2 border-primary/30 rounded-2xl shadow-2xl z-50 overflow-hidden"
+          className="w-[calc(100vw-2rem)] max-w-xs p-3 bg-card border border-primary/30 rounded-2xl shadow-2xl z-50 overflow-hidden"
         >
           <Calendar
             mode="single"

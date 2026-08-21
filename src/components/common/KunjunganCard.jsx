@@ -55,7 +55,7 @@ export function KunjunganCard({
                 </span>
                 {item.info_paket && (
                   <Badge variant="secondary" className="bg-primary/15 text-primary font-bold text-[10px]">
-                    <Package className="w-3 h-3 mr-1" />
+                    <Package className="w-3 h-3" />
                     {item.info_paket}
                   </Badge>
                 )}
@@ -67,7 +67,7 @@ export function KunjunganCard({
           </div>
 
           <Badge variant="outline" className="uppercase font-bold text-[10px] sm:text-[11px] tracking-wider shrink-0 bg-background">
-            <CreditCard className="w-3 h-3 mr-1 text-primary" />
+            <CreditCard className="w-3 h-3 text-primary" />
             {item.metode_pembayaran}
           </Badge>
         </div>
@@ -156,13 +156,12 @@ export function KunjunganCard({
             type="button"
             disabled={Boolean(updatingId)}
             onClick={() => onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'menunggu')}
-            className={`${btnBase} ${
-              effMenunggu
+            className={`${btnBase} ${effMenunggu
                 ? isUpdatingThis
                   ? 'bg-amber-500 text-white shadow-xs animate-pulse'
                   : 'bg-amber-500 text-white shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
-            }`}
+              }`}
           >
             {isUpdatingThis && effMenunggu && <Spinner className="size-3" />}
             Menunggu
@@ -173,13 +172,12 @@ export function KunjunganCard({
             type="button"
             disabled={Boolean(updatingId)}
             onClick={() => onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'lunas')}
-            className={`${btnBase} ${
-              effLunas
+            className={`${btnBase} ${effLunas
                 ? isUpdatingThis
                   ? 'bg-emerald-600 text-white shadow-xs animate-pulse'
                   : 'bg-emerald-600 text-white shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
-            }`}
+              }`}
           >
             {isUpdatingThis && effLunas && <Spinner className="size-3" />}
             Lunas
@@ -190,13 +188,12 @@ export function KunjunganCard({
             type="button"
             disabled={Boolean(updatingId)}
             onClick={() => onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'belum bayar')}
-            className={`${btnBase} ${
-              effBelum
+            className={`${btnBase} ${effBelum
                 ? isUpdatingThis
                   ? 'bg-rose-600 text-white shadow-xs animate-pulse'
                   : 'bg-rose-600 text-white shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
-            }`}
+              }`}
           >
             {isUpdatingThis && effBelum && <Spinner className="size-3" />}
             Belum Bayar
