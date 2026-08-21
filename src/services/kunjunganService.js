@@ -37,8 +37,11 @@ export const kunjunganService = {
     return res.data?.kunjungan || res.data || {};
   },
 
-  /** Update detail kunjungan (metode, tanggal, biaya, status). */
-  updateKunjungan: async (userId, kunjunganId, updateData) => {
+  /** Update detail kunjungan (metode, tanggal, biaya, status, dll). */
+  updateKunjungan: async (userId, kunjunganIdOrData, updateDataObj) => {
+    const kunjunganId = typeof kunjunganIdOrData === 'string' ? kunjunganIdOrData : kunjunganIdOrData?.kunjungan_id;
+    const updateData = typeof kunjunganIdOrData === 'object' ? kunjunganIdOrData : updateDataObj || {};
+
     const res = await apiPost('updateKunjungan', userId, {
       kunjungan_id: kunjunganId,
       ...updateData,

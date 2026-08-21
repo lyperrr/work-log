@@ -46,7 +46,10 @@ export const paketService = {
   },
 
   /** Update detail paket kunjungan. */
-  updatePaket: async (userId, paketId, data) => {
+  updatePaket: async (userId, paketIdOrData, updateDataObj) => {
+    const paketId = typeof paketIdOrData === 'string' ? paketIdOrData : paketIdOrData?.paket_id;
+    const data = typeof paketIdOrData === 'object' ? paketIdOrData : updateDataObj || {};
+
     const res = await apiPost('updatePaket', userId, {
       paket_id: paketId,
       total_kunjungan: data.total_kunjungan,
