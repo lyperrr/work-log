@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useSettings } from '../../context/SettingsContext';
-import { useAuth } from '../../context/AuthContext';
 import { useAnimatePresence } from '../../hooks/useAnimatePresence';
 import { DatePicker } from './DatePicker';
 import { Button } from '../ui/button';
@@ -21,11 +20,6 @@ import {
 export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
   const { shouldRender, isMounted } = useAnimatePresence(isOpen, 250);
   const { kopSurat, setKopSurat } = useSettings();
-  const { currentUser } = useAuth();
-
-  const loggedInName = currentUser?.username
-    ? currentUser.username.charAt(0).toUpperCase() + currentUser.username.slice(1)
-    : currentUser?.email?.split('@')[0] || 'Penanggung Jawab';
 
   // Period state: '1_minggu' | 'bulan_ini' | 'bulan_lalu' | 'tahun_ini' | 'custom'
   const [periodType, setPeriodType] = useState('bulan_ini');
@@ -526,9 +520,9 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
                   </div>
                   <div>
                     <p className="text-xs font-black text-gray-900 underline uppercase">
-                      ( {loggedInName} )
+                      ( {kopSurat.penanggungJawab} )
                     </p>
-                    <p className="text-[10px] text-gray-500 mt-0.5">Penanggung Jawab / Petugas Logged In</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">Penanggung Jawab Klinik / Praktek</p>
                   </div>
                 </div>
               </div>

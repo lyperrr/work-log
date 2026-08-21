@@ -186,11 +186,13 @@ export function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-foreground mb-1 block">Penanggung Jawab (User Logged In)</label>
-                <div className="h-11 px-3.5 bg-secondary/80 text-foreground font-bold text-xs rounded-xl border border-input flex items-center gap-2">
-                  <User className="size-4 text-primary shrink-0" />
-                  <span className="truncate">{displayName} (Otomatis dari Akun Active)</span>
-                </div>
+                <label className="text-xs font-bold text-foreground mb-1 block">Nama Penanggung Jawab</label>
+                <Input
+                  value={tempKop.penanggungJawab}
+                  onChange={(e) => setTempKop({ ...tempKop, penanggungJawab: e.target.value })}
+                  placeholder="Nama Penanggung Jawab"
+                  className="font-bold text-xs h-11"
+                />
               </div>
             </div>
 
