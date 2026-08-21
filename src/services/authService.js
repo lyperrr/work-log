@@ -1,4 +1,4 @@
-import { apiPost } from './api';
+import { apiGet, apiPost } from './api';
 
 /**
  * Service khusus Otentikasi (Login & Register).
@@ -15,4 +15,15 @@ export const authService = {
     if (!res.success) throw new Error(res.message || 'Registrasi gagal');
     return res.data; // { user_id, username, email }
   },
+
+  /**
+   * Validasi apakah user_id yang tersimpan di localStorage masih ada di database.
+   * Dipanggil saat app pertama kali dimuat. Melempar error jika akun sudah dihapus.
+   */
+  validateSession: async (userId) => {
+    const res = await apiGet('validateSession', { user_id: userId });
+    if (!res.success) throw new Error(res.message || 'Sesi tidak valid');
+    return res.data; // { user_id, username, email }
+  },
 };
+
