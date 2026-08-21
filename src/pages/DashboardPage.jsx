@@ -383,13 +383,13 @@ export function DashboardPage({ onNavigate }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-56 w-full min-w-0 pt-2 min-h-[220px]">
+          <div className="h-56 w-full min-w-0 pt-2 min-h-55">
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={chartData}>
                 <XAxis dataKey="day" stroke="#888888" fontSize={12} tickLine={false} />
-                <YAxis stroke="#888888" fontSize={10} tickFormatter={(v) => (hideIncome ? '•••' : `${v / 1000}k`)} width={35} />
+                <YAxis stroke="#888888" fontSize={10} tickFormatter={(v) => `${v / 1000}k`} width={35} />
                 <Tooltip
-                  formatter={(value) => [formatAmount(value), 'Pemasukan']}
+                  formatter={(value) => [`Rp ${Number(value || 0).toLocaleString('id-ID')}`, 'Pemasukan']}
                   contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '12px', borderColor: 'var(--border)' }}
                 />
                 <Bar dataKey="total" radius={[8, 8, 0, 0]}>
