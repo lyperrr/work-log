@@ -136,6 +136,9 @@ export function AuthPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="contoh@email.com"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
                   required
                 />
               </div>
@@ -151,6 +154,9 @@ export function AuthPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Minimal 6 karakter"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
                     className="pr-10"
                     required
                   />
