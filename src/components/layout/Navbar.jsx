@@ -33,7 +33,7 @@ export function Navbar({ activeTab, setActiveTab }) {
   return (
     <>
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 glass-nav border-b border-border/60 shadow-xs">
+      <header className="sticky top-0 z-40 glass-nav border-b border-border/60 shadow-xs pt-safe">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div
             className="flex items-center gap-3 cursor-pointer group"
