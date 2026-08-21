@@ -242,12 +242,12 @@ export function ImportModal({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in-50">
-      <Card className="p-0 border-2 border-primary/40 rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden shrink-0">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
+      <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-xl md:max-w-2xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
         {/* Modal Header */}
-        <CardHeader className="flex flex-row items-center justify-between p-4 md:p-5 border-b border-border bg-card">
-          <CardTitle className="text-lg md:text-xl font-black flex items-center gap-3">
-            <FileSpreadsheet className="size-6 text-primary" />
+        <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 border-b border-border bg-card shrink-0">
+          <CardTitle className="text-base sm:text-lg md:text-xl font-black flex items-center gap-2.5">
+            <FileSpreadsheet className="size-5 sm:size-6 text-primary shrink-0" />
             Import Data Spreadsheet
           </CardTitle>
           <Button variant="ghost" size="icon-sm" onClick={onClose} className="rounded-full">
@@ -255,7 +255,7 @@ export function ImportModal({
           </Button>
         </CardHeader>
 
-        <CardContent className="p-5 md:p-6 space-y-5 max-h-[65vh] overflow-y-auto">
+        <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 pb-24 sm:pb-6">
           {/* Import Type Selector (Paket vs Kunjungan) */}
           <div className="flex bg-secondary p-1 rounded-2xl border border-border">
             <button
@@ -461,25 +461,32 @@ export function ImportModal({
         </CardContent>
 
         {/* Footer Submit Button (Pinned at Bottom) */}
-        <div className="p-4 md:p-5 bg-card border-t border-border flex items-center justify-end gap-3 rounded-b-3xl">
-          <Button type="button" variant="outline" onClick={onClose} disabled={importing} className="font-bold">
-            Batal
+        <div className="p-4 md:p-5 bg-card border-t border-border flex items-center gap-2.5 rounded-b-3xl">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={importing}
+            className="w-1/3 sm:w-auto px-4 h-12 text-xs sm:text-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
+          >
+            <X className="size-4 shrink-0 text-muted-foreground" />
+            <span>Batal</span>
           </Button>
           <Button
             type="button"
             disabled={validItems.length === 0 || importing}
             onClick={handleExecuteImport}
-            className="font-black px-6 shadow-md"
+            className="flex-1 h-12 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl shadow-md gap-1.5 whitespace-nowrap min-w-0"
           >
             {importing ? (
               <>
-                <Spinner className="size-4" />
-                Mengimpor Data...
+                <Spinner className="size-4 shrink-0" />
+                <span className="truncate">Mengimpor Data...</span>
               </>
             ) : (
               <>
-                <FileSpreadsheet className="size-4" />
-                Impor {validItems.length} Data {importType === 'paket' ? 'Paket' : 'Kunjungan'}
+                <FileSpreadsheet className="size-4 shrink-0" />
+                <span className="truncate">Impor {validItems.length} Data {importType === 'paket' ? 'Paket' : 'Kunjungan'}</span>
               </>
             )}
           </Button>

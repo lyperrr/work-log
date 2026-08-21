@@ -9,6 +9,9 @@ import {
   Package,
   Edit,
   Trash2,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 
 export function KunjunganCard({
@@ -37,7 +40,7 @@ export function KunjunganCard({
     : '-';
 
   const btnBase =
-    'relative py-1.5 px-1 rounded-lg text-xs font-bold text-center flex items-center justify-center gap-1 transition-all duration-300';
+    'relative py-2.5 px-1 rounded-xl text-xs sm:text-sm font-black text-center flex items-center justify-center gap-1.5 transition-all duration-300 whitespace-nowrap shadow-2xs';
 
   return (
     <div className="bg-card border border-border/80 hover:border-primary/50 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-200 space-y-3.5 overflow-hidden">
@@ -150,65 +153,86 @@ export function KunjunganCard({
       )}
 
       {/* ─── Status Toggle Section ─── */}
-      <div className="space-y-1.5 pt-0.5">
-        <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-1">
-          <span>Status Pembayaran:</span>
+      <div className="space-y-2 pt-1">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs sm:text-sm font-black text-foreground uppercase tracking-wide">Status Pembayaran:</span>
           <Badge
             variant={effLunas ? 'success' : effMenunggu ? 'warning' : 'destructive'}
-            className="capitalize text-[10px] py-0 px-2"
+            className="capitalize text-xs sm:text-sm font-black px-2.5 py-0.5"
           >
             {effectiveStatus}
           </Badge>
         </div>
 
         {/* 3-Button Toggle Segment */}
-        <div className="grid grid-cols-3 gap-1 bg-secondary/80 p-1 rounded-xl border border-border/80">
+        <div className="grid grid-cols-3 gap-1.5 bg-secondary/90 p-1.5 rounded-2xl border-2 border-border/80">
           {/* Menunggu */}
           <button
             type="button"
-            disabled={Boolean(updatingId)}
-            onClick={() => onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'menunggu')}
+            disabled={Boolean(updatingId) || effMenunggu}
+            onClick={() => {
+              if (effMenunggu) return;
+              onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'menunggu');
+            }}
             className={`${btnBase} ${effMenunggu
                 ? isUpdatingThis
-                  ? 'bg-amber-500 text-white shadow-xs animate-pulse'
-                  : 'bg-amber-500 text-white shadow-xs'
+                  ? 'bg-amber-500 text-white shadow-sm animate-pulse cursor-default'
+                  : 'bg-amber-500 text-white shadow-sm cursor-default'
                 : 'text-muted-foreground hover:text-foreground'
               }`}
           >
-            {isUpdatingThis && effMenunggu && <Spinner className="size-3" />}
-            Menunggu
+            {isUpdatingThis && effMenunggu ? (
+              <Spinner className="size-3.5 sm:size-4" />
+            ) : (
+              <Clock className="size-3.5 sm:size-4 shrink-0" />
+            )}
+            <span>Menunggu</span>
           </button>
 
           {/* Lunas */}
           <button
             type="button"
-            disabled={Boolean(updatingId)}
-            onClick={() => onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'lunas')}
+            disabled={Boolean(updatingId) || effLunas}
+            onClick={() => {
+              if (effLunas) return;
+              onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'lunas');
+            }}
             className={`${btnBase} ${effLunas
                 ? isUpdatingThis
-                  ? 'bg-emerald-600 text-white shadow-xs animate-pulse'
-                  : 'bg-emerald-600 text-white shadow-xs'
+                  ? 'bg-emerald-600 text-white shadow-sm animate-pulse cursor-default'
+                  : 'bg-emerald-600 text-white shadow-sm cursor-default'
                 : 'text-muted-foreground hover:text-foreground'
               }`}
           >
-            {isUpdatingThis && effLunas && <Spinner className="size-3" />}
-            Lunas
+            {isUpdatingThis && effLunas ? (
+              <Spinner className="size-3.5 sm:size-4" />
+            ) : (
+              <CheckCircle2 className="size-3.5 sm:size-4 shrink-0" />
+            )}
+            <span>Lunas</span>
           </button>
 
           {/* Belum Bayar */}
           <button
             type="button"
-            disabled={Boolean(updatingId)}
-            onClick={() => onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'belum bayar')}
+            disabled={Boolean(updatingId) || effBelum}
+            onClick={() => {
+              if (effBelum) return;
+              onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'belum bayar');
+            }}
             className={`${btnBase} ${effBelum
                 ? isUpdatingThis
-                  ? 'bg-rose-600 text-white shadow-xs animate-pulse'
-                  : 'bg-rose-600 text-white shadow-xs'
+                  ? 'bg-rose-600 text-white shadow-sm animate-pulse cursor-default'
+                  : 'bg-rose-600 text-white shadow-sm cursor-default'
                 : 'text-muted-foreground hover:text-foreground'
               }`}
           >
-            {isUpdatingThis && effBelum && <Spinner className="size-3" />}
-            Belum Bayar
+            {isUpdatingThis && effBelum ? (
+              <Spinner className="size-3.5 sm:size-4" />
+            ) : (
+              <AlertCircle className="size-3.5 sm:size-4 shrink-0" />
+            )}
+            <span>Belum Bayar</span>
           </button>
         </div>
       </div>
