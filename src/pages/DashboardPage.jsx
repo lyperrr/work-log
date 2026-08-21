@@ -203,7 +203,7 @@ export function DashboardPage({ onNavigate }) {
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in-50">
+    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-8 animate-in fade-in-50">
 
       {/* Welcome Greeting Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 md:p-6 rounded-3xl bg-linear-to-r from-primary/15 via-primary/10 to-cyan-500/10 border border-primary/20 shadow-xs overflow-hidden">
@@ -337,33 +337,33 @@ export function DashboardPage({ onNavigate }) {
       </Card>
 
       {/* Status Counters */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-amber-500/10 border border-amber-500/25 p-4 rounded-2xl text-center shadow-xs hover:scale-102 transition-transform flex flex-col items-center justify-center">
-          <Clock className="size-6 text-amber-600 dark:text-amber-400 mx-auto mb-1" />
-          <div className="text-2xl font-black text-amber-700 dark:text-amber-300">
-            {loading ? <Spinner className="size-5 text-amber-600 my-1" /> : pendingCount}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="bg-amber-500/10 border border-amber-500/25 p-2.5 sm:p-4 rounded-2xl text-center shadow-xs hover:scale-102 transition-transform flex flex-col items-center justify-center">
+          <Clock className="size-5 sm:size-6 text-amber-600 dark:text-amber-400 mx-auto mb-1" />
+          <div className="text-xl sm:text-2xl font-black text-amber-700 dark:text-amber-300">
+            {loading ? <Spinner className="size-4 sm:size-5 text-amber-600 my-1" /> : pendingCount}
           </div>
-          <div className="text-xs font-bold text-amber-800 dark:text-amber-200 mt-0.5">
+          <div className="text-[11px] sm:text-xs font-bold text-amber-800 dark:text-amber-200 mt-0.5 whitespace-nowrap">
             Menunggu
           </div>
         </div>
 
-        <div className="bg-rose-500/10 border border-rose-500/25 p-4 rounded-2xl text-center shadow-xs hover:scale-102 transition-transform flex flex-col items-center justify-center">
-          <AlertCircle className="size-6 text-rose-600 dark:text-rose-400 mx-auto mb-1" />
-          <div className="text-2xl font-black text-rose-700 dark:text-rose-300">
-            {loading ? <Spinner className="size-5 text-rose-600 my-1" /> : unpaidCount}
+        <div className="bg-rose-500/10 border border-rose-500/25 p-2.5 sm:p-4 rounded-2xl text-center shadow-xs hover:scale-102 transition-transform flex flex-col items-center justify-center">
+          <AlertCircle className="size-5 sm:size-6 text-rose-600 dark:text-rose-400 mx-auto mb-1" />
+          <div className="text-xl sm:text-2xl font-black text-rose-700 dark:text-rose-300">
+            {loading ? <Spinner className="size-4 sm:size-5 text-rose-600 my-1" /> : unpaidCount}
           </div>
-          <div className="text-xs font-bold text-rose-800 dark:text-rose-200 mt-0.5">
+          <div className="text-[11px] sm:text-xs font-bold text-rose-800 dark:text-rose-200 mt-0.5 whitespace-nowrap">
             Belum Bayar
           </div>
         </div>
 
-        <div className="bg-cyan-500/10 border border-cyan-500/25 p-4 rounded-2xl text-center shadow-xs hover:scale-102 transition-transform flex flex-col items-center justify-center">
-          <Package className="size-6 text-cyan-600 dark:text-cyan-400 mx-auto mb-1" />
-          <div className="text-2xl font-black text-cyan-700 dark:text-cyan-300">
-            {loading ? <Spinner className="size-5 text-cyan-600 my-1" /> : activePaketCount}
+        <div className="bg-cyan-500/10 border border-cyan-500/25 p-2.5 sm:p-4 rounded-2xl text-center shadow-xs hover:scale-102 transition-transform flex flex-col items-center justify-center">
+          <Package className="size-5 sm:size-6 text-cyan-600 dark:text-cyan-400 mx-auto mb-1" />
+          <div className="text-xl sm:text-2xl font-black text-cyan-700 dark:text-cyan-300">
+            {loading ? <Spinner className="size-4 sm:size-5 text-cyan-600 my-1" /> : activePaketCount}
           </div>
-          <div className="text-xs font-bold text-cyan-800 dark:text-cyan-200 mt-0.5">
+          <div className="text-[11px] sm:text-xs font-bold text-cyan-800 dark:text-cyan-200 mt-0.5 whitespace-nowrap">
             Paket Aktif
           </div>
         </div>

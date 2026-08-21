@@ -38,7 +38,7 @@ export function SettingsPage() {
     : currentUser?.email?.split('@')[0] || 'Pengguna';
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto animate-in fade-in-50">
+    <div className="space-y-4 sm:space-y-6 max-w-2xl mx-auto pb-24 sm:pb-8 animate-in fade-in-50">
 
       {/* Header Card */}
       <Card>
@@ -237,7 +237,7 @@ export function SettingsPage() {
       <div className="bg-secondary/40 border border-border rounded-3xl p-4 text-center text-xs text-muted-foreground space-y-1">
         <div className="flex items-center justify-center gap-1.5 font-bold text-foreground">
           <ShieldCheck className="size-4 text-primary" />
-          <span>Rekap Kerja - v1.0</span>
+          <span>Rekap Kerja - v1.6</span>
         </div>
       </div>
 

@@ -32,6 +32,16 @@ import {
   FileSpreadsheet,
   Lock,
   CheckCircle2,
+  RotateCcw,
+  User,
+  DollarSign,
+  CreditCard,
+  X,
+  Pencil,
+  Wallet,
+  Building2,
+  Clock,
+  AlertCircle,
 } from 'lucide-react';
 
 export function RiwayatPage() {
@@ -204,7 +214,7 @@ export function RiwayatPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in-50">
+    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-8 animate-in fade-in-50">
 
       {/* Header Card using shadcn Card */}
       <Card>
@@ -244,24 +254,29 @@ export function RiwayatPage() {
 
       {/* Filter Control Box using shadcn Card, Input, Select, and Button */}
       <Card>
-        <CardHeader className="flex-row items-center justify-between">
-          <div className="flex items-center gap-2 font-bold text-base text-foreground">
-            <Filter className="size-5 text-primary shrink-0" />
-            <span>Filter Pencarian Data</span>
-            {dataScope === 'current_month' && !startDate && !endDate && (
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-bold text-xs ml-2">
-                <Calendar className="size-4" />
-                Bulan Ini ({currentYearMonth})
-              </Badge>
-            )}
+        <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4 space-y-2">
+          <div className="flex items-center justify-between gap-2 w-full">
+            <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-foreground min-w-0">
+              <Filter className="size-4.5 text-primary shrink-0" />
+              <span className="truncate">Filter Pencarian Data</span>
+            </div>
+            <Button
+              variant="link"
+              onClick={resetFilters}
+              className="text-xs text-primary font-bold p-0 h-auto shrink-0 flex items-center gap-1.5 hover:underline"
+            >
+              <RotateCcw className="size-3.5 shrink-0" />
+              <span>Reset Filter</span>
+            </Button>
           </div>
-          <Button
-            variant="link"
-            onClick={resetFilters}
-            className="text-xs text-primary font-bold p-0 h-auto"
-          >
-            Reset Filter
-          </Button>
+          {dataScope === 'current_month' && !startDate && !endDate && (
+            <div className="pt-0.5">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-bold text-xs inline-flex items-center gap-1.5">
+                <Calendar className="size-3.5 shrink-0" />
+                <span>Bulan Ini ({currentYearMonth})</span>
+              </Badge>
+            </div>
+          )}
         </CardHeader>
 
         <CardContent className="pt-4">
@@ -447,11 +462,12 @@ export function RiwayatPage() {
 
       {/* Edit Modal */}
       {editingItem && createPortal(
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in-50">
-          <Card className="p-0 border-2 border-primary/40 rounded-3xl max-w-lg w-full shadow-2xl shrink-0 overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-3">
-              <CardTitle className="text-xl font-black">
-                Edit Kunjungan ({editingItem.kunjungan_id})
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
+          <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-6 shrink-0">
+              <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
+                <Pencil className="size-5 sm:size-6 text-primary shrink-0" />
+                <span>Edit Kunjungan ({editingItem.kunjungan_id})</span>
               </CardTitle>
               <Button
                 variant="ghost"
@@ -463,10 +479,11 @@ export function RiwayatPage() {
               </Button>
             </CardHeader>
 
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 pb-24 sm:pb-6">
               <form onSubmit={handleSaveEdit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <User className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Nama Pasien
                   </label>
                   <Input
@@ -481,7 +498,8 @@ export function RiwayatPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <Calendar className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Tanggal Kunjungan
                   </label>
                   <DatePicker
@@ -494,7 +512,8 @@ export function RiwayatPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <DollarSign className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Biaya (Rp)
                   </label>
                   <Input
@@ -509,7 +528,8 @@ export function RiwayatPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <CreditCard className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Metode Pembayaran
                   </label>
                   {editingItem.paket_id ? (
@@ -527,15 +547,20 @@ export function RiwayatPage() {
                         <SelectValue placeholder="Pilih metode..." />
                       </SelectTrigger>
                       <SelectContent className="rounded-2xl">
-                        <SelectItem value="cash">Tunai / Cash</SelectItem>
-                        <SelectItem value="transfer">Transfer Bank</SelectItem>
+                        <SelectItem value="cash">
+                          <span className="flex items-center gap-2 font-bold"><Wallet className="size-4 text-emerald-600 shrink-0" /> Tunai / Cash</span>
+                        </SelectItem>
+                        <SelectItem value="transfer">
+                          <span className="flex items-center gap-2 font-bold"><Building2 className="size-4 text-blue-600 shrink-0" /> Transfer Bank</span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <CheckCircle2 className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Status Pembayaran
                   </label>
                   {editingItem.paket_id ? (
@@ -553,36 +578,46 @@ export function RiwayatPage() {
                         <SelectValue placeholder="Pilih status..." />
                       </SelectTrigger>
                       <SelectContent className="rounded-2xl">
-                        <SelectItem value="lunas">Lunas</SelectItem>
-                        <SelectItem value="menunggu">Menunggu</SelectItem>
-                        <SelectItem value="belum bayar">Belum Bayar</SelectItem>
+                        <SelectItem value="lunas">
+                          <span className="flex items-center gap-2 font-bold"><CheckCircle2 className="size-4 text-emerald-600 shrink-0" /> Lunas</span>
+                        </SelectItem>
+                        <SelectItem value="menunggu">
+                          <span className="flex items-center gap-2 font-bold"><Clock className="size-4 text-amber-500 shrink-0" /> Menunggu</span>
+                        </SelectItem>
+                        <SelectItem value="belum bayar">
+                          <span className="flex items-center gap-2 font-bold"><AlertCircle className="size-4 text-rose-500 shrink-0" /> Belum Bayar</span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   )}
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex items-center gap-2.5 pt-2">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={saving}
                     onClick={() => setEditingItem(null)}
-                    className="w-1/2 py-5 font-bold rounded-xl"
+                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 text-xs sm:text-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
                   >
-                    Batal
+                    <X className="size-4 shrink-0 text-muted-foreground" />
+                    <span>Batal</span>
                   </Button>
                   <Button
                     type="submit"
                     disabled={saving}
-                    className="w-1/2 py-5 font-bold rounded-xl shadow-md"
+                    className="flex-1 h-12 sm:h-13 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
                   >
                     {saving ? (
                       <>
-                        <Spinner className="mr-2" />
-                        Menyimpan...
+                        <Spinner className="size-4 sm:size-5 shrink-0" />
+                        <span className="truncate">Menyimpan...</span>
                       </>
                     ) : (
-                      'Simpan Perubahan'
+                      <>
+                        <CheckCircle2 className="size-4 sm:size-5 shrink-0" />
+                        <span className="truncate">Simpan Perubahan</span>
+                      </>
                     )}
                   </Button>
                 </div>

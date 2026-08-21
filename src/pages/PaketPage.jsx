@@ -20,7 +20,6 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { Skeleton } from '../components/ui/skeleton';
 import { Spinner } from '../components/ui/spinner';
 import { Input } from '../components/ui/input';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../components/ui/select';
 import {
   Package,
   PlusCircle,
@@ -35,6 +34,9 @@ import {
   Pencil,
   Trash2,
   Lock,
+  X,
+  DollarSign,
+  CreditCard,
 } from 'lucide-react';
 
 export function PaketPage({ onNavigate }) {
@@ -249,7 +251,7 @@ export function PaketPage({ onNavigate }) {
         total_kunjungan: total,
         harga_paket: harga,
         tanggal_beli: editTanggalBeli,
-        status_paket: editStatusPaket,
+        status_paket: sisa <= 0 ? 'selesai' : 'aktif',
         terpakai,
         sisa_kunjungan: sisa,
       });
@@ -328,7 +330,7 @@ export function PaketPage({ onNavigate }) {
 
   // ─── Render ───────────────────────────────────────────────────
   return (
-    <div className="space-y-6 animate-in fade-in-50">
+    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-8 animate-in fade-in-50">
 
       {/* Header */}
       <Card>
@@ -342,23 +344,23 @@ export function PaketPage({ onNavigate }) {
               </p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
             <Button
               type="button"
               variant="outline"
               onClick={() => setShowImportModal(true)}
-              className="flex-1 md:flex-none font-bold"
+              className="w-full sm:w-auto font-bold h-11 sm:h-10 justify-center text-sm whitespace-nowrap"
             >
-              <FileSpreadsheet className="size-4" />
-              Import Spreadsheet
+              <FileSpreadsheet className="size-4 shrink-0" />
+              <span>Import Spreadsheet</span>
             </Button>
             <Button
               type="button"
               onClick={() => { setShowModal(true); setErrorMsg(''); setSuccessMsg(''); }}
-              className="flex-1 md:flex-none font-black"
+              className="w-full sm:w-auto font-black h-11 sm:h-10 justify-center text-sm whitespace-nowrap"
             >
-              <PlusCircle className="size-4" />
-              Buat Paket Baru
+              <PlusCircle className="size-4 shrink-0" />
+              <span>Buat Paket Baru</span>
             </Button>
           </div>
         </CardHeader>
@@ -686,11 +688,11 @@ export function PaketPage({ onNavigate }) {
 
       {/* ─── Modal: Buat Paket Baru ─── */}
       {showModal && createPortal(
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in-50">
-          <Card className="border-2 border-primary/40 rounded-3xl max-w-lg w-full shadow-2xl my-auto">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
-              <CardTitle className="text-xl font-black flex items-center gap-3">
-                <Package className="size-7 text-primary" />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
+          <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-6 shrink-0">
+              <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
+                <Package className="size-6 sm:size-7 text-primary" />
                 Buat Paket Kunjungan Baru
               </CardTitle>
               <Button
@@ -703,7 +705,7 @@ export function PaketPage({ onNavigate }) {
               </Button>
             </CardHeader>
 
-            <CardContent className="p-6 md:p-8 space-y-5">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 pb-24 sm:pb-6">
               {errorMsg && (
                 <Alert variant="destructive" className="rounded-2xl border-2">
                   <AlertCircle className="h-5 w-5" />
@@ -711,7 +713,7 @@ export function PaketPage({ onNavigate }) {
                 </Alert>
               )}
 
-              <form onSubmit={handleCreatePaket} className="space-y-5">
+              <form onSubmit={handleCreatePaket} className="space-y-4 sm:space-y-5">
                 <PatientAutocomplete
                   value={namaPasien}
                   onChange={setNamaPasien}
@@ -729,8 +731,8 @@ export function PaketPage({ onNavigate }) {
                 />
 
                 <div>
-                  <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
-                    <Calendar className="size-5 text-primary" />
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <Calendar className="size-4 sm:size-5 text-primary" />
                     Tanggal Pembelian
                   </label>
                   <DatePicker
@@ -740,25 +742,26 @@ export function PaketPage({ onNavigate }) {
                   />
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex items-center gap-2.5 pt-2">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={saving}
                     onClick={() => setShowModal(false)}
-                    className="w-1/2 py-6 text-base font-bold rounded-2xl touch-btn"
+                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 text-xs sm:text-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
                   >
-                    Batal
+                    <X className="size-4 shrink-0 text-muted-foreground" />
+                    <span>Batal</span>
                   </Button>
                   <Button
                     type="submit"
                     disabled={saving}
-                    className="w-1/2 py-6 text-base font-black rounded-2xl shadow-lg touch-btn"
+                    className="flex-1 h-12 sm:h-13 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
                   >
                     {saving ? (
-                      <><Spinner className="mr-2" />Menyimpan...</>
+                      <><Spinner className="size-4 sm:size-5 shrink-0" /><span className="truncate">Menyimpan...</span></>
                     ) : (
-                      <><CheckCircle2 className="size-5" />Simpan Paket</>
+                      <><CheckCircle2 className="size-4 sm:size-5 shrink-0" /><span className="truncate">Simpan Paket</span></>
                     )}
                   </Button>
                 </div>
@@ -771,12 +774,12 @@ export function PaketPage({ onNavigate }) {
 
       {/* ─── Modal: Edit Paket Kunjungan ─── */}
       {showEditModal && editPaketData && createPortal(
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in-50">
-          <Card className="p-0 border-2 border-primary/40 rounded-3xl max-w-lg w-full shadow-2xl shrink-0 overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
+          <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-6 shrink-0">
               <div>
-                <CardTitle className="text-xl font-black flex items-center gap-2.5">
-                  <Pencil className="size-6 text-primary" />
+                <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
+                  <Pencil className="size-5 sm:size-6 text-primary" />
                   Edit Paket Kunjungan
                 </CardTitle>
                 <p className="text-xs text-muted-foreground font-mono mt-0.5">{editPaketData.paket_id}</p>
@@ -791,7 +794,7 @@ export function PaketPage({ onNavigate }) {
               </Button>
             </CardHeader>
 
-            <CardContent className="p-6 md:p-8 space-y-5">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 pb-24 sm:pb-6">
               {errorMsg && (
                 <Alert variant="destructive" className="rounded-2xl border-2">
                   <AlertCircle className="h-5 w-5" />
@@ -799,12 +802,12 @@ export function PaketPage({ onNavigate }) {
                 </Alert>
               )}
 
-              <form onSubmit={handleSaveEditPaket} className="space-y-5">
+              <form onSubmit={handleSaveEditPaket} className="space-y-4 sm:space-y-5">
                 {/* Patient Info Card */}
-                <div className="p-4 rounded-2xl bg-secondary/60 border border-border space-y-1">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-secondary/60 border border-border space-y-1">
                   <div className="text-xs font-bold text-muted-foreground">Pasien</div>
-                  <div className="font-black text-foreground text-lg flex items-center gap-2">
-                    <User className="size-5 text-primary" />
+                  <div className="font-black text-foreground text-base sm:text-lg flex items-center gap-2">
+                    <User className="size-4 sm:size-5 text-primary" />
                     {editPaketData.nama_pasien}
                   </div>
                   <div className="text-xs text-muted-foreground flex items-center gap-1.5 pt-0.5">
@@ -822,20 +825,20 @@ export function PaketPage({ onNavigate }) {
                 />
 
                 {/* Terpakai & Sisa Kunjungan (Otomatis) */}
-                <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-secondary/60 border border-border">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl bg-secondary/60 border border-border">
                   <div>
-                    <span className="text-xs font-bold text-muted-foreground block mb-1">
+                    <span className="text-[11px] sm:text-xs font-bold text-muted-foreground block mb-1">
                       Sesi Terpakai (Otomatis)
                     </span>
-                    <span className="font-black text-lg text-foreground">
+                    <span className="font-black text-base sm:text-lg text-foreground">
                       {Number(editPaketData.terpakai || 0)} Sesi
                     </span>
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-muted-foreground block mb-1">
+                    <span className="text-[11px] sm:text-xs font-bold text-muted-foreground block mb-1">
                       Sisa Sesi (Otomatis)
                     </span>
-                    <span className="font-black text-lg text-primary">
+                    <span className="font-black text-base sm:text-lg text-primary">
                       {Math.max(0, Number(editTotalKunjungan || 0) - Number(editPaketData.terpakai || 0))} Sesi
                     </span>
                   </div>
@@ -843,8 +846,8 @@ export function PaketPage({ onNavigate }) {
 
                 {/* Tanggal Beli */}
                 <div>
-                  <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
-                    <Calendar className="size-5 text-primary" />
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <Calendar className="size-4 sm:size-5 text-primary" />
                     Tanggal Pembelian
                   </label>
                   <DatePicker
@@ -854,41 +857,45 @@ export function PaketPage({ onNavigate }) {
                   />
                 </div>
 
-                {/* Status Paket */}
+                {/* Status Paket (Otomatis) */}
                 <div>
-                  <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
-                    Status Paket
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    Status Paket (Otomatis)
                   </label>
-                  <Select value={editStatusPaket} onValueChange={setEditStatusPaket}>
-                    <SelectTrigger className="w-full h-12 px-4 border-2 border-input font-bold text-base rounded-xl bg-background shadow-xs">
-                      <SelectValue placeholder="Pilih status..." />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl">
-                      <SelectItem value="aktif">Aktif</SelectItem>
-                      <SelectItem value="selesai">Selesai</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="h-12 px-4 flex items-center justify-between font-bold text-sm bg-secondary/80 rounded-xl border border-input">
+                    <span className="text-muted-foreground text-xs font-semibold">*Otomatis dari sisa kuota sesi</span>
+                    {Math.max(0, Number(editTotalKunjungan || 0) - Number(editPaketData.terpakai || 0)) <= 0 ? (
+                      <Badge variant="secondary" className="bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold text-xs">
+                        <CheckCircle2 className="size-3.5 mr-1 text-amber-500" /> Selesai / Habis
+                      </Badge>
+                    ) : (
+                      <Badge variant="success" className="font-bold text-xs">
+                        <CheckCircle2 className="size-3.5 mr-1" /> Aktif
+                      </Badge>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex items-center gap-2.5 pt-2">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={saving}
                     onClick={() => setShowEditModal(false)}
-                    className="w-1/2 py-6 text-base font-bold rounded-2xl touch-btn"
+                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 text-xs sm:text-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
                   >
-                    Batal
+                    <X className="size-4 shrink-0 text-muted-foreground" />
+                    <span>Batal</span>
                   </Button>
                   <Button
                     type="submit"
                     disabled={saving}
-                    className="w-1/2 py-6 text-base font-black rounded-2xl shadow-lg touch-btn"
+                    className="flex-1 h-12 sm:h-13 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
                   >
                     {saving ? (
-                      <><Spinner className="mr-2" />Menyimpan...</>
+                      <><Spinner className="size-4 sm:size-5 shrink-0" /><span className="truncate">Menyimpan...</span></>
                     ) : (
-                      <><CheckCircle2 className="size-5" />Simpan Perubahan</>
+                      <><CheckCircle2 className="size-4 sm:size-5 shrink-0" /><span className="truncate">Simpan Perubahan</span></>
                     )}
                   </Button>
                 </div>
@@ -915,11 +922,12 @@ export function PaketPage({ onNavigate }) {
 
       {/* ─── Modal: Edit Kunjungan ─── */}
       {editingKunjungan && createPortal(
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in-50">
-          <Card className="p-0 border-2 border-primary/40 rounded-3xl max-w-lg w-full shadow-2xl shrink-0 overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-3">
-              <CardTitle className="text-xl font-black">
-                Edit Kunjungan ({editingKunjungan.kunjungan_id})
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
+          <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-6 shrink-0">
+              <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
+                <Pencil className="size-5 sm:size-6 text-primary shrink-0" />
+                <span>Edit Kunjungan ({editingKunjungan.kunjungan_id})</span>
               </CardTitle>
               <Button
                 variant="ghost"
@@ -931,10 +939,11 @@ export function PaketPage({ onNavigate }) {
               </Button>
             </CardHeader>
 
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 pb-24 sm:pb-6">
               <form onSubmit={handleSaveEditKunjungan} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <User className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Nama Pasien
                   </label>
                   <Input
@@ -949,7 +958,8 @@ export function PaketPage({ onNavigate }) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <Calendar className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Tanggal Kunjungan
                   </label>
                   <DatePicker
@@ -962,7 +972,8 @@ export function PaketPage({ onNavigate }) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <DollarSign className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Biaya (Rp)
                   </label>
                   <Input
@@ -977,7 +988,8 @@ export function PaketPage({ onNavigate }) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <CreditCard className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Metode Pembayaran
                   </label>
                   <div className="h-12 px-4 flex items-center font-bold text-sm bg-secondary/80 text-muted-foreground rounded-xl border border-input">
@@ -986,7 +998,8 @@ export function PaketPage({ onNavigate }) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-1.5">
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <CheckCircle2 className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Status Pembayaran
                   </label>
                   <div className="h-12 px-4 flex items-center font-bold text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/30">
@@ -994,28 +1007,26 @@ export function PaketPage({ onNavigate }) {
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex items-center gap-2.5 pt-2">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={saving}
                     onClick={() => setEditingKunjungan(null)}
-                    className="w-1/2 py-5 font-bold rounded-xl"
+                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 text-xs sm:text-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
                   >
-                    Batal
+                    <X className="size-4 shrink-0 text-muted-foreground" />
+                    <span>Batal</span>
                   </Button>
                   <Button
                     type="submit"
                     disabled={saving}
-                    className="w-1/2 py-5 font-bold rounded-xl shadow-md"
+                    className="flex-1 h-12 sm:h-13 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
                   >
                     {saving ? (
-                      <>
-                        <Spinner className="mr-2" />
-                        Menyimpan...
-                      </>
+                      <><Spinner className="size-4 sm:size-5 shrink-0" /><span className="truncate">Menyimpan...</span></>
                     ) : (
-                      'Simpan Perubahan'
+                      <><CheckCircle2 className="size-4 sm:size-5 shrink-0" /><span className="truncate">Simpan Perubahan</span></>
                     )}
                   </Button>
                 </div>

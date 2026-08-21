@@ -209,23 +209,23 @@ export function KunjunganFormPage({ onSaved, prefill }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in-50">
-      <Card className="shadow-lg overflow-hidden">
-        <CardHeader className="">
+    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 pb-24 sm:pb-8 animate-in fade-in-50">
+      <Card className="shadow-xs sm:shadow-lg border-0 sm:border border-border/60 rounded-2xl sm:rounded-3xl overflow-hidden bg-card">
+        <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4">
           <div className="flex items-center gap-3">
-            <PlusCircle className="size-7 shrink-0 text-primary" />
+            <PlusCircle className="size-6 sm:size-7 shrink-0 text-primary" />
             <div>
-              <CardTitle className="text-xl md:text-2xl font-black">
+              <CardTitle className="text-lg sm:text-xl md:text-2xl font-black">
                 Catat Kunjungan Baru
               </CardTitle>
-              <p className="text-sm text-muted-foreground font-medium">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">
                 Isi formulir berikut untuk mencatat sesi kunjungan pasien & pembayaran
               </p>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 md:p-8 space-y-6">
+        <CardContent className="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
           {errorMsg && (
             <Alert variant="destructive" className="rounded-2xl border-2">
               <AlertCircle className="h-5 w-5" />
@@ -265,7 +265,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <PatientAutocomplete
               value={namaPasien}
               onChange={handlePatientNameChange}
@@ -276,18 +276,18 @@ export function KunjunganFormPage({ onSaved, prefill }) {
 
             {/* Active Package Selector */}
             {activePaketList.length > 0 && (
-              <div className="p-4 rounded-2xl bg-primary/10 border-2 border-primary/30 space-y-2">
-                <label className="flex items-center gap-2 text-sm font-bold text-primary">
-                  <Package className="size-4" />
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-primary/10 border-2 border-primary/30 space-y-2">
+                <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-primary">
+                  <Package className="size-4 shrink-0" />
                   Gunakan Paket Aktif Pasien Ini?
                 </label>
                 <Select value={selectedPaketId} onValueChange={setSelectedPaketId}>
-                  <SelectTrigger className="w-full min-h-13 py-2.5 px-4 bg-card border-2 border-primary/40 font-bold text-base md:text-lg rounded-xl">
+                  <SelectTrigger className="w-full h-auto min-h-13 py-2 px-3 sm:px-4 bg-card border-2 border-primary/40 font-bold text-sm sm:text-base md:text-lg rounded-xl text-left">
                     <SelectValue placeholder="Pilih paket..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl max-w-[calc(100vw-2rem)] sm:max-w-lg">
                     <SelectItem value="none" className="py-2.5">
-                      <span className="font-bold text-sm md:text-base text-foreground">
+                      <span className="font-bold text-xs sm:text-sm md:text-base text-foreground">
                         Tidak Menggunakan Paket (Bayar Mandiri / Eceran)
                       </span>
                     </SelectItem>
@@ -295,23 +295,25 @@ export function KunjunganFormPage({ onSaved, prefill }) {
                       const patientName = pkt.nama_pasien || namaPasien || 'Pasien';
                       return (
                         <SelectItem key={pkt.paket_id} value={pkt.paket_id} className="py-2.5">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 w-full text-left">
-                            <div className="flex items-center gap-2 font-black text-sm md:text-base truncate">
-                              <span className="font-mono text-primary font-bold text-xs bg-primary/15 px-2 py-0.5 rounded-md border border-primary/20 shrink-0">
+                          <div className="flex flex-col gap-1 w-full text-left">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-mono text-primary font-bold text-[11px] sm:text-xs bg-primary/15 px-2 py-0.5 rounded-md border border-primary/20 shrink-0">
                                 {pkt.paket_id}
                               </span>
-                              <span className="truncate text-foreground font-black">{patientName}</span>
+                              <span className="text-[11px] sm:text-xs font-extrabold text-primary shrink-0">
+                                Sisa <span className="font-black text-primary">{pkt.sisa_kunjungan}</span> dari {pkt.total_kunjungan} Sesi
+                              </span>
                             </div>
-                            <div className="text-xs font-bold text-muted-foreground shrink-0">
-                              Sisa <span className="font-black text-primary">{pkt.sisa_kunjungan}</span> dari {pkt.total_kunjungan} Sesi
-                            </div>
+                            <span className="text-xs sm:text-sm font-black text-foreground truncate mt-0.5">
+                              {patientName}
+                            </span>
                           </div>
                         </SelectItem>
                       );
                     })}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground font-medium">
+                <p className="text-[11px] sm:text-xs text-muted-foreground font-medium">
                   *Jika memilih paket, 1 kuota kunjungan akan otomatis terpotong.
                 </p>
               </div>
@@ -436,17 +438,17 @@ export function KunjunganFormPage({ onSaved, prefill }) {
             <Button
               type="submit"
               disabled={saving}
-              className="w-full py-7 font-black text-lg rounded-2xl shadow-lg shadow-primary/20 touch-btn mt-4"
+              className="w-full h-13 sm:h-14 font-black text-base sm:text-lg md:text-xl rounded-2xl shadow-lg shadow-primary/20 touch-btn mt-2 sm:mt-4 gap-2"
             >
               {saving ? (
                 <>
-                  <Spinner className="size-5" />
-                  Menyimpan Catatan...
+                  <Spinner className="size-5 shrink-0" />
+                  <span>Menyimpan Catatan...</span>
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="size-6" />
-                  Simpan Catatan Kunjungan
+                  <CheckCircle2 className="size-5 sm:size-6 shrink-0" />
+                  <span>Simpan Catatan Kunjungan</span>
                 </>
               )}
             </Button>
