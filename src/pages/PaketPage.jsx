@@ -17,6 +17,8 @@ import { Progress } from '../components/ui/progress';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Skeleton } from '../components/ui/skeleton';
 import { Spinner } from '../components/ui/spinner';
+import { Input } from '../components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../components/ui/select';
 import {
   Package,
   PlusCircle,
@@ -28,6 +30,7 @@ import {
   ChevronRight,
   ArrowLeft,
   FileSpreadsheet,
+  Pencil,
 } from 'lucide-react';
 
 export function PaketPage({ onNavigate }) {
@@ -41,6 +44,15 @@ export function PaketPage({ onNavigate }) {
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editPaketData, setEditPaketData] = useState(null);
+  const [editHargaPaket, setEditHargaPaket] = useState('');
+  const [editTotalKunjungan, setEditTotalKunjungan] = useState('');
+  const [editTerpakai, setEditTerpakai] = useState('');
+  const [editTanggalBeli, setEditTanggalBeli] = useState('');
+  const [editStatusPaket, setEditStatusPaket] = useState('aktif');
 
   // Detail drawer
   const [selectedPaket, setSelectedPaket] = useState(null);
@@ -192,6 +204,80 @@ export function PaketPage({ onNavigate }) {
     }
   };
 
+  // ─── Edit Paket Handlers ─────────────────────────────────────
+  const handleOpenEditModal = (pkt, e) => {
+    if (e) e.stopPropagation();
+    setEditPaketData(pkt);
+    setEditHargaPaket(String(pkt.harga_paket || ''));
+    setEditTotalKunjungan(String(pkt.total_kunjungan || ''));
+    setEditTerpakai(String(pkt.terpakai || '0'));
+    setEditTanggalBeli(pkt.tanggal_beli ? String(pkt.tanggal_beli).split('T')[0] : '');
+    setEditStatusPaket(pkt.status_paket || 'aktif');
+    setErrorMsg('');
+    setShowEditModal(true);
+  };
+
+  const handleSaveEditPaket = async (e) => {
+    e.preventDefault();
+    if (!editPaketData || saving) return;
+
+    const total = Number(editTotalKunjungan);
+    const terpakai = Number(editTerpakai);
+    const harga = Number(editHargaPaket);
+
+    if (!total || total <= 0) {
+      setErrorMsg('Total kunjungan / sesi harus lebih dari 0.');
+      return;
+    }
+    if (isNaN(terpakai) || terpakai < 0) {
+      setErrorMsg('Jumlah terpakai harus bernilai 0 atau lebih.');
+      return;
+    }
+    if (terpakai > total) {
+      setErrorMsg('Jumlah terpakai tidak boleh melebihi total kunjungan.');
+      return;
+    }
+    if (!harga || harga <= 0) {
+      setErrorMsg('Harga total paket harus lebih dari 0.');
+      return;
+    }
+
+    const sisa = Math.max(0, total - terpakai);
+    setSaving(true);
+    setErrorMsg('');
+
+    try {
+      await api.updatePaket(editPaketData.paket_id, {
+        total_kunjungan: total,
+        harga_paket: harga,
+        tanggal_beli: editTanggalBeli,
+        status_paket: editStatusPaket,
+        terpakai,
+        sisa_kunjungan: sisa,
+      });
+
+      showToast('Paket berhasil diperbarui!', 'success');
+      setShowEditModal(false);
+      await loadData();
+
+      if (selectedPaket && selectedPaket.paket_id === editPaketData.paket_id) {
+        setSelectedPaket((prev) => ({
+          ...prev,
+          total_kunjungan: total,
+          harga_paket: harga,
+          tanggal_beli: editTanggalBeli,
+          status_paket: editStatusPaket,
+          terpakai,
+          sisa_kunjungan: sisa,
+        }));
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Gagal memperbarui paket');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Kunjungan yang terkait dengan paket yang dipilih (terbaru di atas)
   const paketKunjungan = selectedPaket
     ? kunjunganList
@@ -335,7 +421,7 @@ export function PaketPage({ onNavigate }) {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {/* Stop propagation so privacy toggle doesn't open the drawer */}
                       <div onClick={(e) => e.stopPropagation()}>
                         <PrivacyPeekButton
@@ -343,6 +429,14 @@ export function PaketPage({ onNavigate }) {
                           onToggle={() => togglePaketPeek(pkt.paket_id)}
                         />
                       </div>
+                      <button
+                        type="button"
+                        onClick={(e) => handleOpenEditModal(pkt, e)}
+                        className="p-1.5 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                        title="Edit Paket"
+                      >
+                        <Pencil className="size-4 text-primary" />
+                      </button>
                       <Badge variant={isAktif ? 'success' : 'secondary'} className="uppercase">
                         {isAktif ? 'Aktif' : 'Selesai'}
                       </Badge>
@@ -436,6 +530,15 @@ export function PaketPage({ onNavigate }) {
                 {selectedPaket.status_paket === 'aktif' && Number(selectedPaket.sisa_kunjungan) > 0
                   ? 'Aktif' : 'Selesai'}
               </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleOpenEditModal(selectedPaket)}
+                className="shrink-0 font-bold"
+              >
+                <Pencil className="size-3.5" />
+                Edit Paket
+              </Button>
             </div>
 
             {/* Scrollable content */}
@@ -611,6 +714,141 @@ export function PaketPage({ onNavigate }) {
                       <><Spinner className="mr-2" />Menyimpan...</>
                     ) : (
                       <><CheckCircle2 className="size-5" />Simpan Paket</>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>,
+        document.body
+      )}
+
+      {/* ─── Modal: Edit Paket Kunjungan ─── */}
+      {showEditModal && editPaketData && createPortal(
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in-50">
+          <Card className="border-2 border-primary/40 rounded-3xl max-w-lg w-full shadow-2xl my-auto">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
+              <div>
+                <CardTitle className="text-xl font-black flex items-center gap-2.5">
+                  <Pencil className="size-6 text-primary" />
+                  Edit Paket Kunjungan
+                </CardTitle>
+                <p className="text-xs text-muted-foreground font-mono mt-0.5">{editPaketData.paket_id}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowEditModal(false)}
+                className="text-muted-foreground font-black text-xl"
+              >
+                ✕
+              </Button>
+            </CardHeader>
+
+            <CardContent className="p-6 md:p-8 space-y-5">
+              {errorMsg && (
+                <Alert variant="destructive" className="rounded-2xl border-2">
+                  <AlertCircle className="h-5 w-5" />
+                  <AlertDescription className="font-bold text-base">{errorMsg}</AlertDescription>
+                </Alert>
+              )}
+
+              <form onSubmit={handleSaveEditPaket} className="space-y-5">
+                {/* Patient Info Card */}
+                <div className="p-4 rounded-2xl bg-secondary/60 border border-border space-y-1">
+                  <div className="text-xs font-bold text-muted-foreground">Pasien</div>
+                  <div className="font-black text-foreground text-lg flex items-center gap-2">
+                    <User className="size-5 text-primary" />
+                    {editPaketData.nama_pasien}
+                  </div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1.5 pt-0.5">
+                    <Phone className="size-3.5" />
+                    {editPaketData.no_telp || 'Tanpa no telp'}
+                  </div>
+                </div>
+
+                <PackageCalculator
+                  priceValue={editHargaPaket}
+                  onPriceChange={setEditHargaPaket}
+                  sessionsValue={editTotalKunjungan}
+                  onSessionsChange={setEditTotalKunjungan}
+                  showCardWrapper={false}
+                />
+
+                {/* Terpakai & Sisa Kunjungan Adjuster */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-bold text-foreground mb-1.5">
+                      Sesi Terpakai
+                    </label>
+                    <Input
+                      type="number"
+                      value={editTerpakai}
+                      onChange={(e) => setEditTerpakai(e.target.value)}
+                      min="0"
+                      max={editTotalKunjungan || undefined}
+                      className="font-bold h-12"
+                    />
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-bold text-foreground mb-1.5">
+                      Sisa Sesi (Otomatis)
+                    </label>
+                    <div className="h-12 px-4 flex items-center font-black text-lg bg-secondary text-primary rounded-xl border border-input">
+                      {Math.max(0, Number(editTotalKunjungan || 0) - Number(editTerpakai || 0))} Sesi
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tanggal Beli */}
+                <div>
+                  <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
+                    <Calendar className="size-5 text-primary" />
+                    Tanggal Pembelian
+                  </label>
+                  <DatePicker
+                    value={editTanggalBeli}
+                    onChange={setEditTanggalBeli}
+                    placeholder="Pilih tanggal..."
+                  />
+                </div>
+
+                {/* Status Paket */}
+                <div>
+                  <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
+                    Status Paket
+                  </label>
+                  <Select value={editStatusPaket} onValueChange={setEditStatusPaket}>
+                    <SelectTrigger className="w-full h-12 px-4 border-2 border-input font-bold text-base rounded-xl bg-background shadow-xs">
+                      <SelectValue placeholder="Pilih status..." />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl">
+                      <SelectItem value="aktif">Aktif</SelectItem>
+                      <SelectItem value="selesai">Selesai</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={saving}
+                    onClick={() => setShowEditModal(false)}
+                    className="w-1/2 py-6 text-base font-bold rounded-2xl touch-btn"
+                  >
+                    Batal
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={saving}
+                    className="w-1/2 py-6 text-base font-black rounded-2xl shadow-lg touch-btn"
+                  >
+                    {saving ? (
+                      <><Spinner className="mr-2" />Menyimpan...</>
+                    ) : (
+                      <><CheckCircle2 className="size-5" />Simpan Perubahan</>
                     )}
                   </Button>
                 </div>

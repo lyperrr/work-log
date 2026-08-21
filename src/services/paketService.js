@@ -44,5 +44,20 @@ export const paketService = {
     if (!res.success) throw new Error(res.message || 'Gagal mencatat kunjungan paket');
     return res.data;
   },
+
+  /** Update detail paket kunjungan. */
+  updatePaket: async (userId, paketId, data) => {
+    const res = await apiPost('updatePaket', userId, {
+      paket_id: paketId,
+      total_kunjungan: data.total_kunjungan,
+      harga_paket: data.harga_paket,
+      tanggal_beli: data.tanggal_beli,
+      status_paket: data.status_paket,
+      sisa_kunjungan: data.sisa_kunjungan,
+      terpakai: data.terpakai,
+    });
+    if (!res.success) throw new Error(res.message || 'Gagal memperbarui paket');
+    return res.data;
+  },
 };
 
