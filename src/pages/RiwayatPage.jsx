@@ -8,7 +8,7 @@ import { KunjunganCard } from '../components/common/KunjunganCard';
 import { EmptyState } from '../components/common/EmptyState';
 import { ImportModal } from '../components/common/ImportModal';
 import { ConfirmModal } from '../components/common/ConfirmModal';
-import { getTodayDateString } from '../lib/utils';
+import { getTodayDateString, formatDateLocal } from '../lib/utils';
 import { DatePicker } from '../components/common/DatePicker';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -30,6 +30,8 @@ import {
   Calendar,
   Trash2,
   FileSpreadsheet,
+  Lock,
+  CheckCircle2,
 } from 'lucide-react';
 
 export function RiwayatPage() {
@@ -99,7 +101,7 @@ export function RiwayatPage() {
   const filteredList = (Array.isArray(kunjunganList) ? kunjunganList : []).filter((k) => {
     if (!k || typeof k !== 'object') return false;
 
-    const kDate = k.tanggal_kunjungan ? String(k.tanggal_kunjungan).split('T')[0] : '';
+    const kDate = k.tanggal_kunjungan ? formatDateLocal(k.tanggal_kunjungan) : '';
 
     // Enforce dataScope from Settings (Bulan Saat Ini Saja vs Semua Bulan)
     if (dataScope === 'current_month' && !startDate && !endDate) {
@@ -419,7 +421,7 @@ export function RiwayatPage() {
                 setEditingItem({
                   ...k,
                   tanggal_kunjungan: k.tanggal_kunjungan
-                    ? String(k.tanggal_kunjungan).split('T')[0]
+                    ? formatDateLocal(k.tanggal_kunjungan)
                     : '',
                 })
               }
@@ -510,41 +512,53 @@ export function RiwayatPage() {
                   <label className="block text-sm font-bold text-foreground mb-1.5">
                     Metode Pembayaran
                   </label>
-                  <Select
-                    value={editingItem.metode_pembayaran || 'cash'}
-                    onValueChange={(val) =>
-                      setEditingItem({ ...editingItem, metode_pembayaran: val })
-                    }
-                  >
-                    <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
-                      <SelectValue placeholder="Pilih metode..." />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl">
-                      <SelectItem value="cash">Tunai / Cash</SelectItem>
-                      <SelectItem value="transfer">Transfer Bank</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {editingItem.paket_id ? (
+                    <div className="h-12 px-4 flex items-center font-bold text-sm bg-secondary/80 text-muted-foreground rounded-xl border border-input">
+                      <Lock className="size-4 mr-2 shrink-0 text-muted-foreground" /> {editingItem.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Tunai / Cash'} (Patokan Paket)
+                    </div>
+                  ) : (
+                    <Select
+                      value={editingItem.metode_pembayaran || 'cash'}
+                      onValueChange={(val) =>
+                        setEditingItem({ ...editingItem, metode_pembayaran: val })
+                      }
+                    >
+                      <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
+                        <SelectValue placeholder="Pilih metode..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl">
+                        <SelectItem value="cash">Tunai / Cash</SelectItem>
+                        <SelectItem value="transfer">Transfer Bank</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-bold text-foreground mb-1.5">
                     Status Pembayaran
                   </label>
-                  <Select
-                    value={editingItem.status || 'menunggu'}
-                    onValueChange={(val) =>
-                      setEditingItem({ ...editingItem, status: val })
-                    }
-                  >
-                    <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
-                      <SelectValue placeholder="Pilih status..." />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl">
-                      <SelectItem value="lunas">Lunas</SelectItem>
-                      <SelectItem value="menunggu">Menunggu</SelectItem>
-                      <SelectItem value="belum bayar">Belum Bayar</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {editingItem.paket_id ? (
+                    <div className="h-12 px-4 flex items-center font-bold text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/30">
+                      <CheckCircle2 className="size-4.5 mr-2 shrink-0" /> Lunas (Terbayar Paket)
+                    </div>
+                  ) : (
+                    <Select
+                      value={editingItem.status || 'menunggu'}
+                      onValueChange={(val) =>
+                        setEditingItem({ ...editingItem, status: val })
+                      }
+                    >
+                      <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
+                        <SelectValue placeholder="Pilih status..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl">
+                        <SelectItem value="lunas">Lunas</SelectItem>
+                        <SelectItem value="menunggu">Menunggu</SelectItem>
+                        <SelectItem value="belum bayar">Belum Bayar</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div className="flex gap-3 pt-2">

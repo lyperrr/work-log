@@ -6,7 +6,7 @@ import { useToast } from '../context/ToastContext';
 import { PrivacyAmount, PrivacyPeekButton } from '../components/common/PrivacyAmount';
 import { PatientAutocomplete } from '../components/common/PatientAutocomplete';
 import { PackageCalculator, calculateValuePerSession } from '../components/common/PackageCalculator';
-import { getTodayDateString } from '../lib/utils';
+import { getTodayDateString, formatDateLocal } from '../lib/utils';
 import { DatePicker } from '../components/common/DatePicker';
 import { KunjunganCard } from '../components/common/KunjunganCard';
 import { EmptyState } from '../components/common/EmptyState';
@@ -34,6 +34,7 @@ import {
   FileSpreadsheet,
   Pencil,
   Trash2,
+  Lock,
 } from 'lucide-react';
 
 export function PaketPage({ onNavigate }) {
@@ -53,7 +54,6 @@ export function PaketPage({ onNavigate }) {
   const [editPaketData, setEditPaketData] = useState(null);
   const [editHargaPaket, setEditHargaPaket] = useState('');
   const [editTotalKunjungan, setEditTotalKunjungan] = useState('');
-  const [editTerpakai, setEditTerpakai] = useState('');
   const [editTanggalBeli, setEditTanggalBeli] = useState('');
   const [editStatusPaket, setEditStatusPaket] = useState('aktif');
 
@@ -217,8 +217,7 @@ export function PaketPage({ onNavigate }) {
     setEditPaketData(pkt);
     setEditHargaPaket(String(pkt.harga_paket || ''));
     setEditTotalKunjungan(String(pkt.total_kunjungan || ''));
-    setEditTerpakai(String(pkt.terpakai || '0'));
-    setEditTanggalBeli(pkt.tanggal_beli ? String(pkt.tanggal_beli).split('T')[0] : '');
+    setEditTanggalBeli(pkt.tanggal_beli ? formatDateLocal(pkt.tanggal_beli) : '');
     setEditStatusPaket(pkt.status_paket || 'aktif');
     setErrorMsg('');
     setShowEditModal(true);
@@ -229,19 +228,11 @@ export function PaketPage({ onNavigate }) {
     if (!editPaketData || saving) return;
 
     const total = Number(editTotalKunjungan);
-    const terpakai = Number(editTerpakai);
+    const terpakai = Number(editPaketData.terpakai || 0);
     const harga = Number(editHargaPaket);
 
     if (!total || total <= 0) {
       setErrorMsg('Total kunjungan / sesi harus lebih dari 0.');
-      return;
-    }
-    if (isNaN(terpakai) || terpakai < 0) {
-      setErrorMsg('Jumlah terpakai harus bernilai 0 atau lebih.');
-      return;
-    }
-    if (terpakai > total) {
-      setErrorMsg('Jumlah terpakai tidak boleh melebihi total kunjungan.');
       return;
     }
     if (!harga || harga <= 0) {
@@ -499,7 +490,7 @@ export function PaketPage({ onNavigate }) {
                     <Progress value={progressPercent} className="h-3" />
                     <div className="flex justify-between text-xs text-muted-foreground font-medium pt-1">
                       <span>Terpakai: {pkt.terpakai}x</span>
-                      <span>Beli: {pkt.tanggal_beli ? String(pkt.tanggal_beli).split('T')[0] : '-'}</span>
+                      <span>Beli: {pkt.tanggal_beli ? formatDateLocal(pkt.tanggal_beli) : '-'}</span>
                     </div>
                   </div>
 
@@ -607,7 +598,7 @@ export function PaketPage({ onNavigate }) {
                 />
                 <div className="flex justify-between text-xs text-muted-foreground font-medium">
                   <span>Terpakai: {selectedPaket.terpakai}x</span>
-                  <span>Beli: {selectedPaket.tanggal_beli ? String(selectedPaket.tanggal_beli).split('T')[0] : '-'}</span>
+                  <span>Beli: {selectedPaket.tanggal_beli ? formatDateLocal(selectedPaket.tanggal_beli) : '-'}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-primary/20 text-xs">
                   <div>
@@ -678,7 +669,7 @@ export function PaketPage({ onNavigate }) {
                         setEditingKunjungan({
                           ...k,
                           tanggal_kunjungan: k.tanggal_kunjungan
-                            ? String(k.tanggal_kunjungan).split('T')[0]
+                            ? formatDateLocal(k.tanggal_kunjungan)
                             : '',
                         })
                       }
@@ -830,28 +821,23 @@ export function PaketPage({ onNavigate }) {
                   showCardWrapper={false}
                 />
 
-                {/* Terpakai & Sisa Kunjungan Adjuster */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* Terpakai & Sisa Kunjungan (Otomatis) */}
+                <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-secondary/60 border border-border">
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-bold text-foreground mb-1.5">
-                      Sesi Terpakai
-                    </label>
-                    <Input
-                      type="number"
-                      value={editTerpakai}
-                      onChange={(e) => setEditTerpakai(e.target.value)}
-                      min="0"
-                      max={editTotalKunjungan || undefined}
-                      className="font-bold h-12"
-                    />
+                    <span className="text-xs font-bold text-muted-foreground block mb-1">
+                      Sesi Terpakai (Otomatis)
+                    </span>
+                    <span className="font-black text-lg text-foreground">
+                      {Number(editPaketData.terpakai || 0)} Sesi
+                    </span>
                   </div>
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-bold text-foreground mb-1.5">
+                    <span className="text-xs font-bold text-muted-foreground block mb-1">
                       Sisa Sesi (Otomatis)
-                    </label>
-                    <div className="h-12 px-4 flex items-center font-black text-lg bg-secondary text-primary rounded-xl border border-input">
-                      {Math.max(0, Number(editTotalKunjungan || 0) - Number(editTerpakai || 0))} Sesi
-                    </div>
+                    </span>
+                    <span className="font-black text-lg text-primary">
+                      {Math.max(0, Number(editTotalKunjungan || 0) - Number(editPaketData.terpakai || 0))} Sesi
+                    </span>
                   </div>
                 </div>
 
@@ -994,41 +980,18 @@ export function PaketPage({ onNavigate }) {
                   <label className="block text-sm font-bold text-foreground mb-1.5">
                     Metode Pembayaran
                   </label>
-                  <Select
-                    value={editingKunjungan.metode_pembayaran || 'cash'}
-                    onValueChange={(val) =>
-                      setEditingKunjungan({ ...editingKunjungan, metode_pembayaran: val })
-                    }
-                  >
-                    <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
-                      <SelectValue placeholder="Pilih metode..." />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl">
-                      <SelectItem value="cash">Tunai / Cash</SelectItem>
-                      <SelectItem value="transfer">Transfer Bank</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="h-12 px-4 flex items-center font-bold text-sm bg-secondary/80 text-muted-foreground rounded-xl border border-input">
+                    <Lock className="size-4 mr-2 shrink-0 text-muted-foreground" /> {editingKunjungan.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Tunai / Cash'} (Patokan Paket)
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-bold text-foreground mb-1.5">
                     Status Pembayaran
                   </label>
-                  <Select
-                    value={editingKunjungan.status || 'menunggu'}
-                    onValueChange={(val) =>
-                      setEditingKunjungan({ ...editingKunjungan, status: val })
-                    }
-                  >
-                    <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
-                      <SelectValue placeholder="Pilih status..." />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl">
-                      <SelectItem value="lunas">Lunas</SelectItem>
-                      <SelectItem value="menunggu">Menunggu</SelectItem>
-                      <SelectItem value="belum bayar">Belum Bayar</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="h-12 px-4 flex items-center font-bold text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/30">
+                    <CheckCircle2 className="size-4.5 mr-2 shrink-0" /> Lunas (Terbayar Paket)
+                  </div>
                 </div>
 
                 <div className="flex gap-3 pt-2">

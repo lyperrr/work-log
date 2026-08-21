@@ -19,6 +19,7 @@ import {
   AlertCircle,
   PlusCircle,
   Info,
+  Lock,
 } from 'lucide-react';
 
 export function KunjunganFormPage({ onSaved, prefill }) {
@@ -94,19 +95,28 @@ export function KunjunganFormPage({ onSaved, prefill }) {
     return () => clearTimeout(timer);
   }, [namaPasien, allPakets]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Dynamically update `biaya` whenever the selected Paket changes
+  // Dynamically update `biaya`, `status`, and `metodePembayaran` whenever the selected Paket changes
   useEffect(() => {
     if (selectedPaketId && selectedPaketId !== 'none') {
       const targetPaket = allPakets.find((p) => p.paket_id === selectedPaketId);
+      const pkgVisits = allVisits.filter((v) => v.paket_id === selectedPaketId);
+      const firstVisit = pkgVisits.length > 0 ? pkgVisits[0] : null;
+
       if (targetPaket && Number(targetPaket.total_kunjungan) > 0) {
         const perSessionVal = Math.round(
           Number(targetPaket.harga_paket || 0) / Number(targetPaket.total_kunjungan)
         );
-        const timer = setTimeout(() => setBiaya(perSessionVal), 0);
+        const timer = setTimeout(() => {
+          setBiaya(perSessionVal);
+          setStatus('lunas');
+          if (firstVisit && firstVisit.metode_pembayaran) {
+            setMetodePembayaran(firstVisit.metode_pembayaran);
+          }
+        }, 0);
         return () => clearTimeout(timer);
       }
     }
-  }, [selectedPaketId, allPakets]);
+  }, [selectedPaketId, allPakets, allVisits]);
 
   const handlePatientNameChange = (val) => {
     setNamaPasien(val);
@@ -341,15 +351,45 @@ export function KunjunganFormPage({ onSaved, prefill }) {
                   <CreditCard className="size-5 text-primary" />
                   Metode Pembayaran
                 </label>
-                <Select value={metodePembayaran} onValueChange={setMetodePembayaran}>
-                  <SelectTrigger className="w-full h-13 px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs">
-                    <SelectValue placeholder="Pilih metode..." />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl">
-                    <SelectItem value="cash">Tunai / Cash</SelectItem>
-                    <SelectItem value="transfer">Transfer Bank</SelectItem>
-                  </SelectContent>
-                </Select>
+                {selectedPaketId !== 'none' ? (() => {
+                  const pkgVisits = allVisits.filter((v) => v.paket_id === selectedPaketId);
+                  const firstVisit = pkgVisits.length > 0 ? pkgVisits[0] : null;
+                  if (firstVisit) {
+                    const methodLabel = firstVisit.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Tunai / Cash';
+                    return (
+                      <div className="h-13 px-4 flex items-center font-bold text-sm bg-secondary/80 text-muted-foreground rounded-xl border border-input">
+                        <Lock className="size-4 mr-2 shrink-0 text-muted-foreground" /> {methodLabel} (Patokan Paket)
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="space-y-1.5">
+                      <Select value={metodePembayaran} onValueChange={setMetodePembayaran}>
+                        <SelectTrigger className="w-full h-13 px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs">
+                          <SelectValue placeholder="Pilih metode..." />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl">
+                          <SelectItem value="cash">Tunai / Cash</SelectItem>
+                          <SelectItem value="transfer">Transfer Bank</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 bg-primary/5 p-2 rounded-lg border border-primary/20">
+                        <Info className="size-4 text-primary shrink-0" />
+                        <span>Sesi pertama ini menentukan metode pembayaran seluruh paket.</span>
+                      </p>
+                    </div>
+                  );
+                })() : (
+                  <Select value={metodePembayaran} onValueChange={setMetodePembayaran}>
+                    <SelectTrigger className="w-full h-13 px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs">
+                      <SelectValue placeholder="Pilih metode..." />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl">
+                      <SelectItem value="cash">Tunai / Cash</SelectItem>
+                      <SelectItem value="transfer">Transfer Bank</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
               <div>
@@ -357,16 +397,22 @@ export function KunjunganFormPage({ onSaved, prefill }) {
                   <CheckCircle2 className="size-5 text-primary" />
                   Status Pembayaran
                 </label>
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger className="w-full h-13 px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs">
-                    <SelectValue placeholder="Pilih status..." />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl">
-                    <SelectItem value="lunas">Lunas</SelectItem>
-                    <SelectItem value="menunggu">Menunggu Konfirmasi</SelectItem>
-                    <SelectItem value="belum bayar">Belum Bayar</SelectItem>
-                  </SelectContent>
-                </Select>
+                {selectedPaketId !== 'none' ? (
+                  <div className="h-13 px-4 flex items-center font-bold text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/30">
+                    <CheckCircle2 className="size-4.5 mr-2 shrink-0" /> Lunas (Terbayar Paket)
+                  </div>
+                ) : (
+                  <Select value={status} onValueChange={setStatus}>
+                    <SelectTrigger className="w-full h-13 px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs">
+                      <SelectValue placeholder="Pilih status..." />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl">
+                      <SelectItem value="lunas">Lunas</SelectItem>
+                      <SelectItem value="menunggu">Menunggu Konfirmasi</SelectItem>
+                      <SelectItem value="belum bayar">Belum Bayar</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
 
