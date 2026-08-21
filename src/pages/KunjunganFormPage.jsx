@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { apiService } from '../services/apiService';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { PatientAutocomplete } from '../components/common/PatientAutocomplete';
 import { DatePicker } from '../components/common/DatePicker';
@@ -8,11 +8,11 @@ import { Input } from '../components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Alert, AlertDescription } from '../components/ui/alert';
+import { Spinner } from '../components/ui/spinner';
 import {
   Calendar,
   DollarSign,
   CreditCard,
-  FileText,
   Package,
   CheckCircle2,
   AlertCircle,
@@ -21,6 +21,7 @@ import {
 
 export function KunjunganFormPage({ onSaved }) {
   const { showToast } = useToast();
+  const { api } = useAuth();
 
   const [namaPasien, setNamaPasien] = useState('');
   const [noTelp, setNoTelp] = useState('');
@@ -28,55 +29,79 @@ export function KunjunganFormPage({ onSaved }) {
     new Date().toISOString().split('T')[0]
   );
   const [biaya, setBiaya] = useState(300000);
-  const [metodePembayaran, setMetodePembayaran] = useState('Transfer');
-  const [catatan, setCatatan] = useState('');
-  const [status, setStatus] = useState('lunas');
+  const [metodePembayaran, setMetodePembayaran] = useState('cash');
+  const [status, setStatus] = useState('menunggu');
 
   const [selectedPaketId, setSelectedPaketId] = useState('none');
+  const [allPakets, setAllPakets] = useState([]);
+  const [allVisits, setAllVisits] = useState([]);
   const [activePaketList, setActivePaketList] = useState([]);
 
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  const loadPatientPakets = (patientName) => {
-    if (!patientName || !patientName.trim()) {
+  // Fetch all pakets & visits; re-fetch whenever `api` changes (e.g. login)
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([
+      api.getPaketList().catch(() => []),
+      api.getKunjunganList().catch(() => []),
+    ]).then(([pakets, visits]) => {
+      if (isMounted) {
+        setAllPakets(pakets || []);
+        setAllVisits(visits || []);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [api]);
+
+  // In-memory filter active pakets for current patient name
+  useEffect(() => {
+    if (!namaPasien || !namaPasien.trim()) {
       setActivePaketList([]);
       setSelectedPaketId('none');
       return;
     }
 
-    const allPaket = apiService.getPaketList();
-    const filtered = allPaket.filter(
+    const filtered = allPakets.filter(
       (p) =>
-        p.nama_pasien.toLowerCase().trim() === patientName.toLowerCase().trim() &&
-        p.status_paket === 'aktif' &&
-        p.sisa_kunjungan > 0
+        (p.nama_pasien || '').toLowerCase().trim() === namaPasien.toLowerCase().trim() &&
+        (p.status_paket || '').toLowerCase() === 'aktif' &&
+        Number(p.sisa_kunjungan || 0) > 0
     );
-
     setActivePaketList(filtered);
-    if (filtered.length > 0) {
-      setSelectedPaketId(filtered[0].paket_id);
-    } else {
-      setSelectedPaketId('none');
-    }
-  };
+    setSelectedPaketId(filtered.length > 0 ? filtered[0].paket_id : 'none');
+  }, [namaPasien, allPakets]);
 
   const handlePatientNameChange = (val) => {
     setNamaPasien(val);
-    loadPatientPakets(val);
   };
 
   const handleSelectPatient = (patient) => {
     if (patient) {
-      if (patient.no_telp) {
-        setNoTelp(patient.no_telp);
+      // Always set noTelp from patient record — normalize to string in case
+      // Sheets returned the phone number as a Number type.
+      // Previously only set when truthy, leaving phone empty for patients
+      // with no stored phone and causing "Nomor Telepon wajib diisi" error.
+      setNoTelp(String(patient.no_telp || ''));
+
+      // Auto-fill biaya dari kunjungan terakhir pasien ini
+      const lastVisit = allVisits.find(
+        (k) => (k.nama_pasien || '').toLowerCase().trim() === (patient.nama_pasien || '').toLowerCase().trim()
+      );
+      if (lastVisit && lastVisit.biaya !== undefined && lastVisit.biaya !== null) {
+        setBiaya(Number(lastVisit.biaya));
       }
-      loadPatientPakets(patient.nama_pasien);
     }
   };
 
-  const handleSubmit = (e) => {
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
     setErrorMsg('');
     setSuccessMsg('');
 
@@ -92,35 +117,32 @@ export function KunjunganFormPage({ onSaved }) {
       showToast(msg, 'error');
       return;
     }
-    if (!biaya || Number(biaya) < 0) {
+    if (biaya === '' || biaya === undefined || biaya === null || Number(biaya) < 0) {
       const msg = 'Biaya / Nominal harus berupa angka 0 atau lebih.';
       setErrorMsg(msg);
       showToast(msg, 'error');
       return;
     }
 
+    setSaving(true);
     try {
-      const patientRecord = apiService.saveOrGetPasienByName(namaPasien, noTelp);
+      const patientRecord = await api.saveOrGetPasienByName(namaPasien, noTelp);
 
       const usePaket = selectedPaketId !== 'none' ? selectedPaketId : null;
 
-      const newKunjungan = apiService.createKunjungan({
-        pasien_id: patientRecord.pasien_id,
-        nama_pasien: patientRecord.nama_pasien,
-        no_telp: patientRecord.no_telp,
+      const newKunjungan = await api.createKunjungan({
+        pasien_id: patientRecord?.pasien_id || '',
+        nama_pasien: patientRecord?.nama_pasien || namaPasien,
+        no_telp: patientRecord?.no_telp || noTelp,
         tanggal_kunjungan: tanggalKunjungan,
         biaya: Number(biaya),
         metode_pembayaran: metodePembayaran,
-        catatan: catatan,
         status: status,
-        paket_id: usePaket,
+        paket_id: usePaket || '',
       });
 
-      let successText = `Catatan kunjungan (${newKunjungan.kunjungan_id}) berhasil disimpan untuk ${patientRecord.nama_pasien}!`;
-
-      if (usePaket) {
-        successText += ` 1 kunjungan dipotong dari paket ${usePaket}.`;
-      }
+      let successText = `Catatan kunjungan (${newKunjungan?.kunjungan_id || 'baru'}) berhasil disimpan untuk ${patientRecord?.nama_pasien || namaPasien}!`;
+      if (usePaket) successText += ` 1 kunjungan dipotong dari paket ${usePaket}.`;
 
       setSuccessMsg(successText);
       showToast(successText, 'success');
@@ -128,27 +150,27 @@ export function KunjunganFormPage({ onSaved }) {
       setNamaPasien('');
       setNoTelp('');
       setBiaya(300000);
-      setCatatan('');
-      setStatus('lunas');
+      setStatus('menunggu');
+      setMetodePembayaran('cash');
       setSelectedPaketId('none');
       setActivePaketList([]);
 
       if (onSaved) {
-        setTimeout(() => {
-          onSaved();
-        }, 1200);
+        setTimeout(() => { onSaved(); }, 1200);
       }
     } catch (err) {
       const errorText = err.message || 'Gagal menyimpan catatan kunjungan.';
       setErrorMsg(errorText);
       showToast(errorText, 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in-50">
-      <Card className="border-2 border-primary/20 rounded-3xl shadow-lg overflow-hidden">
-        <CardHeader className="bg-linear-to-r from-primary/10 via-primary/5 to-transparent p-6 border-b border-border">
+      <Card className="shadow-lg overflow-hidden">
+        <CardHeader className="">
           <div className="flex items-center gap-3">
             <div className="size-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-md">
               <PlusCircle className="size-7" />
@@ -200,7 +222,7 @@ export function KunjunganFormPage({ onSaved }) {
                   Gunakan Paket Aktif Pasien Ini?
                 </label>
                 <Select value={selectedPaketId} onValueChange={setSelectedPaketId}>
-                  <SelectTrigger className="w-full bg-card border-2 font-bold py-3 text-base rounded-xl">
+                  <SelectTrigger className="w-full h-[52px] px-4 bg-card border-2 border-primary/40 font-bold text-base md:text-lg rounded-xl">
                     <SelectValue placeholder="Pilih paket..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
@@ -244,7 +266,7 @@ export function KunjunganFormPage({ onSaved }) {
                 placeholder="300000"
                 step="5000"
                 min="0"
-                className="py-3.5 text-lg border-2 rounded-xl font-bold touch-input"
+                className="w-full h-[52px] px-4 text-base md:text-lg border-2 border-input rounded-xl bg-background font-bold touch-input shadow-xs"
               />
             </div>
 
@@ -255,13 +277,12 @@ export function KunjunganFormPage({ onSaved }) {
                   Metode Pembayaran
                 </label>
                 <Select value={metodePembayaran} onValueChange={setMetodePembayaran}>
-                  <SelectTrigger className="w-full border-2 font-bold py-3 text-base rounded-xl">
+                  <SelectTrigger className="w-full h-[52px] px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs">
                     <SelectValue placeholder="Pilih metode..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
-                    <SelectItem value="Transfer">Transfer Bank</SelectItem>
-                    <SelectItem value="Tunai">Tunai / Cash</SelectItem>
-                    <SelectItem value="QRIS">QRIS / E-Wallet</SelectItem>
+                    <SelectItem value="cash">Tunai / Cash</SelectItem>
+                    <SelectItem value="transfer">Transfer Bank</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -272,7 +293,7 @@ export function KunjunganFormPage({ onSaved }) {
                   Status Pembayaran
                 </label>
                 <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger className="w-full border-2 font-bold py-3 text-base rounded-xl">
+                  <SelectTrigger className="w-full h-[52px] px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs">
                     <SelectValue placeholder="Pilih status..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
@@ -284,26 +305,24 @@ export function KunjunganFormPage({ onSaved }) {
               </div>
             </div>
 
-            <div>
-              <label className="block text-base font-bold text-foreground mb-1.5 flex items-center gap-2">
-                <FileText className="size-5 text-primary" />
-                Catatan Kunjungan (Opsional)
-              </label>
-              <Input
-                type="text"
-                value={catatan}
-                onChange={(e) => setCatatan(e.target.value)}
-                placeholder="Contoh: Evaluasi perkembangan bahu, sesi ke-3"
-                className="py-3 text-base border-2 rounded-xl touch-input"
-              />
-            </div>
+
 
             <Button
               type="submit"
+              disabled={saving}
               className="w-full py-7 font-black text-lg rounded-2xl shadow-lg shadow-primary/20 touch-btn mt-4"
             >
-              <CheckCircle2 className="size-6" />
-              Simpan Catatan Kunjungan
+              {saving ? (
+                <>
+                  <Spinner className="size-5 mr-2" />
+                  Menyimpan Catatan...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="size-6" />
+                  Simpan Catatan Kunjungan
+                </>
+              )}
             </Button>
           </form>
         </CardContent>

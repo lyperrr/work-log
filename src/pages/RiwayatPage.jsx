@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { usePrivacy } from '../context/PrivacyContext';
-import { apiService } from '../services/apiService';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { PrivacyAmount, PrivacyPeekButton } from '../components/common/PrivacyAmount';
 import { ConfirmModal } from '../components/common/ConfirmModal';
@@ -10,6 +10,9 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
+import { Skeleton } from '../components/ui/skeleton';
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '../components/ui/empty';
+import { Spinner } from '../components/ui/spinner';
 import {
   Select,
   SelectContent,
@@ -31,8 +34,15 @@ import {
 
 export function RiwayatPage() {
   const { showToast } = useToast();
+  const { api } = useAuth();
   usePrivacy();
-  const [kunjunganList, setKunjunganList] = useState(() => apiService.getKunjunganList());
+  const [kunjunganList, setKunjunganList] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [updatingId, setUpdatingId] = useState(null);
+  // Optimistic status: maps kunjungan_id → target status while API call is in flight.
+  // This lets the button indicator "slide" to the new position immediately on click.
+  const [pendingStatus, setPendingStatus] = useState({});
 
   const [peekRiwayatMap, setPeekRiwayatMap] = useState({});
 
@@ -53,73 +63,103 @@ export function RiwayatPage() {
   const [editingItem, setEditingItem] = useState(null);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
 
-  const loadData = () => {
-    setKunjunganList(apiService.getKunjunganList());
+  const loadData = async () => {
+    setLoadingData(true);
+    try {
+      const data = await api.getKunjunganList();
+      setKunjunganList(data || []);
+    } catch (err) {
+      showToast(err.message || 'Gagal memuat data kunjungan', 'error');
+    } finally {
+      setLoadingData(false);
+    }
   };
 
-  const filteredList = kunjunganList.filter((k) => {
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const filteredList = (Array.isArray(kunjunganList) ? kunjunganList : []).filter((k) => {
+    if (!k || typeof k !== 'object') return false;
+
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      const matchName = k.nama_pasien.toLowerCase().includes(q);
-      const matchId = k.kunjungan_id.toLowerCase().includes(q);
+      const matchName = (k.nama_pasien || '').toLowerCase().includes(q);
+      const matchId = (k.kunjungan_id || '').toLowerCase().includes(q);
       if (!matchName && !matchId) return false;
     }
 
-    if (statusFilter !== 'semua' && k.status !== statusFilter) {
+    if (statusFilter !== 'semua' && (k.status || '').toLowerCase() !== statusFilter.toLowerCase()) {
       return false;
     }
 
-    if (metodeFilter !== 'semua' && k.metode_pembayaran !== metodeFilter) {
+    if (metodeFilter !== 'semua' && (k.metode_pembayaran || '').toLowerCase() !== metodeFilter.toLowerCase()) {
       return false;
     }
 
     if (jenisFilter === 'reguler' && k.paket_id) return false;
     if (jenisFilter === 'paket' && !k.paket_id) return false;
 
-    if (startDate && k.tanggal_kunjungan < startDate) return false;
-    if (endDate && k.tanggal_kunjungan > endDate) return false;
+    const kDate = k.tanggal_kunjungan ? String(k.tanggal_kunjungan).split('T')[0] : '';
+    if (startDate && kDate < startDate) return false;
+    if (endDate && kDate > endDate) return false;
 
     return true;
   });
 
-  const handleUpdateStatus = (id, newStatus) => {
+  const handleUpdateStatus = async (id, newStatus) => {
+    if (saving || updatingId) return;
+    setUpdatingId(id);
+    // Optimistic: move the active indicator to the clicked button immediately
+    setPendingStatus((prev) => ({ ...prev, [id]: newStatus }));
     try {
-      apiService.updateKunjungan(id, { status: newStatus });
-      loadData();
+      await api.updateKunjunganStatus(id, newStatus);
+      await loadData();
       showToast(`Status pembayaran diubah ke '${newStatus}'`, 'success');
     } catch (err) {
+      // Revert optimistic update on failure
+      setPendingStatus((prev) => { const n = { ...prev }; delete n[id]; return n; });
       showToast(err.message || 'Gagal memperbarui status', 'error');
+    } finally {
+      setUpdatingId(null);
+      setPendingStatus((prev) => { const n = { ...prev }; delete n[id]; return n; });
     }
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deleteTargetId) return;
+    setSaving(true);
     try {
-      apiService.deleteKunjungan(deleteTargetId);
-      loadData();
+      await api.deleteKunjungan(deleteTargetId);
+      await loadData();
       showToast('Catatan kunjungan berhasil dihapus', 'success');
     } catch (err) {
       showToast(err.message || 'Gagal menghapus catatan', 'error');
     } finally {
+      setSaving(false);
       setDeleteTargetId(null);
     }
   };
 
-  const handleSaveEdit = (e) => {
+  const handleSaveEdit = async (e) => {
     e.preventDefault();
-    if (!editingItem) return;
+    if (!editingItem || saving) return;
+    setSaving(true);
     try {
-      apiService.updateKunjungan(editingItem.kunjungan_id, {
+      await api.updateKunjungan(editingItem.kunjungan_id, {
+        nama_pasien: editingItem.nama_pasien,
         tanggal_kunjungan: editingItem.tanggal_kunjungan,
         biaya: Number(editingItem.biaya),
         metode_pembayaran: editingItem.metode_pembayaran,
         status: editingItem.status,
       });
       setEditingItem(null);
-      loadData();
+      await loadData();
       showToast('Perubahan kunjungan berhasil disimpan', 'success');
     } catch (err) {
       showToast(err.message || 'Gagal menyimpan perubahan', 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -138,13 +178,13 @@ export function RiwayatPage() {
 
       {/* Header Card using shadcn Card */}
       <Card>
-        <CardHeader>
+        <CardHeader className="border-b-0 pb-0">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <History className="size-6" />
             </div>
             <div>
-              <CardTitle>
+              <CardTitle className="">
                 Riwayat & Filter Kunjungan
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -184,7 +224,7 @@ export function RiwayatPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Ketik nama pasien..."
-                  className="pl-10 font-semibold touch-input"
+                  className="pl-10 h-12 font-semibold touch-input"
                 />
                 <Search className="size-5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
@@ -196,7 +236,7 @@ export function RiwayatPage() {
                 Status Pembayaran
               </label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full h-[52px] text-base font-semibold border border-input rounded-xl bg-background touch-input">
+                <SelectTrigger className="w-full h-12 text-base font-semibold border border-input rounded-xl bg-background touch-input">
                   <SelectValue placeholder="Semua Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -214,7 +254,7 @@ export function RiwayatPage() {
                 Metode Pembayaran
               </label>
               <Select value={metodeFilter} onValueChange={setMetodeFilter}>
-                <SelectTrigger className="w-full h-[52px] text-base font-semibold border border-input rounded-xl bg-background touch-input">
+                <SelectTrigger className="w-full h-12 text-base font-semibold border border-input rounded-xl bg-background touch-input">
                   <SelectValue placeholder="Semua Metode" />
                 </SelectTrigger>
                 <SelectContent>
@@ -231,7 +271,7 @@ export function RiwayatPage() {
                 Jenis Transaksi
               </label>
               <Select value={jenisFilter} onValueChange={setJenisFilter}>
-                <SelectTrigger className="w-full h-[52px] text-base font-semibold border border-input rounded-xl bg-background touch-input">
+                <SelectTrigger className="w-full h-12 text-base font-semibold border border-input rounded-xl bg-background touch-input">
                   <SelectValue placeholder="Semua Transaksi" />
                 </SelectTrigger>
                 <SelectContent>
@@ -276,11 +316,48 @@ export function RiwayatPage() {
 
       {/* Results List Cards - 100% Responsive */}
       <div className="space-y-4">
-        {filteredList.length === 0 ? (
-          <Card className="border-2 border-dashed border-border/80 rounded-2xl p-8 text-center text-muted-foreground space-y-2">
-            <History className="size-12 mx-auto text-muted-foreground/60" />
-            <p className="text-lg font-bold">Tidak ada data kunjungan yang cocok.</p>
-            <p className="text-sm">Coba sesuaikan filter atau kata kunci pencarian Anda.</p>
+        {loadingData ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-card border border-border/80 rounded-2xl p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="size-10 rounded-xl" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-36" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-6 w-24" />
+                </div>
+                <Skeleton className="h-10 w-full rounded-xl" />
+                <div className="flex justify-between">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-28" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredList.length === 0 ? (
+          <Card className="border-2 border-dashed border-border/80 rounded-2xl p-8">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <History className="size-6 text-muted-foreground" />
+                </EmptyMedia>
+                <EmptyTitle className="font-bold text-base">Tidak Ada Data Kunjungan</EmptyTitle>
+                <EmptyDescription>
+                  {searchQuery || statusFilter !== 'semua' || metodeFilter !== 'semua' || jenisFilter !== 'semua' || startDate || endDate
+                    ? 'Tidak ditemukan data yang sesuai dengan filter pencarian Anda.'
+                    : 'Belum ada data riwayat kunjungan pasien yang tersimpan.'}
+                </EmptyDescription>
+              </EmptyHeader>
+              {(searchQuery || statusFilter !== 'semua' || metodeFilter !== 'semua' || jenisFilter !== 'semua' || startDate || endDate) && (
+                <Button variant="outline" size="sm" onClick={resetFilters} className="font-bold">
+                  Reset Filter
+                </Button>
+              )}
+            </Empty>
           </Card>
         ) : (
           filteredList.map((item) => {
@@ -355,7 +432,9 @@ export function RiwayatPage() {
                   <span className="flex items-center gap-1.5">
                     <Calendar className="size-4 text-primary shrink-0" />
                     <strong className="font-bold text-foreground">Tgl Kunjungan:</strong>
-                    <span className="text-foreground/90 font-semibold">{item.tanggal_kunjungan}</span>
+                    <span className="text-foreground/90 font-semibold">
+                      {item.tanggal_kunjungan ? String(item.tanggal_kunjungan).split('T')[0] : '-'}
+                    </span>
                   </span>
                 </div>
 
@@ -372,40 +451,74 @@ export function RiwayatPage() {
                   </div>
 
                   {/* Status Toggle Buttons */}
-                  <div className="grid grid-cols-3 gap-1 bg-secondary/80 p-1 rounded-xl border border-border/80">
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateStatus(item.kunjungan_id, 'menunggu')}
-                      className={`py-1.5 px-1 rounded-lg text-xs font-bold text-center transition-all ${isMenunggu
-                        ? 'bg-amber-500 text-white shadow-xs'
-                        : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                    >
-                      Menunggu
-                    </button>
+                  {(() => {
+                    // Use pending (optimistic) status while API is in flight so the
+                    // indicator slides to the target button immediately on click.
+                    const isUpdatingThis = updatingId === item.kunjungan_id;
+                    const effectiveStatus = isUpdatingThis && pendingStatus[item.kunjungan_id]
+                      ? pendingStatus[item.kunjungan_id]
+                      : item.status;
+                    const effLunas    = effectiveStatus === 'lunas';
+                    const effMenunggu = effectiveStatus === 'menunggu';
+                    const effBelum    = !effLunas && !effMenunggu;
 
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateStatus(item.kunjungan_id, 'lunas')}
-                      className={`py-1.5 px-1 rounded-lg text-xs font-bold text-center transition-all ${isLunas
-                        ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                    >
-                      Lunas
-                    </button>
+                    const btnBase = 'relative py-1.5 px-1 rounded-lg text-xs font-bold text-center flex items-center justify-center gap-1 transition-all duration-300';
 
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateStatus(item.kunjungan_id, 'belum bayar')}
-                      className={`py-1.5 px-1 rounded-lg text-xs font-bold text-center transition-all ${!isLunas && !isMenunggu
-                        ? 'bg-rose-600 text-white shadow-xs'
-                        : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                    >
-                      Belum Bayar
-                    </button>
-                  </div>
+                    return (
+                      <div className="grid grid-cols-3 gap-1 bg-secondary/80 p-1 rounded-xl border border-border/80">
+                        {/* Menunggu */}
+                        <button
+                          type="button"
+                          disabled={Boolean(updatingId)}
+                          onClick={() => handleUpdateStatus(item.kunjungan_id, 'menunggu')}
+                          className={`${btnBase} ${
+                            effMenunggu
+                              ? isUpdatingThis
+                                ? 'bg-amber-500 text-white shadow-xs animate-pulse'
+                                : 'bg-amber-500 text-white shadow-xs'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          {isUpdatingThis && effMenunggu && <Spinner className="size-3" />}
+                          Menunggu
+                        </button>
+
+                        {/* Lunas */}
+                        <button
+                          type="button"
+                          disabled={Boolean(updatingId)}
+                          onClick={() => handleUpdateStatus(item.kunjungan_id, 'lunas')}
+                          className={`${btnBase} ${
+                            effLunas
+                              ? isUpdatingThis
+                                ? 'bg-emerald-600 text-white shadow-xs animate-pulse'
+                                : 'bg-emerald-600 text-white shadow-xs'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          {isUpdatingThis && effLunas && <Spinner className="size-3" />}
+                          Lunas
+                        </button>
+
+                        {/* Belum Bayar */}
+                        <button
+                          type="button"
+                          disabled={Boolean(updatingId)}
+                          onClick={() => handleUpdateStatus(item.kunjungan_id, 'belum bayar')}
+                          className={`${btnBase} ${
+                            effBelum
+                              ? isUpdatingThis
+                                ? 'bg-rose-600 text-white shadow-xs animate-pulse'
+                                : 'bg-rose-600 text-white shadow-xs'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          {isUpdatingThis && effBelum && <Spinner className="size-3" />}
+                          Belum Bayar
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Actions (Edit / Delete) */}
@@ -413,7 +526,14 @@ export function RiwayatPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setEditingItem({ ...item })}
+                    onClick={() =>
+                      setEditingItem({
+                        ...item,
+                        tanggal_kunjungan: item.tanggal_kunjungan
+                          ? String(item.tanggal_kunjungan).split('T')[0]
+                          : '',
+                      })
+                    }
                     className="w-full font-bold"
                   >
                     <Edit className="size-3.5 mr-1 text-primary" />
@@ -447,6 +567,7 @@ export function RiwayatPage() {
         cancelText="Batal"
         variant="destructive"
         icon={Trash2}
+        isLoading={saving}
       />
 
       {/* Edit Modal */}
@@ -475,9 +596,12 @@ export function RiwayatPage() {
                   </label>
                   <Input
                     type="text"
-                    value={editingItem.nama_pasien}
-                    disabled
-                    className="bg-secondary text-muted-foreground font-bold"
+                    value={editingItem.nama_pasien || ''}
+                    onChange={(e) =>
+                      setEditingItem({ ...editingItem, nama_pasien: e.target.value })
+                    }
+                    className="font-bold"
+                    required
                   />
                 </div>
 
@@ -515,6 +639,7 @@ export function RiwayatPage() {
                   <Button
                     type="button"
                     variant="outline"
+                    disabled={saving}
                     onClick={() => setEditingItem(null)}
                     className="w-1/2 py-5 font-bold rounded-xl"
                   >
@@ -522,9 +647,17 @@ export function RiwayatPage() {
                   </Button>
                   <Button
                     type="submit"
+                    disabled={saving}
                     className="w-1/2 py-5 font-bold rounded-xl shadow-md"
                   >
-                    Simpan Perubahan
+                    {saving ? (
+                      <>
+                        <Spinner className="mr-2" />
+                        Menyimpan...
+                      </>
+                    ) : (
+                      'Simpan Perubahan'
+                    )}
                   </Button>
                 </div>
               </form>

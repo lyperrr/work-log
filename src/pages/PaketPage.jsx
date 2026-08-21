@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { usePrivacy } from '../context/PrivacyContext';
-import { apiService } from '../services/apiService';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { PrivacyAmount, PrivacyPeekButton } from '../components/common/PrivacyAmount';
 import { PatientAutocomplete } from '../components/common/PatientAutocomplete';
@@ -12,6 +12,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import { Alert, AlertDescription } from '../components/ui/alert';
+import { Skeleton } from '../components/ui/skeleton';
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '../components/ui/empty';
+import { Spinner } from '../components/ui/spinner';
 import {
   Package,
   PlusCircle,
@@ -24,11 +27,29 @@ import {
 
 export function PaketPage() {
   const { showToast } = useToast();
+  const { api } = useAuth();
   usePrivacy();
-  const [paketList, setPaketList] = useState(() => apiService.getPaketList());
+  const [paketList, setPaketList] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   const [peekPaketMap, setPeekPaketMap] = useState({});
+
+  const loadData = async () => {
+    try {
+      const data = await api.getPaketList();
+      setPaketList(data);
+    } catch (err) {
+      showToast(err.message || 'Gagal memuat data paket', 'error');
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const togglePaketPeek = (id) => {
     setPeekPaketMap((prev) => ({
@@ -53,18 +74,18 @@ export function PaketPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  const loadData = () => {
-    setPaketList(apiService.getPaketList());
-  };
 
   const handleSelectPatient = (patient) => {
-    if (patient && patient.no_telp) {
-      setNoTelp(patient.no_telp);
+    if (patient) {
+      // Always set noTelp from patient record (normalize to string in case
+      // Sheets returned the phone number as a numeric type)
+      setNoTelp(String(patient.no_telp || ''));
     }
   };
 
-  const handleCreatePaket = (e) => {
+  const handleCreatePaket = async (e) => {
     e.preventDefault();
+    if (saving) return;
     setErrorMsg('');
     setSuccessMsg('');
 
@@ -89,10 +110,11 @@ export function PaketPage() {
       return;
     }
 
+    setSaving(true);
     try {
-      const patientRecord = apiService.saveOrGetPasienByName(namaPasien, noTelp);
+      const patientRecord = await api.saveOrGetPasienByName(namaPasien, noTelp);
 
-      const newPaket = apiService.createPaket({
+      const newPaket = await api.createPaket({
         pasien_id: patientRecord.pasien_id,
         total_kunjungan: numSessions,
         harga_paket: Number(hargaPaket),
@@ -104,17 +126,18 @@ export function PaketPage() {
       showToast(successText, 'success');
 
       setShowModal(false);
-
       setNamaPasien('');
       setNoTelp('');
       setTotalKunjungan(5);
       setHargaPaket(1500000);
 
-      loadData();
+      await loadData();
     } catch (err) {
       const errorText = err.message || 'Gagal membuat paket baru.';
       setErrorMsg(errorText);
       showToast(errorText, 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -123,7 +146,7 @@ export function PaketPage() {
 
       {/* Header section with Create button */}
       <Card>
-        <CardHeader className="flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <CardHeader className="flex-col md:flex-row items-start md:items-center justify-between gap-4 border-0">
           <div className="flex items-center gap-3">
             <Package className="size-7 text-primary" />
             <div>
@@ -171,11 +194,50 @@ export function PaketPage() {
 
       {/* Package List Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {paketList.length === 0 ? (
-          <div className="col-span-full bg-card border-2 border-dashed border-border rounded-3xl p-8 text-center text-muted-foreground space-y-2">
-            <Package className="size-12 mx-auto text-muted-foreground/60" />
-            <p className="text-lg font-bold">Belum ada paket kunjungan yang dibuat.</p>
-            <p className="text-sm">Klik tombol "Buat Paket Baru" untuk membuat paket pertama.</p>
+        {loadingData ? (
+          <>
+            {[1, 2].map((i) => (
+              <Card key={i}>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="flex items-center justify-between border-b border-border pb-3">
+                    <div className="space-y-2">
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-5 w-36" />
+                    </div>
+                    <Skeleton className="h-6 w-16" />
+                  </div>
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-16 w-full rounded-2xl" />
+                </CardContent>
+              </Card>
+            ))}
+          </>
+        ) : paketList.length === 0 ? (
+          <div className="col-span-full bg-card border-2 border-dashed border-border rounded-3xl p-8">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Package className="size-6 text-muted-foreground" />
+                </EmptyMedia>
+                <EmptyTitle className="font-bold text-base">Belum Ada Paket Kunjungan</EmptyTitle>
+                <EmptyDescription>
+                  Belum ada paket kunjungan yang dibuat. Klik tombol "Buat Paket Baru" untuk mendaftarkan paket pasien.
+                </EmptyDescription>
+              </EmptyHeader>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setShowModal(true);
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                }}
+                className="mt-2 font-bold"
+              >
+                <PlusCircle className="size-4 mr-1.5" />
+                Buat Paket Baru
+              </Button>
+            </Empty>
           </div>
         ) : (
           paketList.map((pkt) => {
@@ -229,7 +291,7 @@ export function PaketPage() {
 
                     <div className="flex justify-between text-xs text-muted-foreground font-medium pt-1">
                       <span>Terpakai: {pkt.terpakai}x</span>
-                      <span>Beli: {pkt.tanggal_beli}</span>
+                      <span>Beli: {pkt.tanggal_beli ? String(pkt.tanggal_beli).split('T')[0] : '-'}</span>
                     </div>
                   </div>
 
@@ -323,6 +385,7 @@ export function PaketPage() {
                   <Button
                     type="button"
                     variant="outline"
+                    disabled={saving}
                     onClick={() => setShowModal(false)}
                     className="w-1/2 py-6 text-base font-bold rounded-2xl touch-btn"
                   >
@@ -331,10 +394,20 @@ export function PaketPage() {
 
                   <Button
                     type="submit"
+                    disabled={saving}
                     className="w-1/2 py-6 text-base font-black rounded-2xl shadow-lg touch-btn"
                   >
-                    <CheckCircle2 className="size-5" />
-                    Simpan Paket
+                    {saving ? (
+                      <>
+                        <Spinner className="mr-2" />
+                        Menyimpan...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="size-5 mr-1" />
+                        Simpan Paket
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>

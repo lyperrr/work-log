@@ -178,7 +178,7 @@ export function AuthPage() {
                       setErrorMsg('');
                       setLoading(true);
                       try {
-                        await login('admin@freelance.com', 'admin123');
+                        await login('budi@klinik.com', 'password123');
                       } catch (err) {
                         setErrorMsg(err.message);
                       } finally {

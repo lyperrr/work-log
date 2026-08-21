@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { usePrivacy } from '../context/PrivacyContext';
+import { useSettings } from '../context/SettingsContext';
 import { FontSizeControl } from '../components/common/FontSizeControl';
 import { apiService } from '../services/apiService';
 import { useToast } from '../context/ToastContext';
@@ -24,36 +25,16 @@ import {
   Mail,
   LogOut,
   Sparkles,
+  Calendar,
+  Filter,
 } from 'lucide-react';
 
 export function SettingsPage() {
   const { currentUser, logout } = useAuth();
   const { showToast } = useToast();
   const { hideIncome, toggleHideIncome } = usePrivacy();
-  const [gasUrl, setGasUrl] = useState(apiService.getGasUrl());
-  const [savedMsg, setSavedMsg] = useState('');
-  const [showResetModal, setShowResetModal] = useState(false);
+  const { dataScope, setDataScope } = useSettings();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-  const handleSaveGasUrl = (e) => {
-    e.preventDefault();
-    apiService.setGasUrl(gasUrl.trim());
-    setSavedMsg('URL Google Apps Script Web App berhasil disimpan!');
-    showToast('Konfigurasi backend berhasil disimpan', 'success');
-    setTimeout(() => setSavedMsg(''), 3000);
-  };
-
-  const handleConfirmResetData = () => {
-    try {
-      apiService.resetData();
-      showToast('Data berhasil di-reset ke data bawaan awal', 'success');
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } catch (err) {
-      showToast(err.message || 'Gagal melakukan reset data', 'error');
-    }
-  };
 
   const handleConfirmLogout = () => {
     logout();
@@ -69,7 +50,7 @@ export function SettingsPage() {
 
       {/* Header Card */}
       <Card>
-        <CardHeader>
+        <CardHeader className="border-0 pb-0">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <Settings className="size-6" />
@@ -87,22 +68,22 @@ export function SettingsPage() {
       </Card>
 
       {/* 0. Profil Pengguna (User Profile Card) */}
-      <Card>
-        <CardHeader className="bg-linear-to-r from-primary/10 via-transparent to-transparent">
+      <Card className="p-0!">
+        <CardHeader className="bg-primary p-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="size-14 rounded-2xl bg-linear-to-tr from-primary to-cyan-600 text-white font-black text-xl flex items-center justify-center shadow-md uppercase shrink-0">
+              <div className="size-14 rounded-2xl bg-primary-foreground text-foregorund font-black text-xl flex items-center justify-center shadow-md uppercase shrink-0">
                 {(currentUser?.username || currentUser?.email || 'U').charAt(0).toUpperCase()}
               </div>
               <div>
-                <h3 className="text-xl font-black text-foreground flex items-center gap-2">
+                <h3 className="text-xl font-black text-white flex items-center gap-2">
                   {displayName}
-                  <Badge variant="success">
+                  <Badge variant="success" className="bg-emerald-600 text-white">
                     Aktif
                   </Badge>
                 </h3>
-                <p className="text-xs md:text-sm text-muted-foreground font-medium flex items-center gap-1.5 mt-0.5">
-                  <Mail className="size-3.5 text-primary" />
+                <p className="text-xs md:text-sm text-white font-medium flex items-center gap-1.5 mt-0.5">
+                  <Mail className="size-3.5 text-white" />
                   {currentUser?.email || 'Belum terhubung email'}
                 </p>
               </div>
@@ -112,7 +93,7 @@ export function SettingsPage() {
               type="button"
               variant="destructive"
               onClick={() => setShowLogoutModal(true)}
-              className="shrink-0"
+              className="shrink-0 bg-destructive text-white hover:bg-destructive/80"
             >
               <LogOut className="size-4" />
               Keluar Akun
@@ -185,88 +166,69 @@ export function SettingsPage() {
           </Button>
         </CardContent>
       </Card>
-
-      {/* 2. Google Apps Script Integration */}
+      {/* 2. Rentang Tampilan Data (Data Scope Filter) */}
       <Card>
         <CardHeader className="flex-row items-center gap-2">
-          <LinkIcon className="size-5 text-primary" />
-          <CardTitle>Integrasi Google Apps Script (Backend)</CardTitle>
+          <Calendar className="size-5 text-primary" />
+          <CardTitle>Rentang Tampilan Data (Reset Tiap Bulan)</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
           <p className="text-xs md:text-sm text-muted-foreground font-medium">
-            Aplikasi ini dirancang untuk dapat terhubung langsung ke Google Sheets & Google Apps Script Web App (`doGet`/`doPost`).
+            Pilih apakah aplikasi hanya menampilkan data transaksi di bulan saat ini (otomatis di-reset setiap bulan baru) atau menampilkan seluruh data historis dari bulan-bulan sebelumnya.
           </p>
 
-          {savedMsg && (
-            <Alert className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 rounded-2xl">
-              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-              <AlertDescription className="font-bold text-sm">
-                {savedMsg}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <form onSubmit={handleSaveGasUrl} className="space-y-3">
-            <div>
-              <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
-                Google Apps Script Web App URL
-              </label>
-              <Input
-                type="url"
-                value={gasUrl}
-                onChange={(e) => setGasUrl(e.target.value)}
-                placeholder="https://script.google.com/macros/s/.../exec"
-                className="font-mono text-sm touch-input"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full font-bold"
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setDataScope('current_month');
+                showToast('Mode Tampilan: Bulan Saat Ini Saja (Default)', 'info');
+              }}
+              className={`p-4 rounded-2xl border-2 text-left transition-all ${dataScope === 'current_month'
+                ? 'border-primary bg-primary/10 shadow-xs'
+                : 'border-border bg-card hover:bg-secondary/60'
+                }`}
             >
-              Simpan Konfigurasi Backend
-            </Button>
-          </form>
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-bold text-sm text-foreground">Bulan Saat Ini Saja</span>
+                <Badge variant={dataScope === 'current_month' ? 'default' : 'outline'}>
+                  {dataScope === 'current_month' ? 'Aktif (Default)' : 'Pilih'}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground font-medium">
+                Hanya menampilkan data bulan berjalan. Data di-reset visual setiap pergantian bulan.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setDataScope('all_time');
+                showToast('Mode Tampilan: Semua Bulan (Historis)', 'info');
+              }}
+              className={`p-4 rounded-2xl border-2 text-left transition-all ${dataScope === 'all_time'
+                ? 'border-primary bg-primary/10 shadow-xs'
+                : 'border-border bg-card hover:bg-secondary/60'
+                }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-bold text-sm text-foreground">Semua Bulan (Historis)</span>
+                <Badge variant={dataScope === 'all_time' ? 'default' : 'outline'}>
+                  {dataScope === 'all_time' ? 'Aktif' : 'Pilih'}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground font-medium">
+                Menampilkan seluruh riwayat transaksi dari bulan-bulan sebelumnya.
+              </p>
+            </button>
+          </div>
         </CardContent>
       </Card>
 
-      {/* 3. Database Reset */}
-      <Card>
-        <CardHeader className="flex-row items-center gap-2">
-          <Database className="size-5 text-primary" />
-          <CardTitle>Kelola Data Simulasi</CardTitle>
-        </CardHeader>
 
-        <CardContent className="space-y-4">
-          <p className="text-xs md:text-sm text-muted-foreground font-medium">
-            Jika Anda ingin mengembalikan data aplikasi ke data bawaan awal (Users, Pasien, Paket, Kunjungan).
-          </p>
 
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => setShowResetModal(true)}
-            className="w-full font-bold"
-          >
-            <RefreshCw className="size-4" />
-            Reset Data ke Seed Awal
-          </Button>
-        </CardContent>
-      </Card>
 
-      {/* Reset Confirmation Modal */}
-      <ConfirmModal
-        isOpen={showResetModal}
-        onClose={() => setShowResetModal(false)}
-        onConfirm={handleConfirmResetData}
-        title="Reset Seluruh Data"
-        description="Apakah Anda yakin ingin mereset seluruh data simulasi ke data awal? Seluruh perubahan lokal akan terhapus."
-        confirmText="Ya, Reset Data"
-        cancelText="Batal"
-        variant="destructive"
-        icon={RefreshCw}
-      />
 
       {/* Logout Confirmation Modal */}
       <ConfirmModal
@@ -285,9 +247,8 @@ export function SettingsPage() {
       <div className="bg-secondary/40 border border-border rounded-3xl p-4 text-center text-xs text-muted-foreground space-y-1">
         <div className="flex items-center justify-center gap-1.5 font-bold text-foreground">
           <ShieldCheck className="size-4 text-primary" />
-          <span>Sesuai Spesifikasi PRD v1.0</span>
+          <span>Work Log - v1.0</span>
         </div>
-        <p>Warna Utama: oklch(0.52 0.105 223.128) • Mobile First Elderly Ready</p>
       </div>
 
     </div>
