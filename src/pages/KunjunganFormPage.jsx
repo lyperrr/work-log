@@ -198,9 +198,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
       <Card className="shadow-lg overflow-hidden">
         <CardHeader className="">
           <div className="flex items-center gap-3">
-            <div className="size-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-md">
-              <PlusCircle className="size-7" />
-            </div>
+              <PlusCircle className="size-7 shrink-0 text-primary" />
             <div>
               <CardTitle className="text-xl md:text-2xl font-black">
                 Catat Kunjungan Baru

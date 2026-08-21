@@ -52,9 +52,7 @@ export function SettingsPage() {
       <Card>
         <CardHeader className="border-0 pb-0">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <Settings className="size-6" />
-            </div>
+            <Settings className="size-6 shrink-0 text-primary" />
             <div>
               <CardTitle>
                 Pengaturan Aplikasi

@@ -186,9 +186,7 @@ export function RiwayatPage() {
       <Card>
         <CardHeader className="border-b-0 pb-0">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <History className="size-6" />
-            </div>
+            <History className="size-6 shrink-0 text-primary" />
             <div>
               <CardTitle className="">
                 Riwayat & Filter Kunjungan

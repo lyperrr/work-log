@@ -187,7 +187,7 @@ export function PaketPage({ onNavigate }) {
 
       {/* Header */}
       <Card>
-        <CardHeader className="flex-col md:flex-row items-start md:items-center justify-between gap-4 border-0">
+        <CardHeader className="flex-col md:flex-row items-start md:items-center justify-between gap-4 border-0 pb-0">
           <div className="flex items-center gap-3">
             <Package className="size-7 text-primary" />
             <div>
