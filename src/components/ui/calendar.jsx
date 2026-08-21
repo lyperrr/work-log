@@ -160,7 +160,7 @@ function CalendarDayButton({
       data-day={day.date.toLocaleDateString(locale?.code)}
       data-selected-single={isSelected}
       className={cn(
-        "relative isolate z-10 flex aspect-square size-9 size-9 items-center justify-center rounded-xl border-0 font-bold text-sm transition-all duration-200",
+        "relative isolate z-10 flex aspect-square size-9 items-center justify-center rounded-xl border-0 font-bold text-sm transition-all duration-200",
         isSelected
           ? "bg-linear-to-tr from-primary via-primary to-cyan-500 text-white font-black shadow-md scale-105 ring-2 ring-primary/30"
           : modifiers.today
