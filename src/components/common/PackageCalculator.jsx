@@ -131,7 +131,7 @@ export function PackageCalculator({
   if (!showCardWrapper) return content;
 
   return (
-    <Card className="border-2 border-primary/20 rounded-3xl shadow-sm">
+    <Card className="shadow-sm">
       <CardHeader className="pb-3 border-b border-border">
         <CardTitle className="text-lg font-black flex items-center gap-2">
           <Calculator className="size-5 text-primary shrink-0" />

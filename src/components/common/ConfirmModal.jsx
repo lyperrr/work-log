@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { Button } from '../ui/button';
+import { Spinner } from '../ui/spinner';
 import { LogOut, Trash2 } from 'lucide-react';
 
 export function ConfirmModal({
@@ -12,6 +13,7 @@ export function ConfirmModal({
   cancelText = 'Batal',
   variant = 'destructive', // 'destructive' or 'primary'
   icon: CustomIcon,
+  isLoading = false,
 }) {
   if (!isOpen) return null;
 
@@ -45,6 +47,7 @@ export function ConfirmModal({
             type="button"
             variant="outline"
             onClick={onClose}
+            disabled={isLoading}
             className="w-1/2 py-6 font-bold text-base rounded-2xl touch-btn"
           >
             {cancelText}
@@ -53,13 +56,18 @@ export function ConfirmModal({
           <Button
             type="button"
             variant={variant === 'destructive' ? 'destructive' : 'default'}
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
+            disabled={isLoading}
+            onClick={onConfirm}
             className="w-1/2 py-6 font-black text-base rounded-2xl shadow-lg touch-btn"
           >
-            {confirmText}
+            {isLoading ? (
+              <>
+                <Spinner className="mr-2" />
+                Memproses...
+              </>
+            ) : (
+              confirmText
+            )}
           </Button>
         </div>
       </div>

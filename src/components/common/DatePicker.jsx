@@ -30,33 +30,29 @@ export function DatePicker({ value, onChange, placeholder = "Pilih tanggal..." }
   return (
     <div className="w-full">
       <Popover>
-        <PopoverTrigger className="w-full block">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-[52px] flex items-center justify-between text-left font-bold text-base border-2 border-input rounded-xl touch-btn px-4 bg-background"
-          >
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <CalendarIcon className="h-5 w-5 text-primary shrink-0" />
-              <span className={value ? "text-foreground font-bold truncate" : "text-muted-foreground font-semibold truncate"}>
-                {formattedDisplay}
-              </span>
-            </div>
-            {value && (
-              <span
-                role="button"
-                tabIndex={0}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChange('');
-                }}
-                className="p-1 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground shrink-0 ml-1"
-                title="Hapus tanggal"
-              >
-                <X className="size-4" />
-              </span>
-            )}
-          </Button>
+        <PopoverTrigger
+          className="w-full h-[52px] flex items-center justify-between text-left font-bold text-base border-2 border-input rounded-xl touch-btn px-4 bg-background text-foreground hover:bg-accent/50 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all shadow-xs cursor-pointer"
+        >
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <CalendarIcon className="h-5 w-5 text-primary shrink-0" />
+            <span className={value ? "text-foreground font-bold truncate" : "text-muted-foreground font-semibold truncate"}>
+              {formattedDisplay}
+            </span>
+          </div>
+          {value && (
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange('');
+              }}
+              className="p-1 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground shrink-0 ml-1"
+              title="Hapus tanggal"
+            >
+              <X className="size-4" />
+            </span>
+          )}
         </PopoverTrigger>
         <PopoverContent
           align="start"
