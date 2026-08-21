@@ -40,7 +40,7 @@ export function KunjunganCard({
     : '-';
 
   const btnBase =
-    'relative py-2.5 px-1 rounded-xl text-xs sm:text-sm font-black text-center flex items-center justify-center gap-1.5 transition-all duration-300 whitespace-nowrap shadow-2xs';
+    'relative py-2.5 px-1 rounded-xl text-xs sm:text-sm font-black text-center flex items-center justify-center gap-1.5 transition-all duration-300 whitespace-nowrap';
 
   return (
     <div className="bg-card border border-border/80 hover:border-primary/50 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-200 space-y-3.5 overflow-hidden">
@@ -178,7 +178,7 @@ export function KunjunganCard({
                 ? isUpdatingThis
                   ? 'bg-amber-500 text-white shadow-sm animate-pulse cursor-default'
                   : 'bg-amber-500 text-white shadow-sm cursor-default'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-background hover:border-border border border-transparent cursor-pointer shadow-none bg-transparent'
               }`}
           >
             {isUpdatingThis && effMenunggu ? (
@@ -201,7 +201,7 @@ export function KunjunganCard({
                 ? isUpdatingThis
                   ? 'bg-emerald-600 text-white shadow-sm animate-pulse cursor-default'
                   : 'bg-emerald-600 text-white shadow-sm cursor-default'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-muted-foreground hover:text-foreground  hover:bg-background/40 shadow-none bg-transparent'
               }`}
           >
             {isUpdatingThis && effLunas ? (
@@ -224,7 +224,7 @@ export function KunjunganCard({
                 ? isUpdatingThis
                   ? 'bg-rose-600 text-white shadow-sm animate-pulse cursor-default'
                   : 'bg-rose-600 text-white shadow-sm cursor-default'
-                : 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background hover:border-border border border-transparent cursor-pointer shadow-none bg-transparent'
               }`}
           >
             {isUpdatingThis && effBelum ? (
