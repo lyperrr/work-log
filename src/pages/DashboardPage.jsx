@@ -241,9 +241,10 @@ export function DashboardPage({ onNavigate }) {
         <Button
           type="button"
           onClick={() => onNavigate('catat')}
-          className="w-full justify-between"
+          className="w-full justify-between font-bold h-11 sm:h-10"
+          asChild
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             <PlusCircle className="size-5" />
             <span className="text-sm font-bold">Catat Kunjungan</span>
           </div>
@@ -254,9 +255,9 @@ export function DashboardPage({ onNavigate }) {
           type="button"
           variant="outline"
           onClick={() => onNavigate('paket')}
-          className="w-full justify-between"
+          className="w-full justify-between font-bold h-11 sm:h-10"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 ">
             <Package className="size-5 text-primary" />
             <span className="text-sm font-bold">Buat Paket Baru</span>
           </div>

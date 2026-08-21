@@ -12,6 +12,7 @@ import { KunjunganCard } from '../components/common/KunjunganCard';
 import { EmptyState } from '../components/common/EmptyState';
 import { ImportModal } from '../components/common/ImportModal';
 import { ConfirmModal } from '../components/common/ConfirmModal';
+import { useAnimatePresence } from '../hooks/useAnimatePresence';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -29,7 +30,6 @@ import {
   User,
   Phone,
   ChevronRight,
-  ArrowLeft,
   FileSpreadsheet,
   Pencil,
   Trash2,
@@ -49,10 +49,12 @@ export function PaketPage({ onNavigate }) {
   const [loadingData, setLoadingData] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const { shouldRender: shouldRenderCreateModal, isMounted: isCreateModalMounted } = useAnimatePresence(showModal, 250);
   const [showImportModal, setShowImportModal] = useState(false);
 
   // Edit modal state
   const [showEditModal, setShowEditModal] = useState(false);
+  const { shouldRender: shouldRenderEditPaketModal, isMounted: isEditPaketModalMounted } = useAnimatePresence(showEditModal, 250);
   const [editPaketData, setEditPaketData] = useState(null);
   const [editHargaPaket, setEditHargaPaket] = useState('');
   const [editTotalKunjungan, setEditTotalKunjungan] = useState('');
@@ -61,10 +63,41 @@ export function PaketPage({ onNavigate }) {
 
   // Edit kunjungan state
   const [editingKunjungan, setEditingKunjungan] = useState(null);
+  const [activeEditingKunjungan, setActiveEditingKunjungan] = useState(null);
+  const { shouldRender: shouldRenderEditKunjunganModal, isMounted: isEditKunjunganModalMounted } = useAnimatePresence(Boolean(editingKunjungan), 250);
+
+  const handleOpenEditKunjungan = (k) => {
+    const formatted = {
+      ...k,
+      tanggal_kunjungan: k.tanggal_kunjungan
+        ? formatDateLocal(k.tanggal_kunjungan)
+        : '',
+    };
+    setEditingKunjungan(formatted);
+    setActiveEditingKunjungan(formatted);
+  };
+
+  const updateEditingKunjungan = (newVal) => {
+    setEditingKunjungan(newVal);
+    if (newVal) {
+      setActiveEditingKunjungan(newVal);
+    }
+  };
+
+  const currentEditKunjungan = editingKunjungan || activeEditingKunjungan;
   const [deleteKunjunganId, setDeleteKunjunganId] = useState(null);
 
   // Detail drawer
   const [selectedPaket, setSelectedPaket] = useState(null);
+  const [activeSelectedPaket, setActiveSelectedPaket] = useState(null);
+  const { shouldRender: shouldRenderDetailModal, isMounted: isDetailModalMounted } = useAnimatePresence(Boolean(selectedPaket), 250);
+
+  const handleOpenDetailModal = (pkt) => {
+    setSelectedPaket(pkt);
+    if (pkt) setActiveSelectedPaket(pkt);
+  };
+
+  const currentPaket = selectedPaket || activeSelectedPaket;
   const [updatingKunjunganId, setUpdatingKunjunganId] = useState(null);
   const [pendingKunjunganStatus, setPendingKunjunganStatus] = useState({});
 
@@ -438,7 +471,7 @@ export function PaketPage({ onNavigate }) {
             return (
               <Card
                 key={pkt.paket_id}
-                onClick={() => setSelectedPaket(pkt)}
+                onClick={() => handleOpenDetailModal(pkt)}
                 className={`cursor-pointer hover:border-primary/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.99] ${isAktif ? 'border-primary/40' : 'opacity-75'
                   }`}
               >
@@ -535,84 +568,98 @@ export function PaketPage({ onNavigate }) {
         )}
       </div>
 
-      {/* ─── Detail Drawer ─── */}
-      {selectedPaket && createPortal(
+      {/* ─── Detail Paket Modal ─── */}
+      {shouldRenderDetailModal && currentPaket && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in-50"
           onClick={() => setSelectedPaket(null)}
+          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${
+            isDetailModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         >
-          <div
-            className="absolute inset-y-0 right-0 w-full max-w-lg bg-background shadow-2xl flex flex-col animate-in slide-in-from-right duration-300"
+          <Card
             onClick={(e) => e.stopPropagation()}
+            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-xl md:max-w-2xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${
+              isDetailModalMounted
+                ? 'translate-y-0 opacity-100 scale-100'
+                : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
+            }`}
           >
-            {/* Drawer Header */}
-            <div className="flex items-center gap-3 p-4 border-b border-border bg-background sticky top-0 z-10">
-              <button
-                type="button"
-                onClick={() => setSelectedPaket(null)}
-                className="p-2 rounded-xl hover:bg-secondary transition-colors shrink-0"
-              >
-                <ArrowLeft className="size-5" />
-              </button>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-black text-base truncate">{selectedPaket.nama_pasien}</h2>
-                <p className="text-xs text-muted-foreground font-mono">{selectedPaket.paket_id}</p>
+            {/* Modal Header */}
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card">
+              <div className="flex-1 min-w-0 pr-2">
+                <CardTitle className="text-base sm:text-lg md:text-xl font-black flex items-center gap-2.5">
+                  <Package className="size-5 sm:size-6 text-primary shrink-0" />
+                  <span className="truncate">{currentPaket.nama_pasien}</span>
+                </CardTitle>
+                <p className="text-xs text-muted-foreground font-mono mt-0.5">{currentPaket.paket_id}</p>
               </div>
-              <Badge
-                variant={
-                  selectedPaket.status_paket === 'aktif' && Number(selectedPaket.sisa_kunjungan) > 0
-                    ? 'success' : 'secondary'
-                }
-                className="uppercase shrink-0"
-              >
-                {selectedPaket.status_paket === 'aktif' && Number(selectedPaket.sisa_kunjungan) > 0
-                  ? 'Aktif' : 'Selesai'}
-              </Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleOpenEditModal(selectedPaket)}
-                className="shrink-0 font-bold"
-              >
-                <Pencil className="size-3.5" />
-                Edit Paket
-              </Button>
-            </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <Badge
+                  variant={
+                    currentPaket.status_paket === 'aktif' && Number(currentPaket.sisa_kunjungan) > 0
+                      ? 'success' : 'secondary'
+                  }
+                  className="uppercase font-bold text-xs shrink-0"
+                >
+                  {currentPaket.status_paket === 'aktif' && Number(currentPaket.sisa_kunjungan) > 0
+                    ? 'Aktif' : 'Selesai'}
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenEditModal(currentPaket)}
+                  className="shrink-0 font-bold h-9 text-xs sm:text-sm rounded-xl gap-1.5"
+                >
+                  <Pencil className="size-3.5 text-primary shrink-0" />
+                  <span className="hidden sm:inline">Edit Paket</span>
+                  <span className="sm:hidden">Edit</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedPaket(null)}
+                  className="text-muted-foreground font-black text-xl size-9 rounded-xl hover:bg-secondary shrink-0"
+                >
+                  ✕
+                </Button>
+              </div>
+            </CardHeader>
 
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+2rem))]">
 
               {/* Paket Summary Card */}
               <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-3">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Phone className="size-3.5" />
-                  {selectedPaket.no_telp || 'Tanpa no telp'}
+                  {currentPaket.no_telp || 'Tanpa no telp'}
                 </div>
                 <div className="flex justify-between items-center text-sm font-bold">
                   <span className="text-muted-foreground">Sisa Kunjungan:</span>
                   <span className="text-xl font-black text-primary">
-                    {selectedPaket.sisa_kunjungan} / {selectedPaket.total_kunjungan} Sesi
+                    {currentPaket.sisa_kunjungan} / {currentPaket.total_kunjungan} Sesi
                   </span>
                 </div>
                 <Progress
-                  value={Math.round((Number(selectedPaket.terpakai) / Number(selectedPaket.total_kunjungan)) * 100)}
+                  value={Math.round((Number(currentPaket.terpakai) / Number(currentPaket.total_kunjungan)) * 100)}
                   className="h-2.5"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground font-medium">
-                  <span>Terpakai: {selectedPaket.terpakai}x</span>
-                  <span>Beli: {selectedPaket.tanggal_beli ? formatDateLocal(selectedPaket.tanggal_beli) : '-'}</span>
+                  <span>Terpakai: {currentPaket.terpakai}x</span>
+                  <span>Beli: {currentPaket.tanggal_beli ? formatDateLocal(currentPaket.tanggal_beli) : '-'}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-primary/20 text-xs">
                   <div>
                     <span className="text-muted-foreground block">Harga Paket</span>
                     <span className="font-black text-foreground">
-                      Rp {Number(selectedPaket.harga_paket).toLocaleString('id-ID')}
+                      Rp {Number(currentPaket.harga_paket).toLocaleString('id-ID')}
                     </span>
                   </div>
                   <div className="text-right">
                     <span className="text-muted-foreground block">Nilai per Sesi</span>
                     <span className="font-black text-primary">
-                      Rp {calculateValuePerSession(selectedPaket.harga_paket, selectedPaket.total_kunjungan).toLocaleString('id-ID')}
+                      Rp {calculateValuePerSession(currentPaket.harga_paket, currentPaket.total_kunjungan).toLocaleString('id-ID')}
                     </span>
                   </div>
                 </div>
@@ -629,14 +676,14 @@ export function PaketPage({ onNavigate }) {
                     onClick={() => {
                       // Pass patient & paket context so KunjunganFormPage pre-fills the form.
                       // biaya = nilai per sesi (harga_paket / total_kunjungan)
-                      const nilaiPerSesi = selectedPaket.total_kunjungan
-                        ? Math.round(Number(selectedPaket.harga_paket) / Number(selectedPaket.total_kunjungan))
+                      const nilaiPerSesi = currentPaket.total_kunjungan
+                        ? Math.round(Number(currentPaket.harga_paket) / Number(currentPaket.total_kunjungan))
                         : 0;
                       onNavigate('catat', {
-                        nama_pasien: selectedPaket.nama_pasien,
-                        no_telp: selectedPaket.no_telp || '',
-                        pasien_id: selectedPaket.pasien_id,
-                        paket_id: selectedPaket.paket_id,
+                        nama_pasien: currentPaket.nama_pasien,
+                        no_telp: currentPaket.no_telp || '',
+                        pasien_id: currentPaket.pasien_id,
+                        paket_id: currentPaket.paket_id,
                         biaya: nilaiPerSesi,
                       });
                       setSelectedPaket(null);
@@ -667,30 +714,35 @@ export function PaketPage({ onNavigate }) {
                       updatingId={updatingKunjunganId}
                       pendingStatus={pendingKunjunganStatus}
                       onUpdateStatus={handleUpdateKunjunganStatus}
-                      onEdit={(k) =>
-                        setEditingKunjungan({
-                          ...k,
-                          tanggal_kunjungan: k.tanggal_kunjungan
-                            ? formatDateLocal(k.tanggal_kunjungan)
-                            : '',
-                        })
-                      }
+                      onEdit={handleOpenEditKunjungan}
                       onDelete={(id) => setDeleteKunjunganId(id)}
                     />
                   ))}
                 </div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>,
         document.body
       )}
 
       {/* ─── Modal: Buat Paket Baru ─── */}
-      {showModal && createPortal(
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
-          <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 shrink-0">
+      {shouldRenderCreateModal && createPortal(
+        <div
+          onClick={() => setShowModal(false)}
+          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${
+            isCreateModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <Card
+            onClick={(e) => e.stopPropagation()}
+            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${
+              isCreateModalMounted
+                ? 'translate-y-0 opacity-100 scale-100'
+                : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
+            }`}
+          >
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card">
               <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
                 <Package className="size-6 sm:size-7 text-primary" />
                 Buat Paket Kunjungan Baru
@@ -705,7 +757,7 @@ export function PaketPage({ onNavigate }) {
               </Button>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 pb-24 sm:pb-5">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+2rem))]">
               {errorMsg && (
                 <Alert variant="destructive" className="rounded-2xl border-2">
                   <AlertCircle className="h-5 w-5" />
@@ -748,7 +800,7 @@ export function PaketPage({ onNavigate }) {
                     variant="outline"
                     disabled={saving}
                     onClick={() => setShowModal(false)}
-                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 text-xs sm:text-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
+                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 ext-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
                   >
                     <X className="size-4 shrink-0 text-muted-foreground" />
                     <span>Batal</span>
@@ -756,7 +808,7 @@ export function PaketPage({ onNavigate }) {
                   <Button
                     type="submit"
                     disabled={saving}
-                    className="flex-1 h-12 sm:h-13 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
+                    className="flex-1 h-12 sm:h-13 text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
                   >
                     {saving ? (
                       <><Spinner className="size-4 sm:size-5 shrink-0" /><span className="truncate">Menyimpan...</span></>
@@ -773,10 +825,22 @@ export function PaketPage({ onNavigate }) {
       )}
 
       {/* ─── Modal: Edit Paket Kunjungan ─── */}
-      {showEditModal && editPaketData && createPortal(
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
-          <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 shrink-0">
+      {shouldRenderEditPaketModal && editPaketData && createPortal(
+        <div
+          onClick={() => setShowEditModal(false)}
+          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${
+            isEditPaketModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <Card
+            onClick={(e) => e.stopPropagation()}
+            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${
+              isEditPaketModalMounted
+                ? 'translate-y-0 opacity-100 scale-100'
+                : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
+            }`}
+          >
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card">
               <div>
                 <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
                   <Pencil className="size-5 sm:size-6 text-primary" />
@@ -794,7 +858,7 @@ export function PaketPage({ onNavigate }) {
               </Button>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 pb-24 sm:pb-5">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+2rem))]">
               {errorMsg && (
                 <Alert variant="destructive" className="rounded-2xl border-2">
                   <AlertCircle className="h-5 w-5" />
@@ -882,7 +946,7 @@ export function PaketPage({ onNavigate }) {
                     variant="outline"
                     disabled={saving}
                     onClick={() => setShowEditModal(false)}
-                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 text-xs sm:text-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
+                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 ext-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
                   >
                     <X className="size-4 shrink-0 text-muted-foreground" />
                     <span>Batal</span>
@@ -890,7 +954,7 @@ export function PaketPage({ onNavigate }) {
                   <Button
                     type="submit"
                     disabled={saving}
-                    className="flex-1 h-12 sm:h-13 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
+                    className="flex-1 h-12 sm:h-13 text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
                   >
                     {saving ? (
                       <><Spinner className="size-4 sm:size-5 shrink-0" /><span className="truncate">Menyimpan...</span></>
@@ -921,13 +985,25 @@ export function PaketPage({ onNavigate }) {
       />
 
       {/* ─── Modal: Edit Kunjungan ─── */}
-      {editingKunjungan && createPortal(
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
-          <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 shrink-0">
+      {shouldRenderEditKunjunganModal && activeEditingKunjungan && createPortal(
+        <div
+          onClick={() => setEditingKunjungan(null)}
+          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${
+            isEditKunjunganModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <Card
+            onClick={(e) => e.stopPropagation()}
+            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${
+              isEditKunjunganModalMounted
+                ? 'translate-y-0 opacity-100 scale-100'
+                : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
+            }`}
+          >
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card">
               <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
                 <Pencil className="size-5 sm:size-6 text-primary shrink-0" />
-                <span>Edit Kunjungan ({editingKunjungan.kunjungan_id})</span>
+                <span>Edit Kunjungan ({currentEditKunjungan.kunjungan_id})</span>
               </CardTitle>
               <Button
                 variant="ghost"
@@ -939,7 +1015,7 @@ export function PaketPage({ onNavigate }) {
               </Button>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 pb-24 sm:pb-5">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+2rem))]">
               <form onSubmit={handleSaveEditKunjungan} className="space-y-4">
                 <div>
                   <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
@@ -948,9 +1024,9 @@ export function PaketPage({ onNavigate }) {
                   </label>
                   <Input
                     type="text"
-                    value={editingKunjungan.nama_pasien || ''}
+                    value={currentEditKunjungan.nama_pasien || ''}
                     onChange={(e) =>
-                      setEditingKunjungan({ ...editingKunjungan, nama_pasien: e.target.value })
+                      updateEditingKunjungan({ ...currentEditKunjungan, nama_pasien: e.target.value })
                     }
                     className="font-bold h-12 rounded-xl"
                     required
@@ -963,9 +1039,9 @@ export function PaketPage({ onNavigate }) {
                     Tanggal Kunjungan
                   </label>
                   <DatePicker
-                    value={editingKunjungan.tanggal_kunjungan}
+                    value={currentEditKunjungan.tanggal_kunjungan}
                     onChange={(dateVal) =>
-                      setEditingKunjungan({ ...editingKunjungan, tanggal_kunjungan: dateVal })
+                      updateEditingKunjungan({ ...currentEditKunjungan, tanggal_kunjungan: dateVal })
                     }
                     placeholder="Pilih tanggal kunjungan..."
                   />
@@ -978,9 +1054,9 @@ export function PaketPage({ onNavigate }) {
                   </label>
                   <Input
                     type="number"
-                    value={editingKunjungan.biaya}
+                    value={currentEditKunjungan.biaya}
                     onChange={(e) =>
-                      setEditingKunjungan({ ...editingKunjungan, biaya: e.target.value })
+                      updateEditingKunjungan({ ...currentEditKunjungan, biaya: e.target.value })
                     }
                     className="font-bold h-12 rounded-xl"
                     required
@@ -993,7 +1069,7 @@ export function PaketPage({ onNavigate }) {
                     Metode Pembayaran
                   </label>
                   <div className="h-12 px-4 flex items-center font-bold text-sm bg-secondary/80 text-muted-foreground rounded-xl border border-input">
-                    <Lock className="size-4 mr-2 shrink-0 text-muted-foreground" /> {editingKunjungan.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Tunai / Cash'} (Patokan Paket)
+                    <Lock className="size-4 mr-2 shrink-0 text-muted-foreground" /> {currentEditKunjungan.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Tunai / Cash'} (Patokan Paket)
                   </div>
                 </div>
 
@@ -1013,7 +1089,7 @@ export function PaketPage({ onNavigate }) {
                     variant="outline"
                     disabled={saving}
                     onClick={() => setEditingKunjungan(null)}
-                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 text-xs sm:text-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
+                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 ext-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
                   >
                     <X className="size-4 shrink-0 text-muted-foreground" />
                     <span>Batal</span>
@@ -1021,7 +1097,7 @@ export function PaketPage({ onNavigate }) {
                   <Button
                     type="submit"
                     disabled={saving}
-                    className="flex-1 h-12 sm:h-13 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
+                    className="flex-1 h-12 sm:h-13 text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
                   >
                     {saving ? (
                       <><Spinner className="size-4 sm:size-5 shrink-0" /><span className="truncate">Menyimpan...</span></>

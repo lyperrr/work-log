@@ -210,8 +210,8 @@ export function KunjunganFormPage({ onSaved, prefill }) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 pb-24 sm:pb-8 animate-in fade-in-50">
-      <Card className="shadow-xs sm:shadow-lg border-0 sm:border border-border/60 rounded-2xl sm:rounded-3xl overflow-hidden bg-card">
-        <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4">
+      <Card>
+        <CardHeader>
           <div className="flex items-center gap-3">
             <PlusCircle className="size-6 sm:size-7 shrink-0 text-primary" />
             <div>
@@ -432,8 +432,6 @@ export function KunjunganFormPage({ onSaved, prefill }) {
                 )}
               </div>
             </div>
-
-
 
             <Button
               type="submit"

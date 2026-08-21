@@ -5,9 +5,10 @@ import { Input } from '../components/ui/input';
 import { Card, CardHeader, CardContent } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Spinner } from '../components/ui/spinner';
 
 import { LogIn, UserPlus, Lock, Mail, User, AlertCircle, Eye, EyeOff } from 'lucide-react';
-
+import { IosInstallPrompt } from '../components/common/IosInstallPrompt';
 
 export function AuthPage() {
   const { login, register } = useAuth();
@@ -18,14 +19,14 @@ export function AuthPage() {
   const [username, setUsername] = useState('');
 
   const [errorMsg, setErrorMsg] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(null); // 'submit' | 'demo' | null
 
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
-    setLoading(true);
+    setLoadingAction('submit');
 
     try {
       const cleanEmail = (email || '').trim().toLowerCase();
@@ -50,7 +51,7 @@ export function AuthPage() {
     } catch (err) {
       setErrorMsg(err.message || 'Terjadi kesalahan');
     } finally {
-      setLoading(false);
+      setLoadingAction(null);
     }
   };
 
@@ -73,7 +74,8 @@ export function AuthPage() {
           </p>
         </div>
 
-
+        {/* iOS PWA Installation Banner */}
+        <IosInstallPrompt />
 
         {/* Auth Card using shadcn Card */}
         <Card className="border-2 border-border rounded-3xl shadow-xl">
@@ -86,7 +88,7 @@ export function AuthPage() {
                 setErrorMsg('');
               }}
             >
-              <TabsList className="w-full">
+              <TabsList className="w-full h-12!">
                 <TabsTrigger value="login">
                   <LogIn />
                   Masuk
@@ -139,6 +141,7 @@ export function AuthPage() {
                   autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck="false"
+                  className="h-13"
                   required
                 />
               </div>
@@ -157,7 +160,7 @@ export function AuthPage() {
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck="false"
-                    className="pr-10"
+                    className="pr-10 h-13"
                     required
                   />
                   <Button
@@ -176,18 +179,23 @@ export function AuthPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="w-full mt-2"
-                disabled={loading}
+                className="w-full mt-2 font-bold h-11 sm:h-10"
+                disabled={Boolean(loadingAction)}
               >
-                {activeTab === 'login' ? (
+                {loadingAction === 'submit' ? (
                   <>
-                    <LogIn className='size-4' />
-                    {loading ? 'Memproses...' : 'Masuk ke Aplikasi'}
+                    <Spinner className="size-4 shrink-0" />
+                    <span>{activeTab === 'login' ? 'Memproses...' : 'Mendaftarkan...'}</span>
+                  </>
+                ) : activeTab === 'login' ? (
+                  <>
+                    <LogIn className="size-4 shrink-0" />
+                    <span>Masuk ke Aplikasi</span>
                   </>
                 ) : (
                   <>
-                    <UserPlus className='size-4' />
-                    {loading ? 'Mendaftarkan...' : 'Buat Akun Baru'}
+                    <UserPlus className="size-4 shrink-0" />
+                    <span>Buat Akun Baru</span>
                   </>
                 )}
               </Button>
@@ -204,22 +212,31 @@ export function AuthPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full"
-                    disabled={loading}
+                    className="w-full font-bold h-11 sm:h-10"
+                    disabled={Boolean(loadingAction)}
                     onClick={async () => {
                       setErrorMsg('');
-                      setLoading(true);
+                      setLoadingAction('demo');
                       try {
                         await login('budi@klinik.com', 'password123');
                       } catch (err) {
                         setErrorMsg(err.message);
                       } finally {
-                        setLoading(false);
+                        setLoadingAction(null);
                       }
                     }}
                   >
-                    <LogIn className='size-4' />
-                    {loading ? 'Memproses...' : 'Masuk sebagai Demo'}
+                    {loadingAction === 'demo' ? (
+                      <>
+                        <Spinner className="size-4 shrink-0" />
+                        <span>Memproses...</span>
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="size-4 shrink-0" />
+                        <span>Masuk sebagai Demo</span>
+                      </>
+                    )}
                   </Button>
                 </>
               )}

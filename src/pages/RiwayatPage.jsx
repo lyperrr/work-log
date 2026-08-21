@@ -8,6 +8,7 @@ import { KunjunganCard } from '../components/common/KunjunganCard';
 import { EmptyState } from '../components/common/EmptyState';
 import { ImportModal } from '../components/common/ImportModal';
 import { ConfirmModal } from '../components/common/ConfirmModal';
+import { useAnimatePresence } from '../hooks/useAnimatePresence';
 import { getTodayDateString, formatDateLocal } from '../lib/utils';
 import { DatePicker } from '../components/common/DatePicker';
 import { Button } from '../components/ui/button';
@@ -74,6 +75,28 @@ export function RiwayatPage() {
   const [endDate, setEndDate] = useState('');
 
   const [editingItem, setEditingItem] = useState(null);
+  const [activeEditingItem, setActiveEditingItem] = useState(null);
+  const { shouldRender: showEditModal, isMounted: isEditModalMounted } = useAnimatePresence(Boolean(editingItem), 250);
+
+  const handleOpenEdit = (k) => {
+    const formatted = {
+      ...k,
+      tanggal_kunjungan: k.tanggal_kunjungan
+        ? formatDateLocal(k.tanggal_kunjungan)
+        : '',
+    };
+    setEditingItem(formatted);
+    setActiveEditingItem(formatted);
+  };
+
+  const updateEditingItem = (newVal) => {
+    setEditingItem(newVal);
+    if (newVal) {
+      setActiveEditingItem(newVal);
+    }
+  };
+
+  const currentEdit = editingItem || activeEditingItem;
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
 
@@ -432,14 +455,7 @@ export function RiwayatPage() {
               updatingId={updatingId}
               pendingStatus={pendingStatus}
               onUpdateStatus={handleUpdateStatus}
-              onEdit={(k) =>
-                setEditingItem({
-                  ...k,
-                  tanggal_kunjungan: k.tanggal_kunjungan
-                    ? formatDateLocal(k.tanggal_kunjungan)
-                    : '',
-                })
-              }
+              onEdit={handleOpenEdit}
               onDelete={(id) => setDeleteTargetId(id)}
             />
           ))
@@ -461,13 +477,25 @@ export function RiwayatPage() {
       />
 
       {/* Edit Modal */}
-      {editingItem && createPortal(
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
-          <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 shrink-0">
+      {showEditModal && activeEditingItem && createPortal(
+        <div
+          onClick={() => setEditingItem(null)}
+          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${
+            isEditModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <Card
+            onClick={(e) => e.stopPropagation()}
+            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${
+              isEditModalMounted
+                ? 'translate-y-0 opacity-100 scale-100'
+                : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
+            }`}
+          >
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card">
               <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
                 <Pencil className="size-5 sm:size-6 text-primary shrink-0" />
-                <span>Edit Kunjungan ({editingItem.kunjungan_id})</span>
+                <span>Edit Kunjungan ({activeEditingItem.kunjungan_id})</span>
               </CardTitle>
               <Button
                 variant="ghost"
@@ -479,7 +507,7 @@ export function RiwayatPage() {
               </Button>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 pb-24 sm:pb-5">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+2rem))]">
               <form onSubmit={handleSaveEdit} className="space-y-4">
                 <div>
                   <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
@@ -488,9 +516,9 @@ export function RiwayatPage() {
                   </label>
                   <Input
                     type="text"
-                    value={editingItem.nama_pasien || ''}
+                    value={currentEdit.nama_pasien || ''}
                     onChange={(e) =>
-                      setEditingItem({ ...editingItem, nama_pasien: e.target.value })
+                      updateEditingItem({ ...currentEdit, nama_pasien: e.target.value })
                     }
                     className="font-bold h-12 rounded-xl"
                     required
@@ -503,9 +531,9 @@ export function RiwayatPage() {
                     Tanggal Kunjungan
                   </label>
                   <DatePicker
-                    value={editingItem.tanggal_kunjungan}
+                    value={currentEdit.tanggal_kunjungan}
                     onChange={(dateVal) =>
-                      setEditingItem({ ...editingItem, tanggal_kunjungan: dateVal })
+                      updateEditingItem({ ...currentEdit, tanggal_kunjungan: dateVal })
                     }
                     placeholder="Pilih tanggal kunjungan..."
                   />
@@ -518,9 +546,9 @@ export function RiwayatPage() {
                   </label>
                   <Input
                     type="number"
-                    value={editingItem.biaya}
+                    value={currentEdit.biaya}
                     onChange={(e) =>
-                      setEditingItem({ ...editingItem, biaya: e.target.value })
+                      updateEditingItem({ ...currentEdit, biaya: e.target.value })
                     }
                     className="font-bold h-12 rounded-xl"
                     required
@@ -532,15 +560,15 @@ export function RiwayatPage() {
                     <CreditCard className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Metode Pembayaran
                   </label>
-                  {editingItem.paket_id ? (
+                  {currentEdit.paket_id ? (
                     <div className="h-12 px-4 flex items-center font-bold text-sm bg-secondary/80 text-muted-foreground rounded-xl border border-input">
-                      <Lock className="size-4 mr-2 shrink-0 text-muted-foreground" /> {editingItem.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Tunai / Cash'} (Patokan Paket)
+                      <Lock className="size-4 mr-2 shrink-0 text-muted-foreground" /> {currentEdit.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Tunai / Cash'} (Patokan Paket)
                     </div>
                   ) : (
                     <Select
-                      value={editingItem.metode_pembayaran || 'cash'}
+                      value={currentEdit.metode_pembayaran || 'cash'}
                       onValueChange={(val) =>
-                        setEditingItem({ ...editingItem, metode_pembayaran: val })
+                        updateEditingItem({ ...currentEdit, metode_pembayaran: val })
                       }
                     >
                       <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
@@ -563,15 +591,15 @@ export function RiwayatPage() {
                     <CheckCircle2 className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Status Pembayaran
                   </label>
-                  {editingItem.paket_id ? (
+                  {currentEdit.paket_id ? (
                     <div className="h-12 px-4 flex items-center font-bold text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/30">
                       <CheckCircle2 className="size-4.5 mr-2 shrink-0" /> Lunas (Terbayar Paket)
                     </div>
                   ) : (
                     <Select
-                      value={editingItem.status || 'menunggu'}
+                      value={currentEdit.status || 'menunggu'}
                       onValueChange={(val) =>
-                        setEditingItem({ ...editingItem, status: val })
+                        updateEditingItem({ ...currentEdit, status: val })
                       }
                     >
                       <SelectTrigger className="w-full h-12 text-base font-bold border border-input rounded-xl bg-background">
@@ -598,7 +626,7 @@ export function RiwayatPage() {
                     variant="outline"
                     disabled={saving}
                     onClick={() => setEditingItem(null)}
-                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 text-xs sm:text-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
+                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 ext-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
                   >
                     <X className="size-4 shrink-0 text-muted-foreground" />
                     <span>Batal</span>
@@ -606,7 +634,7 @@ export function RiwayatPage() {
                   <Button
                     type="submit"
                     disabled={saving}
-                    className="flex-1 h-12 sm:h-13 text-xs sm:text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
+                    className="flex-1 h-12 sm:h-13 text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
                   >
                     {saving ? (
                       <>
