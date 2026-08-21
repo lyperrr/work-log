@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Spinner } from '../ui/spinner';
+import { useAnimatePresence } from '../../hooks/useAnimatePresence';
 import {
   Upload,
   FileSpreadsheet,
@@ -36,6 +37,7 @@ export function ImportModal({
   api,
   showToast,
 }) {
+  const { shouldRender, isMounted } = useAnimatePresence(isOpen, 250);
   const [importType, setImportType] = useState(initialType);
   const [activeTab, setActiveTab] = useState('paste'); // 'paste' | 'file'
   const [rawText, setRawText] = useState('');
@@ -241,11 +243,25 @@ export function ImportModal({
     }
   };
 
+  if (!shouldRender) return null;
+
   return createPortal(
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in-50">
-      <Card className="p-0 border-0 sm:border-2 border-primary/40 rounded-none sm:rounded-3xl max-w-none sm:max-w-xl md:max-w-2xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card">
+    <div
+      onClick={onClose}
+      className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${
+        isMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      }`}
+    >
+      <Card
+        onClick={(e) => e.stopPropagation()}
+        className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-xl md:max-w-2xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${
+          isMounted
+            ? 'translate-y-0 opacity-100 scale-100'
+            : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
+        }`}
+      >
         {/* Modal Header */}
-        <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 border-b border-border bg-card shrink-0">
+        <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] border-b border-border bg-card shrink-0">
           <CardTitle className="text-base sm:text-lg md:text-xl font-black flex items-center gap-2.5">
             <FileSpreadsheet className="size-5 sm:size-6 text-primary shrink-0" />
             Import Data Spreadsheet
@@ -255,7 +271,7 @@ export function ImportModal({
           </Button>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 pb-24 sm:pb-6">
+        <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+2rem))]">
           {/* Import Type Selector (Paket vs Kunjungan) */}
           <div className="flex bg-secondary p-1 rounded-2xl border border-border">
             <button
