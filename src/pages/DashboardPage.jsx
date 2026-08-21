@@ -11,6 +11,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Spinner } from '../components/ui/spinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { IosInstallPrompt } from '../components/common/IosInstallPrompt';
+import { ExportPdfModal } from '../components/common/ExportPdfModal';
 
 import {
   TrendingUp,
@@ -24,6 +25,7 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
+  Printer,
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
@@ -34,6 +36,7 @@ export function DashboardPage({ onNavigate }) {
   const [kunjunganList, setKunjunganList] = useState([]);
   const [paketList, setPaketList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showExportPdfModal, setShowExportPdfModal] = useState(false);
 
   useEffect(() => {
     if (!currentUser?.user_id) return;
@@ -222,6 +225,16 @@ export function DashboardPage({ onNavigate }) {
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Button
             type="button"
+            variant="default"
+            size="sm"
+            onClick={() => setShowExportPdfModal(true)}
+            className="font-bold bg-primary text-primary-foreground shadow-sm gap-1.5"
+          >
+            <Printer className="size-3.5" />
+            <span>Cetak PDF</span>
+          </Button>
+          <Button
+            type="button"
             variant="outline"
             size="sm"
             onClick={toggleHideIncome}
@@ -232,6 +245,13 @@ export function DashboardPage({ onNavigate }) {
           </Button>
         </div>
       </div>
+
+      {/* Export PDF Modal */}
+      <ExportPdfModal
+        isOpen={showExportPdfModal}
+        onClose={() => setShowExportPdfModal(false)}
+        kunjunganList={kunjunganList}
+      />
 
       {/* iOS PWA Install Guide Banner */}
       <IosInstallPrompt />

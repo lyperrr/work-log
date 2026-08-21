@@ -7,6 +7,7 @@ import { useSettings } from '../context/SettingsContext';
 import { KunjunganCard } from '../components/common/KunjunganCard';
 import { EmptyState } from '../components/common/EmptyState';
 import { ImportModal } from '../components/common/ImportModal';
+import { ExportPdfModal } from '../components/common/ExportPdfModal';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 import { useAnimatePresence } from '../hooks/useAnimatePresence';
 import { getTodayDateString, formatDateLocal } from '../lib/utils';
@@ -31,6 +32,7 @@ import {
   Calendar,
   Trash2,
   FileSpreadsheet,
+  Printer,
   Lock,
   CheckCircle2,
   RotateCcw,
@@ -99,6 +101,7 @@ export function RiwayatPage() {
   const currentEdit = editingItem || activeEditingItem;
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showExportPdfModal, setShowExportPdfModal] = useState(false);
 
   const loadData = async () => {
     setLoadingData(true);
@@ -253,17 +256,35 @@ export function RiwayatPage() {
               </p>
             </div>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowImportModal(true)}
-            className="w-full sm:w-auto font-bold"
-          >
-            <FileSpreadsheet className="size-4.5" />
-            Import Spreadsheet
-          </Button>
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <Button
+              type="button"
+              variant="default"
+              onClick={() => setShowExportPdfModal(true)}
+              className="w-full sm:w-auto font-bold bg-primary text-primary-foreground shadow-sm gap-1.5"
+            >
+              <Printer className="size-4.5" />
+              Cetak Laporan PDF
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowImportModal(true)}
+              className="w-full sm:w-auto font-bold gap-1.5"
+            >
+              <FileSpreadsheet className="size-4.5" />
+              Import Spreadsheet
+            </Button>
+          </div>
         </CardHeader>
       </Card>
+
+      {/* Export PDF Modal */}
+      <ExportPdfModal
+        isOpen={showExportPdfModal}
+        onClose={() => setShowExportPdfModal(false)}
+        kunjunganList={kunjunganList}
+      />
 
       {/* Import Modal */}
       <ImportModal

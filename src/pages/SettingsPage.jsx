@@ -6,6 +6,7 @@ import { FontSizeControl } from '../components/common/FontSizeControl';
 import { useToast } from '../context/ToastContext';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 
@@ -19,14 +20,23 @@ import {
   LogOut,
   Sparkles,
   Calendar,
+  FileText,
 } from 'lucide-react';
 
 export function SettingsPage() {
   const { currentUser, logout } = useAuth();
   const { showToast } = useToast();
   const { hideIncome, toggleHideIncome } = usePrivacy();
-  const { dataScope, setDataScope } = useSettings();
+  const { dataScope, setDataScope, kopSurat, setKopSurat } = useSettings();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const [tempKop, setTempKop] = useState(kopSurat);
+
+  const handleSaveKop = (e) => {
+    e.preventDefault();
+    setKopSurat(tempKop);
+    showToast('Pengaturan KOP Surat berhasil disimpan!', 'success');
+  };
 
   const handleConfirmLogout = () => {
     logout();
@@ -50,7 +60,7 @@ export function SettingsPage() {
                 Pengaturan Aplikasi
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Profil Pengguna, Aksesibilitas, Privasi, & Backend Data
+                Profil Pengguna, Aksesibilitas, KOP Surat PDF, &amp; Backend Data
               </p>
             </div>
           </div>
@@ -62,7 +72,7 @@ export function SettingsPage() {
         <CardHeader className="bg-primary p-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="size-14 rounded-2xl bg-primary-foreground text-foregorund font-black text-xl flex items-center justify-center shadow-md uppercase shrink-0">
+              <div className="size-14 rounded-2xl bg-primary-foreground text-foreground font-black text-xl flex items-center justify-center shadow-md uppercase shrink-0">
                 {(currentUser?.username || currentUser?.email || 'U').charAt(0).toUpperCase()}
               </div>
               <div>
@@ -100,53 +110,135 @@ export function SettingsPage() {
                 {currentUser?.username || '-'}
               </span>
             </div>
-
             <div className="bg-secondary/50 p-3 rounded-2xl border border-border/60">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Tipe Akun</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Role Akses</span>
               <span className="font-black text-foreground flex items-center gap-2">
-                <Sparkles className="size-4 text-amber-500" />
-                Freelance & Kunjungan
+                <ShieldCheck className="size-4 text-emerald-600" />
+                {currentUser?.role || 'Admin'}
               </span>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* 1. Accessibility Control */}
-      <FontSizeControl />
-
-      {/* 2. Privacy Mode Control */}
+      {/* 1. Pengaturan KOP Surat Laporan PDF */}
       <Card>
         <CardHeader className="flex-row items-center gap-2">
-          {hideIncome ? <EyeOff className="size-5 shrink-0 text-amber-500" /> : <Eye className="size-5 shrink-0 text-primary" />}
-          <CardTitle>Mode Privasi (Sembunyikan Nominal Uang)</CardTitle>
+          <FileText className="size-5 shrink-0 text-primary" />
+          <CardTitle>Pengaturan KOP Surat Laporan PDF</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          <form onSubmit={handleSaveKop} className="space-y-4">
+            <p className="text-xs md:text-sm text-muted-foreground font-medium">
+              Informasi KOP Surat ini akan otomatis tercetak di bagian atas Laporan Keuangan PDF &amp; Rekap Kunjungan.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-bold text-foreground mb-1 block">Nama Klinik / Praktik</label>
+                <Input
+                  value={tempKop.namaKlinik}
+                  onChange={(e) => setTempKop({ ...tempKop, namaKlinik: e.target.value })}
+                  placeholder="Contoh: KLINIK FISIOTERAPI SEHAT"
+                  className="font-bold text-xs h-11"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-foreground mb-1 block">Sub-judul / Spesialisasi</label>
+                <Input
+                  value={tempKop.subKlinik}
+                  onChange={(e) => setTempKop({ ...tempKop, subKlinik: e.target.value })}
+                  placeholder="Contoh: Layanan Kesehatan & Fisioterapi"
+                  className="text-xs h-11"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-foreground mb-1 block">Alamat Lengkap</label>
+              <Input
+                value={tempKop.alamatKlinik}
+                onChange={(e) => setTempKop({ ...tempKop, alamatKlinik: e.target.value })}
+                placeholder="Alamat Lengkap Klinik"
+                className="text-xs h-11"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-bold text-foreground mb-1 block">No. Telp / WA / Email</label>
+                <Input
+                  value={tempKop.kontakKlinik}
+                  onChange={(e) => setTempKop({ ...tempKop, kontakKlinik: e.target.value })}
+                  placeholder="Telp/WA: 0812..."
+                  className="text-xs h-11"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-foreground mb-1 block">Kota Penerbit</label>
+                <Input
+                  value={tempKop.kotaPenerbit}
+                  onChange={(e) => setTempKop({ ...tempKop, kotaPenerbit: e.target.value })}
+                  placeholder="Contoh: Jakarta"
+                  className="text-xs h-11"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-foreground mb-1 block">Nama Penanggung Jawab</label>
+                <Input
+                  value={tempKop.penanggungJawab}
+                  onChange={(e) => setTempKop({ ...tempKop, penanggungJawab: e.target.value })}
+                  placeholder="Nama Penanggung Jawab"
+                  className="font-bold text-xs h-11"
+                />
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full sm:w-auto font-bold">
+              Simpan Pengaturan KOP Surat
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* 2. Ukuran Teks Aksesibilitas (Elderly Accessibility Card) */}
+      <Card>
+        <CardHeader className="flex-row items-center gap-2">
+          <Sparkles className="size-5 shrink-0 text-primary" />
+          <CardTitle>Ukuran Teks Aplikasi (Aksesibilitas)</CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-3">
+          <p className="text-xs md:text-sm text-muted-foreground font-medium">
+            Sesuaikan ukuran tulisan agar lebih mudah dibaca untuk usia lanjut atau pengguna yang membutuhkan tampilan teks lebih besar.
+          </p>
+
+          <FontSizeControl />
+        </CardContent>
+      </Card>
+
+      {/* 3. Mode Privasi (Privacy Mode Card) */}
+      <Card>
+        <CardHeader className="flex-row items-center gap-2">
+          <ShieldCheck className="size-5 shrink-0 text-primary" />
+          <CardTitle>Mode Privasi Pemasukan</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
           <p className="text-xs md:text-sm text-muted-foreground font-medium">
-            Sembunyikan atau tampilkan semua nominal uang & pemasukan di seluruh halaman aplikasi (Berguna saat membuka aplikasi di tempat umum).
+            Sembunyikan nominal rupiah di dashboard dan kartu kunjungan saat layar dilihat orang lain di tempat umum.
           </p>
 
           <Button
             type="button"
             variant="outline"
-            onClick={() => {
-              toggleHideIncome();
-              showToast(
-                !hideIncome
-                  ? 'Mode Privasi Aktif: Nominal pemasukan disembunyikan'
-                  : 'Nominal pemasukan ditampilkan kembali',
-                'info'
-              );
-            }}
-            className="w-full justify-between font-bold"
+            onClick={toggleHideIncome}
+            className="w-full justify-between font-bold h-12"
           >
-            <div className="flex items-center gap-3">
-              {hideIncome ? (
-                <EyeOff className="size-4 text-amber-500" />
-              ) : (
-                <Eye className="size-4 text-primary" />
-              )}
+            <div className="flex items-center gap-2">
+              {hideIncome ? <EyeOff className="size-5 text-amber-500" /> : <Eye className="size-5 text-primary" />}
               <span>{hideIncome ? 'AKTIF' : 'NONAKTIF'}</span>
             </div>
 
@@ -156,7 +248,8 @@ export function SettingsPage() {
           </Button>
         </CardContent>
       </Card>
-      {/* 2. Rentang Tampilan Data (Data Scope Filter) */}
+
+      {/* 4. Rentang Tampilan Data (Data Scope Filter) */}
       <Card>
         <CardHeader className="flex-row items-center gap-2">
           <Calendar className="size-5 shrink-0 text-primary" />
@@ -216,10 +309,6 @@ export function SettingsPage() {
         </CardContent>
       </Card>
 
-
-
-
-
       {/* Logout Confirmation Modal */}
       <ConfirmModal
         isOpen={showLogoutModal}
@@ -244,4 +333,3 @@ export function SettingsPage() {
     </div>
   );
 }
-

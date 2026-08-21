@@ -242,3 +242,36 @@ html, body {
     user-select: text;
   }
 }
+
+/* Print PDF Styles */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: system-ui, -apple-system, sans-serif !important;
+  }
+
+  /* Hide everything except the printable container */
+  body > div:not(#printable-report-root) {
+    display: none !important;
+  }
+
+  #printable-report-area {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+}
