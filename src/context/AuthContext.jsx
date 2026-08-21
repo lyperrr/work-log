@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { authService, apiService } from '../services';
 
 const AuthContext = createContext(null);
@@ -12,6 +12,31 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
+
+  // Tracks whether the server-side session check has completed.
+  // Prevents rendering protected content before we know the session is valid.
+  const [sessionChecked, setSessionChecked] = useState(false);
+
+  // On mount: if there's a stored session, verify the user still exists in the DB.
+  // If the account was deleted from the spreadsheet, auto-logout immediately.
+  useEffect(() => {
+    if (!currentUser?.user_id) {
+      setSessionChecked(true);
+      return;
+    }
+
+    authService.validateSession(currentUser.user_id)
+      .then(() => {
+        setSessionChecked(true);
+      })
+      .catch(() => {
+        // Account deleted or unreachable — clear stale session
+        setCurrentUser(null);
+        localStorage.removeItem('app_user');
+        setSessionChecked(true);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount only
 
   const login = async (email, password) => {
     const user = await authService.loginUser(email, password);
@@ -59,6 +84,29 @@ export function AuthProvider({ children }) {
     [currentUser]
   );
 
+  // Show a minimal loader while the session check is in flight.
+  // This prevents a flash of the dashboard for deleted accounts.
+  if (!sessionChecked) {
+    return (
+      <div
+        style={{
+          position: 'fixed', inset: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'var(--background, #fff)',
+        }}
+        aria-label="Memeriksa sesi..."
+      >
+        <svg
+          style={{ width: 40, height: 40, animation: 'spin 1s linear infinite' }}
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+        >
+          <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round"/>
+        </svg>
+      </div>
+    );
+  }
+
   return (
     <AuthContext.Provider value={{ currentUser, login, register, logout, api }}>
       {children}
@@ -73,3 +121,4 @@ export function useAuth() {
   }
   return context;
 }
+
