@@ -65,19 +65,39 @@ export const apiGet = async (action, params = {}) => {
 // so the next read always reflects the latest server state.
 export const apiPost = async (action, user_id, data = {}, extra = {}) => {
   const url = getGasUrl();
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/plain;charset=utf-8',
-    },
-    redirect: 'follow',
-    body: JSON.stringify({ action, user_id, data, ...extra }),
-  });
-  const result = await res.json();
+  const payload = { action, user_id, data, ...extra };
 
-  // Bust cache after any successful write so next GET is fresh
-  if (result?.success) _cache.clear();
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      redirect: 'follow',
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
 
-  return result;
+    // Bust cache after any successful write so next GET is fresh
+    if (result?.success) _cache.clear();
+    return result;
+  } catch (postErr) {
+    console.warn('POST request failed on mobile browser, executing GET fallback:', postErr);
+    // GET Fallback for mobile Safari / HTTP IP origins where cross-origin POST redirects are blocked
+    const query = new URLSearchParams({
+      action,
+      user_id: user_id || '',
+      payload: JSON.stringify(payload),
+      email: data?.email || '',
+      password: data?.password || '',
+      username: data?.username || '',
+    }).toString();
+
+    const fallbackRes = await fetch(`${url}?${query}`, { redirect: 'follow' });
+    const fallbackResult = await fallbackRes.json();
+
+    if (fallbackResult?.success) _cache.clear();
+    return fallbackResult;
+  }
 };
 
