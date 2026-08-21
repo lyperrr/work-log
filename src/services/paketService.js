@@ -30,4 +30,19 @@ export const paketService = {
     if (!res.success) throw new Error(res.message || 'Gagal membuat paket');
     return res.data; // { paket_id, ... }
   },
+
+  /**
+   * Catat penggunaan satu sesi kunjungan pada paket secara manual.
+   * Menambah terpakai +1 dan mengurangi sisa_kunjungan -1 di spreadsheet.
+   *
+   * @param {string} userId
+   * @param {string} paketId - ID paket yang akan diupdate
+   * @returns {{ terpakai, sisa_kunjungan, total_kunjungan, status_paket }}
+   */
+  usePaketKunjungan: async (userId, paketId) => {
+    const res = await apiPost('usePaketKunjungan', userId, { paket_id: paketId });
+    if (!res.success) throw new Error(res.message || 'Gagal mencatat kunjungan paket');
+    return res.data;
+  },
 };
+
