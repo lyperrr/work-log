@@ -129,7 +129,7 @@
     @apply font-sans antialiased;
   }
   body {
-    @apply bg-background text-foreground min-h-screen pb-24 md:pb-6;
+    @apply bg-background text-foreground min-h-screen;
   }
 }
 
