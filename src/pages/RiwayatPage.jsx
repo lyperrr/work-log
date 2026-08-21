@@ -3,8 +3,10 @@ import { createPortal } from 'react-dom';
 import { usePrivacy } from '../context/PrivacyContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useSettings } from '../context/SettingsContext';
 import { KunjunganCard } from '../components/common/KunjunganCard';
 import { EmptyState } from '../components/common/EmptyState';
+import { ImportModal } from '../components/common/ImportModal';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 import { DatePicker } from '../components/common/DatePicker';
 import { Button } from '../components/ui/button';
@@ -12,7 +14,6 @@ import { Input } from '../components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Skeleton } from '../components/ui/skeleton';
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '../components/ui/empty';
 import { Spinner } from '../components/ui/spinner';
 import {
   Select,
@@ -27,15 +28,13 @@ import {
   Search,
   Calendar,
   Trash2,
-  Edit,
-  Phone,
-  CreditCard,
-  Package,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export function RiwayatPage() {
   const { showToast } = useToast();
   const { api } = useAuth();
+  const { dataScope } = useSettings();
   usePrivacy();
   const [kunjunganList, setKunjunganList] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -63,6 +62,7 @@ export function RiwayatPage() {
 
   const [editingItem, setEditingItem] = useState(null);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const loadData = async () => {
     setLoadingData(true);
@@ -80,8 +80,18 @@ export function RiwayatPage() {
     loadData();
   }, []);
 
+  const todayStr = new Date().toISOString().split('T')[0];
+  const currentYearMonth = todayStr.substring(0, 7);
+
   const filteredList = (Array.isArray(kunjunganList) ? kunjunganList : []).filter((k) => {
     if (!k || typeof k !== 'object') return false;
+
+    const kDate = k.tanggal_kunjungan ? String(k.tanggal_kunjungan).split('T')[0] : '';
+
+    // Enforce dataScope from Settings (Bulan Saat Ini Saja vs Semua Bulan)
+    if (dataScope === 'current_month' && !startDate && !endDate) {
+      if (kDate && !kDate.startsWith(currentYearMonth)) return false;
+    }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -101,7 +111,6 @@ export function RiwayatPage() {
     if (jenisFilter === 'reguler' && k.paket_id) return false;
     if (jenisFilter === 'paket' && !k.paket_id) return false;
 
-    const kDate = k.tanggal_kunjungan ? String(k.tanggal_kunjungan).split('T')[0] : '';
     if (startDate && kDate < startDate) return false;
     if (endDate && kDate > endDate) return false;
 
@@ -184,20 +193,39 @@ export function RiwayatPage() {
 
       {/* Header Card using shadcn Card */}
       <Card>
-        <CardHeader className="border-b-0 pb-0">
+        <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-0 pb-0">
           <div className="flex items-center gap-3">
             <History className="size-6 shrink-0 text-primary" />
             <div>
               <CardTitle className="">
-                Riwayat & Filter Kunjungan
+                Riwayat &amp; Filter Kunjungan
               </CardTitle>
               <p className="text-sm text-muted-foreground">
                 Cari dan filter data transaksi kunjungan pasien
               </p>
             </div>
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowImportModal(true)}
+            className="w-full sm:w-auto font-bold"
+          >
+            <FileSpreadsheet className="size-4.5" />
+            Import Spreadsheet
+          </Button>
         </CardHeader>
       </Card>
+
+      {/* Import Modal */}
+      <ImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        initialType="kunjungan"
+        onImportSuccess={loadData}
+        api={api}
+        showToast={showToast}
+      />
 
       {/* Filter Control Box using shadcn Card, Input, Select, and Button */}
       <Card>
@@ -205,6 +233,12 @@ export function RiwayatPage() {
           <div className="flex items-center gap-2 font-bold text-base text-foreground">
             <Filter className="size-5 text-primary shrink-0" />
             <span>Filter Pencarian Data</span>
+            {dataScope === 'current_month' && !startDate && !endDate && (
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-bold text-xs ml-2">
+                <Calendar className="size-4" />
+                Bulan Ini ({currentYearMonth})
+              </Badge>
+            )}
           </div>
           <Button
             variant="link"

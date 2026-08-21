@@ -9,6 +9,7 @@ import { PackageCalculator, calculateValuePerSession } from '../components/commo
 import { DatePicker } from '../components/common/DatePicker';
 import { KunjunganCard } from '../components/common/KunjunganCard';
 import { EmptyState } from '../components/common/EmptyState';
+import { ImportModal } from '../components/common/ImportModal';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -29,11 +30,12 @@ import {
   ArrowLeft,
   CreditCard,
   Clock,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export function PaketPage({ onNavigate }) {
   const { showToast } = useToast();
-  const { api } = useAuth();
+  const { currentUser, api } = useAuth();
   usePrivacy();
 
   const [paketList, setPaketList] = useState([]);
@@ -41,6 +43,7 @@ export function PaketPage({ onNavigate }) {
   const [loadingData, setLoadingData] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // Detail drawer
   const [selectedPaket, setSelectedPaket] = useState(null);
@@ -172,13 +175,13 @@ export function PaketPage({ onNavigate }) {
   // Kunjungan yang terkait dengan paket yang dipilih (terbaru di atas)
   const paketKunjungan = selectedPaket
     ? kunjunganList
-        .filter((k) => k.paket_id === selectedPaket.paket_id)
-        .sort((a, b) => {
-          const dateA = a.tanggal_kunjungan ? String(a.tanggal_kunjungan) : '';
-          const dateB = b.tanggal_kunjungan ? String(b.tanggal_kunjungan) : '';
-          if (dateA !== dateB) return dateB.localeCompare(dateA);
-          return String(b.kunjungan_id || '').localeCompare(String(a.kunjungan_id || ''));
-        })
+      .filter((k) => k.paket_id === selectedPaket.paket_id)
+      .sort((a, b) => {
+        const dateA = a.tanggal_kunjungan ? String(a.tanggal_kunjungan) : '';
+        const dateB = b.tanggal_kunjungan ? String(b.tanggal_kunjungan) : '';
+        if (dateA !== dateB) return dateB.localeCompare(dateA);
+        return String(b.kunjungan_id || '').localeCompare(String(a.kunjungan_id || ''));
+      })
     : [];
 
   // ─── Render ───────────────────────────────────────────────────
@@ -197,16 +200,37 @@ export function PaketPage({ onNavigate }) {
               </p>
             </div>
           </div>
-          <Button
-            type="button"
-            onClick={() => { setShowModal(true); setErrorMsg(''); setSuccessMsg(''); }}
-            className="w-full md:w-auto"
-          >
-            <PlusCircle className="size-4" />
-            Buat Paket Baru
-          </Button>
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowImportModal(true)}
+              className="flex-1 md:flex-none font-bold"
+            >
+              <FileSpreadsheet className="size-4" />
+              Import Spreadsheet
+            </Button>
+            <Button
+              type="button"
+              onClick={() => { setShowModal(true); setErrorMsg(''); setSuccessMsg(''); }}
+              className="flex-1 md:flex-none font-black"
+            >
+              <PlusCircle className="size-4" />
+              Buat Paket Baru
+            </Button>
+          </div>
         </CardHeader>
       </Card>
+
+      {/* Import Modal */}
+      <ImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        initialType="paket"
+        onImportSuccess={loadData}
+        api={api}
+        showToast={showToast}
+      />
 
       {/* Package Calculator */}
       <PackageCalculator
@@ -271,9 +295,8 @@ export function PaketPage({ onNavigate }) {
               <Card
                 key={pkt.paket_id}
                 onClick={() => setSelectedPaket(pkt)}
-                className={`cursor-pointer hover:border-primary/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.99] ${
-                  isAktif ? 'border-primary/40' : 'opacity-75'
-                }`}
+                className={`cursor-pointer hover:border-primary/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.99] ${isAktif ? 'border-primary/40' : 'opacity-75'
+                  }`}
               >
                 <CardContent className="space-y-4">
                   {/* Header */}
@@ -450,15 +473,15 @@ export function PaketPage({ onNavigate }) {
                         : 0;
                       onNavigate('catat', {
                         nama_pasien: selectedPaket.nama_pasien,
-                        no_telp:     selectedPaket.no_telp || '',
-                        pasien_id:   selectedPaket.pasien_id,
-                        paket_id:    selectedPaket.paket_id,
-                        biaya:       nilaiPerSesi,
+                        no_telp: selectedPaket.no_telp || '',
+                        pasien_id: selectedPaket.pasien_id,
+                        paket_id: selectedPaket.paket_id,
+                        biaya: nilaiPerSesi,
                       });
                       setSelectedPaket(null);
                     }}
                   >
-                    <PlusCircle className="size-3.5 mr-1" />
+                    <PlusCircle className="size-3.5" />
                     Catat Kunjungan
                   </Button>
                 )}
@@ -567,7 +590,7 @@ export function PaketPage({ onNavigate }) {
                     {saving ? (
                       <><Spinner className="mr-2" />Menyimpan...</>
                     ) : (
-                      <><CheckCircle2 className="size-5 mr-1" />Simpan Paket</>
+                      <><CheckCircle2 className="size-5" />Simpan Paket</>
                     )}
                   </Button>
                 </div>

@@ -198,7 +198,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
       <Card className="shadow-lg overflow-hidden">
         <CardHeader className="">
           <div className="flex items-center gap-3">
-              <PlusCircle className="size-7 shrink-0 text-primary" />
+            <PlusCircle className="size-7 shrink-0 text-primary" />
             <div>
               <CardTitle className="text-xl md:text-2xl font-black">
                 Catat Kunjungan Baru
@@ -374,7 +374,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
             >
               {saving ? (
                 <>
-                  <Spinner className="size-5 mr-2" />
+                  <Spinner className="size-5" />
                   Menyimpan Catatan...
                 </>
               ) : (

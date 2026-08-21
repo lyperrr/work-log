@@ -181,10 +181,10 @@ export function DashboardPage({ onNavigate }) {
 
   const chartTargetDates = hasDataInCurrent7Days || activeDates.length === 0
     ? Array.from({ length: 7 }).map((_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
-        return d.toISOString().split('T')[0];
-      })
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return d.toISOString().split('T')[0];
+    })
     : activeDates.slice(-7);
 
   const chartData = chartTargetDates.map((dateStr) => {
@@ -231,7 +231,7 @@ export function DashboardPage({ onNavigate }) {
             onClick={toggleHideIncome}
             className={hideIncome ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40' : ''}
           >
-            {hideIncome ? <EyeOff className="size-3.5 mr-1 text-amber-500" /> : <Eye className="size-3.5 mr-1 text-primary" />}
+            {hideIncome ? <EyeOff className="size-3.5 text-amber-500" /> : <Eye className="size-3.5 text-primary" />}
             {hideIncome ? 'Mode Privasi' : 'Privasi'}
           </Button>
         </div>
@@ -273,7 +273,7 @@ export function DashboardPage({ onNavigate }) {
             Ringkasan Pemasukan
           </CardTitle>
           <Badge variant="success">
-            <CheckCircle2 className="size-3.5 mr-1" /> Status Lunas
+            <CheckCircle2 className="size-3.5" /> Status Lunas
           </Badge>
         </CardHeader>
 
@@ -299,6 +299,25 @@ export function DashboardPage({ onNavigate }) {
               <div className="text-xs text-muted-foreground mt-1 font-medium">Total lunas hari ini</div>
             </div>
 
+            {/* Minggu Ini */}
+            <div className="bg-secondary/60 p-4.5 rounded-2xl border border-border/60">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Minggu Ini</span>
+                <PrivacyPeekButton isRevealed={peekWeek} onToggle={() => setPeekWeek(!peekWeek)} />
+              </div>
+              <div className="mt-1">
+                {loading ? (
+                  <div className="flex items-center gap-2 py-1">
+                    <Spinner className="size-4 text-primary" />
+                    <Skeleton className="h-6 w-24 rounded-lg" />
+                  </div>
+                ) : (
+                  <PrivacyAmount amount={weekIncome} isRevealed={peekWeek} onToggle={() => setPeekWeek(!peekWeek)} className="text-xl md:text-2xl font-black text-foreground tracking-tight" />
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1 font-medium">Sejak awal minggu</div>
+            </div>
+
             {/* Bulan Ini */}
             <div className="bg-secondary/60 p-4.5 rounded-2xl border border-border/60">
               <div className="flex items-center justify-between">
@@ -308,33 +327,14 @@ export function DashboardPage({ onNavigate }) {
               <div className="mt-1">
                 {loading ? (
                   <div className="flex items-center gap-2 py-1">
-                    <Spinner className="size-4 text-primary" />
-                    <Skeleton className="h-6 w-24 rounded-lg" />
-                  </div>
-                ) : (
-                  <PrivacyAmount amount={monthIncome} isRevealed={peekMonth} onToggle={() => setPeekMonth(!peekMonth)} className="text-xl md:text-2xl font-black text-foreground tracking-tight" />
-                )}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1 font-medium">Sejak awal bulan</div>
-            </div>
-
-            {/* Total Keseluruhan */}
-            <div className="bg-secondary/60 p-4.5 rounded-2xl border border-border/60">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Keseluruhan</span>
-                <PrivacyPeekButton isRevealed={peekWeek} onToggle={() => setPeekWeek(!peekWeek)} />
-              </div>
-              <div className="mt-1">
-                {loading ? (
-                  <div className="flex items-center gap-2 py-1">
                     <Spinner className="size-4 text-emerald-600" />
                     <Skeleton className="h-6 w-24 rounded-lg" />
                   </div>
                 ) : (
-                  <PrivacyAmount amount={totalIncome} isRevealed={peekWeek} onToggle={() => setPeekWeek(!peekWeek)} className="text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight" />
+                  <PrivacyAmount amount={monthIncome} isRevealed={peekMonth} onToggle={() => setPeekMonth(!peekMonth)} className="text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight" />
                 )}
               </div>
-              <div className="text-xs text-muted-foreground mt-1 font-medium">Semua transaksi lunas</div>
+              <div className="text-xs text-muted-foreground mt-1 font-medium">Sejak awal bulan</div>
             </div>
 
           </div>
