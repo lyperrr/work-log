@@ -71,7 +71,7 @@ export function Navbar({ activeTab, setActiveTab }) {
       </header>
 
       {/* Floating Glass Bottom Navigation Dock */}
-      <div className="fixed bottom-3 left-0 right-0 z-40 px-3 pointer-events-none">
+      <div className="fixed bottom-3 left-0 right-0 z-40 px-3 pointer-events-none pb-safe">
         <nav className="max-w-2xl w-full mx-auto bg-background rounded-3xl border border-primary/20 shadow-[0_10px_35px_rgba(0,0,0,0.15)] p-1.5 pointer-events-auto transition-all">
           <div className="grid grid-cols-5 gap-1 items-center">
             {navItems.map((item) => {

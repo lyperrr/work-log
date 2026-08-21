@@ -195,3 +195,21 @@
 .animate-spring {
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+/* iOS Safe Area & Native Standalone PWA Enhancements */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+html, body {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}

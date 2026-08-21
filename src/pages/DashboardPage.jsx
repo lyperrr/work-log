@@ -10,6 +10,7 @@ import { Badge } from '../components/ui/badge';
 import { Skeleton } from '../components/ui/skeleton';
 import { Spinner } from '../components/ui/spinner';
 import { EmptyState } from '../components/common/EmptyState';
+import { IosInstallPrompt } from '../components/common/IosInstallPrompt';
 
 import {
   TrendingUp,
@@ -231,6 +232,9 @@ export function DashboardPage({ onNavigate }) {
           </Button>
         </div>
       </div>
+
+      {/* iOS PWA Install Guide Banner */}
+      <IosInstallPrompt />
 
       {/* Quick Action Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
