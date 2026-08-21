@@ -2,6 +2,7 @@
   "name": "Kinesis Corpus",
   "short_name": "Rekap Kerja",
   "description": "Aplikasi Rekap Kunjungan dan Paket Pasien Kinesis Corpus",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -25,7 +26,9 @@
     {
       "src": "/icons/apple-touch-icon.png",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
+
