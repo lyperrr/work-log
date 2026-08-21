@@ -363,7 +363,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
 
             <div
               id="printable-report-area"
-              className="bg-white text-gray-900 p-6 sm:p-8 rounded-2xl border-2 border-gray-300 shadow-md font-sans text-xs space-y-5 select-text"
+              className="bg-white text-gray-900 p-6 sm:p-8 rounded-2xl border-2 border-gray-300 shadow-md font-sans text-xs space-y-5 select-text print:p-0 print:border-0! print:rounded-none! print:shadow-none!"
             >
               {/* ─── 1. KOP SURAT OFFICIAL HEADER ─── */}
               <div className="text-center pb-3 border-b-4 border-double border-gray-900">

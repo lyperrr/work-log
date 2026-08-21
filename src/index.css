@@ -293,7 +293,7 @@ html, body {
     transform: none !important;
   }
 
-  /* The actual PDF report document */
+  /* The actual PDF report document - FULL PAGE PRINT layout without outer card frames */
   #printable-report-area {
     display: block !important;
     position: static !important;
@@ -304,6 +304,8 @@ html, body {
     color: #000000 !important;
     box-shadow: none !important;
     border: none !important;
+    border-radius: 0 !important;
+    outline: none !important;
   }
 
   @page {
