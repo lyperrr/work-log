@@ -6,7 +6,7 @@ import { Card, CardHeader, CardContent } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
 
-import { LogIn, UserPlus, Lock, Mail, User, AlertCircle } from 'lucide-react';
+import { LogIn, UserPlus, Lock, Mail, User, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 
 export function AuthPage() {
@@ -19,6 +19,8 @@ export function AuthPage() {
 
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -143,13 +145,26 @@ export function AuthPage() {
                   <Lock className="size-4 text-primary" />
                   Kata Sandi
                 </label>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Minimal 6 karakter"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Minimal 6 karakter"
+                    className="pr-10"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 size-8 text-muted-foreground hover:text-foreground"
+                    title={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                  >
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </Button>
+                </div>
               </div>
 
               <Button
