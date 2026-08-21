@@ -126,8 +126,9 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
 
   return createPortal(
     <div
+      id="printable-report-root"
       onClick={onClose}
-      className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out no-print ${
+      className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${
         isMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
@@ -140,7 +141,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
         }`}
       >
         {/* ─── Modal Header ─── */}
-        <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card no-print">
           <div className="flex items-center gap-2.5 min-w-0">
             <FileText className="size-6 text-primary shrink-0" />
             <div>
@@ -148,7 +149,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
                 Cetak Laporan PDF (Ber-KOP Surat)
               </CardTitle>
               <p className="text-xs text-muted-foreground font-medium truncate">
-                Pilih periode & cetak/simpan laporan resmi PDF
+                Pilih periode &amp; cetak/simpan laporan resmi PDF
               </p>
             </div>
           </div>
@@ -177,7 +178,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
         {/* ─── Modal Scrollable Body ─── */}
         <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+2rem))]">
           {/* ─── Filter Periode Buttons ─── */}
-          <div className="space-y-2 bg-secondary/50 p-3.5 rounded-2xl border border-border/80">
+          <div className="space-y-2 bg-secondary/50 p-3.5 rounded-2xl border border-border/80 no-print">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Filter className="size-3.5 text-primary" />
               Pilih Periode Laporan:
@@ -268,7 +269,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
           </div>
 
           {/* ─── KOP Surat Settings Accordion ─── */}
-          <div className="border border-border rounded-2xl overflow-hidden bg-background">
+          <div className="border border-border rounded-2xl overflow-hidden bg-background no-print">
             <button
               type="button"
               onClick={() => setShowKopSettings(!showKopSettings)}
@@ -276,7 +277,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
             >
               <span className="flex items-center gap-2">
                 <Settings className="size-4 text-primary" />
-                Pengaturan KOP Surat & Penanggung Jawab
+                Pengaturan KOP Surat &amp; Penanggung Jawab
               </span>
               {showKopSettings ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
             </button>
@@ -355,7 +356,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
 
           {/* ─── LIVE PRINTABLE PDF REPORT PREVIEW AREA ─── */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-muted-foreground px-1">
+            <div className="flex items-center justify-between text-xs font-bold text-muted-foreground px-1 no-print">
               <span>Pratinjau Halaman Cetak PDF:</span>
               <Badge variant="outline" className="font-mono text-[10px]">{filteredList.length} Transaksi</Badge>
             </div>
