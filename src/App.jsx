@@ -38,10 +38,16 @@ function AppContent() {
   const [activeTab, setActiveTabState] = useState(() =>
     getTabFromPath(window.location.pathname, window.location.hash)
   );
+  // Prefill data passed from PaketPage when user taps "Catat Kunjungan" on a paket card
+  const [kunjunganPrefill, setKunjunganPrefill] = useState(null);
 
-  // Sync state & update browser URL history
-  const setActiveTab = (tab, replace = false) => {
+  // Sync state & update browser URL history.
+  // prefill: optional object with { nama_pasien, no_telp, pasien_id, paket_id } to
+  // pre-fill KunjunganFormPage when navigating from PaketPage.
+  const setActiveTab = (tab, prefill = null, replace = false) => {
     setActiveTabState(tab);
+    // Store prefill only when navigating to 'catat'; clear otherwise
+    setKunjunganPrefill(tab === 'catat' ? (prefill || null) : null);
     const targetPath = TAB_PATHS[tab] || '/';
     if (window.location.pathname !== targetPath) {
       if (replace) {
@@ -72,9 +78,17 @@ function AppContent() {
       case 'dashboard':
         return <DashboardPage onNavigate={(tab) => setActiveTab(tab)} />;
       case 'catat':
-        return <KunjunganFormPage onSaved={() => setActiveTab('riwayat')} />;
+        return (
+          <KunjunganFormPage
+            prefill={kunjunganPrefill}
+            onSaved={() => {
+              setKunjunganPrefill(null); // clear so next manual visit starts blank
+              setActiveTab('riwayat');
+            }}
+          />
+        );
       case 'paket':
-        return <PaketPage />;
+        return <PaketPage onNavigate={setActiveTab} />;
       case 'riwayat':
         return <RiwayatPage />;
       case 'settings':

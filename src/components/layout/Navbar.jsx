@@ -48,7 +48,7 @@ export function Navbar({ activeTab, setActiveTab }) {
             />
             <div>
               <h1 className="font-black text-lg md:text-xl text-foreground leading-tight tracking-tight">
-                Catat Kerja
+                Kinesis Corpus
               </h1>
               <p className="text-[11px] text-muted-foreground hidden sm:block font-medium">
                 Freelance & Pemasukan Kunjungan
