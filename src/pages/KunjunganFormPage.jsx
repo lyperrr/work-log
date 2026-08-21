@@ -67,27 +67,30 @@ export function KunjunganFormPage({ onSaved, prefill }) {
   // When a prefill is provided (coming from PaketPage), we also ensure the
   // specific prefill.paket_id is pre-selected once allPakets has loaded.
   useEffect(() => {
-    if (!namaPasien || !namaPasien.trim()) {
-      setActivePaketList([]);
-      setSelectedPaketId('none');
-      return;
-    }
+    const timer = setTimeout(() => {
+      if (!namaPasien || !namaPasien.trim()) {
+        setActivePaketList([]);
+        setSelectedPaketId('none');
+        return;
+      }
 
-    const filtered = allPakets.filter(
-      (p) =>
-        (p.nama_pasien || '').toLowerCase().trim() === namaPasien.toLowerCase().trim() &&
-        (p.status_paket || '').toLowerCase() === 'aktif' &&
-        Number(p.sisa_kunjungan || 0) > 0
-    );
-    setActivePaketList(filtered);
+      const filtered = allPakets.filter(
+        (p) =>
+          (p.nama_pasien || '').toLowerCase().trim() === namaPasien.toLowerCase().trim() &&
+          (p.status_paket || '').toLowerCase() === 'aktif' &&
+          Number(p.sisa_kunjungan || 0) > 0
+      );
+      setActivePaketList(filtered);
 
-    // If a paket was pre-selected via prefill, keep it selected as long as
-    // it's in the filtered list. Otherwise fall back to the first active one.
-    if (prefill?.paket_id && filtered.some((p) => p.paket_id === prefill.paket_id)) {
-      setSelectedPaketId(prefill.paket_id);
-    } else {
-      setSelectedPaketId(filtered.length > 0 ? filtered[0].paket_id : 'none');
-    }
+      // If a paket was pre-selected via prefill, keep it selected as long as
+      // it's in the filtered list. Otherwise fall back to the first active one.
+      if (prefill?.paket_id && filtered.some((p) => p.paket_id === prefill.paket_id)) {
+        setSelectedPaketId(prefill.paket_id);
+      } else {
+        setSelectedPaketId(filtered.length > 0 ? filtered[0].paket_id : 'none');
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [namaPasien, allPakets]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Dynamically update `biaya` whenever the selected Paket changes
@@ -98,7 +101,8 @@ export function KunjunganFormPage({ onSaved, prefill }) {
         const perSessionVal = Math.round(
           Number(targetPaket.harga_paket || 0) / Number(targetPaket.total_kunjungan)
         );
-        setBiaya(perSessionVal);
+        const timer = setTimeout(() => setBiaya(perSessionVal), 0);
+        return () => clearTimeout(timer);
       }
     }
   }, [selectedPaketId, allPakets]);
@@ -262,12 +266,12 @@ export function KunjunganFormPage({ onSaved, prefill }) {
             {/* Active Package Selector */}
             {activePaketList.length > 0 && (
               <div className="p-4 rounded-2xl bg-primary/10 border-2 border-primary/30 space-y-2">
-                <label className="block text-sm font-bold text-primary flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm font-bold text-primary">
                   <Package className="size-4" />
                   Gunakan Paket Aktif Pasien Ini?
                 </label>
                 <Select value={selectedPaketId} onValueChange={setSelectedPaketId}>
-                  <SelectTrigger className="w-full h-[52px] px-4 bg-card border-2 border-primary/40 font-bold text-base md:text-lg rounded-xl">
+                  <SelectTrigger className="w-full h-13 px-4 bg-card border-2 border-primary/40 font-bold text-base md:text-lg rounded-xl">
                     <SelectValue placeholder="Pilih paket..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
@@ -288,7 +292,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
             )}
 
             <div>
-              <label className="block text-base font-bold text-foreground mb-1.5 flex items-center gap-2">
+              <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
                 <Calendar className="size-5 text-primary" />
                 Tanggal Kunjungan
               </label>
@@ -300,7 +304,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
             </div>
 
             <div>
-              <label className="block text-base font-bold text-foreground mb-1.5 flex items-center gap-2">
+              <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
                 <DollarSign className="size-5 text-primary" />
                 Biaya / Nominal Sesi (Rp)
               </label>
@@ -311,7 +315,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
                 placeholder="300000"
                 step="5000"
                 min="0"
-                className="w-full h-[52px] px-4 text-base md:text-lg border-2 border-input rounded-xl bg-background font-bold touch-input shadow-xs"
+                className="w-full h-13 px-4 text-base md:text-lg border-2 border-input rounded-xl bg-background font-bold touch-input shadow-xs"
               />
               {selectedPaketId !== 'none' && (() => {
                 const curPkt = allPakets.find((p) => p.paket_id === selectedPaketId);
@@ -332,12 +336,12 @@ export function KunjunganFormPage({ onSaved, prefill }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-base font-bold text-foreground mb-1.5 flex items-center gap-2">
+                <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
                   <CreditCard className="size-5 text-primary" />
                   Metode Pembayaran
                 </label>
                 <Select value={metodePembayaran} onValueChange={setMetodePembayaran}>
-                  <SelectTrigger className="w-full h-[52px] px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs">
+                  <SelectTrigger className="w-full h-13 px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs">
                     <SelectValue placeholder="Pilih metode..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
@@ -348,12 +352,12 @@ export function KunjunganFormPage({ onSaved, prefill }) {
               </div>
 
               <div>
-                <label className="block text-base font-bold text-foreground mb-1.5 flex items-center gap-2">
+                <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
                   <CheckCircle2 className="size-5 text-primary" />
                   Status Pembayaran
                 </label>
                 <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger className="w-full h-[52px] px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs">
+                  <SelectTrigger className="w-full h-13 px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs">
                     <SelectValue placeholder="Pilih status..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">

@@ -3,21 +3,14 @@ import { useAuth } from '../context/AuthContext';
 import { usePrivacy } from '../context/PrivacyContext';
 import { useSettings } from '../context/SettingsContext';
 import { FontSizeControl } from '../components/common/FontSizeControl';
-import { apiService } from '../services/apiService';
 import { useToast } from '../context/ToastContext';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Alert, AlertDescription } from '../components/ui/alert';
 
 import {
   Settings,
-  Database,
-  RefreshCw,
-  Link as LinkIcon,
-  CheckCircle2,
   ShieldCheck,
   Eye,
   EyeOff,
@@ -26,7 +19,6 @@ import {
   LogOut,
   Sparkles,
   Calendar,
-  Filter,
 } from 'lucide-react';
 
 export function SettingsPage() {

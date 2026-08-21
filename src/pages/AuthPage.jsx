@@ -99,7 +99,7 @@ export function AuthPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {activeTab === 'register' && (
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5 flex items-center gap-1.5">
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-foreground mb-1.5">
                     <User className="size-4 text-primary" />
                     Nama Pengguna
                   </label>
@@ -114,7 +114,7 @@ export function AuthPage() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5 flex items-center gap-1.5">
+                <label className="flex items-center gap-1.5 text-sm font-medium text-foreground mb-1.5">
                   <Mail className="size-4 text-primary" />
                   Alamat Email
                 </label>
@@ -128,7 +128,7 @@ export function AuthPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5 flex items-center gap-1.5">
+                <label className="flex items-center gap-1.5 text-sm font-medium text-foreground mb-1.5">
                   <Lock className="size-4 text-primary" />
                   Kata Sandi
                 </label>

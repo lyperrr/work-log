@@ -20,7 +20,6 @@ import {
   Calendar,
   Wallet,
   ArrowRight,
-  Sparkles,
   Eye,
   EyeOff,
 } from 'lucide-react';
@@ -28,7 +27,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 
 export function DashboardPage({ onNavigate }) {
   const { currentUser, api } = useAuth();
-  const { hideIncome, toggleHideIncome, formatAmount } = usePrivacy();
+  const { hideIncome, toggleHideIncome } = usePrivacy();
   const { dataScope } = useSettings();
   const [kunjunganList, setKunjunganList] = useState([]);
   const [paketList, setPaketList] = useState([]);
@@ -61,7 +60,7 @@ export function DashboardPage({ onNavigate }) {
     };
     fetchData();
     return () => { cancelled = true; };
-  }, [currentUser?.user_id]);
+  }, [currentUser?.user_id, api]);
 
   const [peekToday, setPeekToday] = useState(false);
   const [peekWeek, setPeekWeek] = useState(false);
@@ -148,11 +147,6 @@ export function DashboardPage({ onNavigate }) {
   const todayIncome = todayVisitIncome + todayPaketIncome;
   const weekIncome = weekVisitIncome + weekPaketIncome;
   const monthIncome = monthVisitIncome + monthPaketIncome;
-
-  // Total Keseluruhan (Scoped)
-  const totalVisitIncome = lunasVisits.reduce((sum, k) => sum + (Number(k.biaya) || 0), 0);
-  const totalPaketIncome = displayPaketList.reduce((sum, p) => sum + (Number(p.harga_paket) || 0), 0);
-  const totalIncome = totalVisitIncome + totalPaketIncome;
 
   const pendingCount = displayKunjunganList.filter((k) => (k.status || '').toLowerCase() === 'menunggu').length;
   const unpaidCount = displayKunjunganList.filter((k) => (k.status || '').toLowerCase() === 'belum bayar').length;

@@ -16,7 +16,6 @@ import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Skeleton } from '../components/ui/skeleton';
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '../components/ui/empty';
 import { Spinner } from '../components/ui/spinner';
 import {
   Package,
@@ -28,14 +27,12 @@ import {
   Phone,
   ChevronRight,
   ArrowLeft,
-  CreditCard,
-  Clock,
   FileSpreadsheet,
 } from 'lucide-react';
 
 export function PaketPage({ onNavigate }) {
   const { showToast } = useToast();
-  const { currentUser, api } = useAuth();
+  const { api } = useAuth();
   usePrivacy();
 
   const [paketList, setPaketList] = useState([]);
@@ -76,14 +73,37 @@ export function PaketPage({ onNavigate }) {
     }
   };
 
-  useEffect(() => { loadData(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    let active = true;
+    const fetchData = async () => {
+      try {
+        const [pakets, kunjungans] = await Promise.all([
+          api.getPaketList().catch(() => []),
+          api.getKunjunganList().catch(() => []),
+        ]);
+        if (active) {
+          setPaketList(sortDesc(pakets, 'paket_id'));
+          setKunjunganList(sortDesc(kunjungans, 'kunjungan_id'));
+        }
+      } catch (err) {
+        if (active) showToast(err.message || 'Gagal memuat data', 'error');
+      } finally {
+        if (active) setLoadingData(false);
+      }
+    };
+    fetchData();
+    return () => { active = false; };
+  }, [api, showToast]);
 
   // Keep selectedPaket in sync with fresh data after reload
   useEffect(() => {
     if (!selectedPaket) return;
     const updated = paketList.find((p) => p.paket_id === selectedPaket.paket_id);
-    if (updated) setSelectedPaket(updated);
-  }, [paketList]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (updated && JSON.stringify(updated) !== JSON.stringify(selectedPaket)) {
+      const timer = setTimeout(() => setSelectedPaket(updated), 0);
+      return () => clearTimeout(timer);
+    }
+  }, [paketList, selectedPaket]);
 
   // ─── Privacy Toggle ───────────────────────────────────────────
   const togglePaketPeek = (id, e) => {
@@ -561,7 +581,7 @@ export function PaketPage({ onNavigate }) {
                 />
 
                 <div>
-                  <label className="block text-base font-bold text-foreground mb-1.5 flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
                     <Calendar className="size-5 text-primary" />
                     Tanggal Pembelian
                   </label>

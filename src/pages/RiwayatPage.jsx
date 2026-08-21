@@ -77,8 +77,20 @@ export function RiwayatPage() {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    let active = true;
+    const fetchData = async () => {
+      try {
+        const data = await api.getKunjunganList();
+        if (active) setKunjunganList(data || []);
+      } catch (err) {
+        if (active) showToast(err.message || 'Gagal memuat data kunjungan', 'error');
+      } finally {
+        if (active) setLoadingData(false);
+      }
+    };
+    fetchData();
+    return () => { active = false; };
+  }, [api, showToast]);
 
   const todayStr = new Date().toISOString().split('T')[0];
   const currentYearMonth = todayStr.substring(0, 7);
