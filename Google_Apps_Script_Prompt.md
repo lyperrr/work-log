@@ -75,7 +75,7 @@ Pengembangan ini harus mengacu 100% pada Product Requirements Document (PRD) ber
    - Ambil daftar pasien milik `user_id` tersebut.
    - Jika `search_query` diisi, filter nama pasien secara *case-insensitive*.
 2. `createOrGetPasien(user_id, { nama_pasien, no_telp })`:
-   - Cek jika nama pasien sudah ada untuk `user_id` ini, gunakan `pasien_id` lama.
+   - Cek jika nama pasien sudah ada untuk `user_id` ini, gunakan `pasien_id` lama. jika `no_telp` baru berbeda dengan data tersimpan, otomatis perbarui `no_telp` pasien tersebut.
    - Jika belum ada, buat entri pasien baru (`PSN-XXXX`).
 
 ### D. Manajemen Paket Kunjungan
