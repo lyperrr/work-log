@@ -361,12 +361,32 @@ export function PaketPage({ onNavigate }) {
     if (!deletePaketTarget || saving) return;
     setSaving(true);
     try {
-      await api.deletePaket(deletePaketTarget.paket_id);
-      showToast(`Paket ${deletePaketTarget.paket_id} berhasil dihapus!`, 'success');
-      if (selectedPaket && selectedPaket.paket_id === deletePaketTarget.paket_id) {
+      const targetPaketId = deletePaketTarget.paket_id;
+      const relatedVisits = (kunjunganList || []).filter(
+        (k) => String(k.paket_id || '') === String(targetPaketId)
+      );
+
+      // 1. Delete package in backend
+      await api.deletePaket(targetPaketId);
+
+      // 2. Cascade delete all visits matching this paket_id
+      if (relatedVisits.length > 0) {
+        await Promise.all(
+          relatedVisits.map((v) => api.deleteKunjungan(v.kunjungan_id).catch(() => null))
+        );
+      }
+
+      showToast(
+        relatedVisits.length > 0
+          ? `Paket ${targetPaketId} dan ${relatedVisits.length} catatan kunjungan terkait berhasil dihapus!`
+          : `Paket ${targetPaketId} berhasil dihapus!`,
+        'success'
+      );
+
+      if (selectedPaket && selectedPaket.paket_id === targetPaketId) {
         setSelectedPaket(null);
       }
-      if (editPaketData && editPaketData.paket_id === deletePaketTarget.paket_id) {
+      if (editPaketData && editPaketData.paket_id === targetPaketId) {
         setShowEditModal(false);
       }
       setDeletePaketTarget(null);
@@ -1106,7 +1126,11 @@ export function PaketPage({ onNavigate }) {
         onClose={() => setDeletePaketTarget(null)}
         onConfirm={handleConfirmDeletePaket}
         title="Hapus Paket Kunjungan"
-        description={`Apakah Anda yakin ingin menghapus Paket (${deletePaketTarget?.paket_id || ''}) atas nama ${deletePaketTarget?.nama_pasien || ''}? Data paket akan dihapus.`}
+        description={
+          deletePaketTarget
+            ? `Apakah Anda yakin ingin menghapus Paket (${deletePaketTarget.paket_id}) atas nama ${deletePaketTarget.nama_pasien || ''}? Seluruh catatan kunjungan yang terikat dengan paket ini juga akan ikut terhapus secara otomatis.`
+            : 'Apakah Anda yakin ingin menghapus Paket ini?'
+        }
         confirmText="Ya, Hapus Paket"
         cancelText="Batal"
         variant="destructive"

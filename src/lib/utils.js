@@ -94,6 +94,25 @@ export function getFriendlyErrorMessage(err, defaultMessage = 'Maaf, terjadi ken
     return 'Waktu masuk Anda telah habis. Silakan masuk (login) kembali.';
   }
 
+  // Technical backend validation messages (e.g. Field `paket_id` diperlukan)
+  if (
+    lower.includes('field') ||
+    lower.includes('diperlukan') ||
+    lower.includes('wajib diisi') ||
+    rawMsg.includes('`')
+  ) {
+    if (lower.includes('paket_id') || lower.includes('paket')) {
+      return 'ID Paket tidak ditemukan. Mohon pilih kembali paket yang ingin dihapus.';
+    }
+    if (lower.includes('pasien')) {
+      return 'Data pasien belum lengkap. Mohon periksa kembali informasi pasien.';
+    }
+    if (lower.includes('kunjungan')) {
+      return 'Data kunjungan belum lengkap. Mohon periksa kembali formulir Anda.';
+    }
+    return 'Informasi yang dikirimkan belum lengkap. Mohon periksa kembali input Anda.';
+  }
+
   // Replace any technical terms in raw message if present
   let friendly = rawMsg
     .replace(/server/gi, 'sistem')

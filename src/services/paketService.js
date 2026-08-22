@@ -64,8 +64,15 @@ export const paketService = {
   },
 
   /** Hapus paket kunjungan berdasarkan ID. */
-  deletePaket: async (userId, paketId) => {
-    const res = await apiPost('deletePaket', userId, { paket_id: paketId });
+  deletePaket: async (userId, paketIdOrObj) => {
+    const paketId = typeof paketIdOrObj === 'string' ? paketIdOrObj : paketIdOrObj?.paket_id;
+    if (!paketId) throw new Error('ID Paket tidak ditemukan.');
+    const res = await apiPost(
+      'deletePaket',
+      userId,
+      { paket_id: paketId },
+      { paket_id: paketId }
+    );
     if (!res.success) throw new Error(res.message || 'Gagal menghapus paket');
     return res.data;
   },
