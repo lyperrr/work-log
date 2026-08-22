@@ -499,7 +499,7 @@ export function PaketPage({ onNavigate }) {
               type="button"
               variant="outline"
               onClick={() => setShowImportModal(true)}
-              className="w-full sm:w-auto font-bold h-11 sm:h-10 justify-center text-sm whitespace-nowrap"
+              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-600/80 hover:text-white text-white font-bold h-11 sm:h-10 justify-center text-sm whitespace-nowrap"
             >
               <FileSpreadsheet className="size-4 shrink-0" />
               <span>Import Spreadsheet</span>
@@ -699,17 +699,15 @@ export function PaketPage({ onNavigate }) {
       {shouldRenderDetailModal && currentPaket && createPortal(
         <div
           onClick={() => setSelectedPaket(null)}
-          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${
-            isDetailModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
+          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${isDetailModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
         >
           <Card
             onClick={(e) => e.stopPropagation()}
-            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-xl md:max-w-2xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${
-              isDetailModalMounted
+            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-xl md:max-w-2xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${isDetailModalMounted
                 ? 'translate-y-0 opacity-100 scale-100'
                 : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
-            }`}
+              }`}
           >
             {/* Modal Header */}
             <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card">
@@ -875,17 +873,15 @@ export function PaketPage({ onNavigate }) {
       {shouldRenderCreateModal && createPortal(
         <div
           onClick={() => setShowModal(false)}
-          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${
-            isCreateModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
+          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${isCreateModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
         >
           <Card
             onClick={(e) => e.stopPropagation()}
-            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${
-              isCreateModalMounted
+            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${isCreateModalMounted
                 ? 'translate-y-0 opacity-100 scale-100'
                 : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
-            }`}
+              }`}
           >
             <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card">
               <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">
@@ -992,17 +988,15 @@ export function PaketPage({ onNavigate }) {
       {shouldRenderEditPaketModal && editPaketData && createPortal(
         <div
           onClick={() => setShowEditModal(false)}
-          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${
-            isEditPaketModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
+          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${isEditPaketModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
         >
           <Card
             onClick={(e) => e.stopPropagation()}
-            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${
-              isEditPaketModalMounted
+            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${isEditPaketModalMounted
                 ? 'translate-y-0 opacity-100 scale-100'
                 : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
-            }`}
+              }`}
           >
             <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card">
               <div>
@@ -1177,17 +1171,15 @@ export function PaketPage({ onNavigate }) {
       {shouldRenderEditKunjunganModal && activeEditingKunjungan && createPortal(
         <div
           onClick={() => setEditingKunjungan(null)}
-          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${
-            isEditKunjunganModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
+          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden transition-opacity duration-250 ease-out ${isEditKunjunganModalMounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
         >
           <Card
             onClick={(e) => e.stopPropagation()}
-            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${
-              isEditKunjunganModalMounted
+            className={`p-0 border-0 sm:border-2 border-primary/40 rounded-t-3xl sm:rounded-3xl max-w-none sm:max-w-lg md:max-w-xl w-full h-[100dvh] sm:h-auto max-h-none sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden bg-card transition-all duration-300 ease-ios-spring transform ${isEditKunjunganModalMounted
                 ? 'translate-y-0 opacity-100 scale-100'
                 : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
-            }`}
+              }`}
           >
             <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card">
               <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-2.5">

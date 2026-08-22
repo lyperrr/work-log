@@ -250,7 +250,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
             {/* Pembatas & Tombol Ekspor PDF Berwarna Merah */}
             <div className="pt-3 border-t border-border/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
               <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
-                <Printer className="size-3.5 text-rose-500 shrink-0" />
+                <Printer className="size-3.5 text-destructive shrink-0" />
                 <span>Dokumen PDF Siap Dicetak / Disimpan</span>
               </span>
 
@@ -259,7 +259,7 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
                 variant="destructive"
                 size="sm"
                 onClick={handlePrint}
-                className="font-black bg-rose-600 hover:bg-rose-700 text-white shadow-md gap-2 rounded-xl h-11 sm:h-9 px-4 text-xs sm:text-sm justify-center border border-rose-700/30 active:scale-98 transition-all shrink-0"
+                className="bg-destructive text-white hover:bg-destructive/80"
               >
                 <Printer className="size-4 shrink-0" />
                 <span>Cetak / Simpan PDF</span>

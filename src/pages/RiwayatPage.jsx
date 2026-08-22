@@ -276,9 +276,9 @@ export function RiwayatPage() {
           <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               onClick={() => setShowExportPdfModal(true)}
-              className="w-full sm:w-auto font-bold gap-1.5 text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+              className="w-full sm:w-auto bg-destructive text-white hover:bg-destructive/80"
             >
               <Printer className="size-4.5" />
               Cetak / Ekspor PDF
@@ -287,7 +287,7 @@ export function RiwayatPage() {
               type="button"
               variant="outline"
               onClick={() => setShowImportModal(true)}
-              className="w-full sm:w-auto font-bold gap-1.5"
+              className="w-full sm:w-auto font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-600/80 hover:text-white text-white"
             >
               <FileSpreadsheet className="size-4.5" />
               Import Spreadsheet
