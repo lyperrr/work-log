@@ -27,6 +27,7 @@ export const paketService = {
       total_kunjungan: data.total_kunjungan,
       harga_paket: data.harga_paket,
       tanggal_beli: data.tanggal_beli,
+      metode_pembayaran: data.metode_pembayaran,
     });
     if (!res.success) throw new Error(res.message || 'Gagal membuat paket');
     return res.data; // { paket_id, ... }

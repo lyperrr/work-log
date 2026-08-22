@@ -602,7 +602,7 @@ export function DashboardPage({ onNavigate }) {
                     <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 font-medium">
                       <span>{k.tanggal_kunjungan ? String(k.tanggal_kunjungan).split('T')[0] : '-'}</span>
                       <span>•</span>
-                      <span className="uppercase font-semibold">{k.metode_pembayaran}</span>
+                      <span className="capitalize font-bold">{k.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Cash (Tunai)'}</span>
                     </div>
                   </div>
                 </div>

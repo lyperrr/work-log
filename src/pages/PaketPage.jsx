@@ -794,17 +794,11 @@ export function PaketPage({ onNavigate }) {
                   <span>Terpakai: {currentTerpakai}x</span>
                   <span>Beli: {currentPaket.tanggal_beli ? formatDateLocal(currentPaket.tanggal_beli) : '-'}</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-primary/20 text-xs">
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-primary/20 text-xs">
                   <div>
                     <span className="text-muted-foreground block">Harga Paket</span>
                     <span className="font-black text-foreground">
                       Rp {Number(currentPaket.harga_paket).toLocaleString('id-ID')}
-                    </span>
-                  </div>
-                  <div className="text-center">
-                    <span className="text-muted-foreground block">Metode Bayar</span>
-                    <span className="font-black text-foreground capitalize">
-                      {currentPaket.metode_pembayaran === 'transfer' ? 'Transfer' : 'Cash'}
                     </span>
                   </div>
                   <div className="text-right">
@@ -948,7 +942,7 @@ export function PaketPage({ onNavigate }) {
                 <div>
                   <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
                     <Wallet className="size-4 sm:size-5 text-primary" />
-                    Metode Pembayaran Paket
+                    Metode Pembayaran (Kunjungan Pertama)
                   </label>
                   <Select value={metodePembayaran} onValueChange={setMetodePembayaran}>
                     <SelectTrigger className="w-full h-12 sm:h-13 px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs touch-input">
@@ -960,7 +954,7 @@ export function PaketPage({ onNavigate }) {
                     </SelectContent>
                   </Select>
                   <p className="text-[11px] sm:text-xs text-muted-foreground font-medium mt-1">
-                    *Metode ini otomatis digunakan pada catatan kunjungan pertama.
+                    *Metode ini otomatis ditetapkan pada catatan kunjungan pertama yang tergenerasi.
                   </p>
                 </div>
 
@@ -1096,23 +1090,6 @@ export function PaketPage({ onNavigate }) {
                     onChange={setEditTanggalBeli}
                     placeholder="Pilih tanggal..."
                   />
-                </div>
-
-                {/* Metode Pembayaran */}
-                <div>
-                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
-                    <Wallet className="size-4 sm:size-5 text-primary" />
-                    Metode Pembayaran Paket
-                  </label>
-                  <Select value={editMetodePembayaran} onValueChange={setEditMetodePembayaran}>
-                    <SelectTrigger className="w-full h-12 sm:h-13 px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs touch-input">
-                      <SelectValue placeholder="Pilih metode..." />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl z-50">
-                      <SelectItem value="cash">Cash (Tunai)</SelectItem>
-                      <SelectItem value="transfer">Transfer Bank</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 {/* Status Paket (Otomatis) */}
