@@ -22,6 +22,13 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Spinner } from '../components/ui/spinner';
 import { Input } from '../components/ui/input';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import {
   Package,
   PlusCircle,
   CheckCircle2,
@@ -37,6 +44,7 @@ import {
   X,
   DollarSign,
   CreditCard,
+  Wallet,
 } from 'lucide-react';
 
 export function PaketPage({ onNavigate }) {
@@ -59,6 +67,7 @@ export function PaketPage({ onNavigate }) {
   const [editHargaPaket, setEditHargaPaket] = useState('');
   const [editTotalKunjungan, setEditTotalKunjungan] = useState('');
   const [editTanggalBeli, setEditTanggalBeli] = useState('');
+  const [editMetodePembayaran, setEditMetodePembayaran] = useState('cash');
   const [editStatusPaket, setEditStatusPaket] = useState('aktif');
   const [editNamaPasien, setEditNamaPasien] = useState('');
   const [editNoTelp, setEditNoTelp] = useState('');
@@ -208,6 +217,7 @@ export function PaketPage({ onNavigate }) {
   const [totalKunjungan, setTotalKunjungan] = useState(5);
   const [hargaPaket, setHargaPaket] = useState(1500000);
   const [tanggalBeli, setTanggalBeli] = useState(getTodayDateString());
+  const [metodePembayaran, setMetodePembayaran] = useState('cash');
   const [simPrice, setSimPrice] = useState(1500000);
   const [simSessions, setSimSessions] = useState(5);
   const [errorMsg, setErrorMsg] = useState('');
@@ -249,13 +259,14 @@ export function PaketPage({ onNavigate }) {
         total_kunjungan: numSessions,
         harga_paket: numHarga,
         tanggal_beli: tanggalBeli,
+        metode_pembayaran: metodePembayaran,
       });
 
       const successText = `Paket baru & 1 catatan kunjungan pertama (${formatDateLocal(tanggalBeli)}) berhasil dibuat untuk ${patientRecord.nama_pasien}!`;
       setSuccessMsg(successText);
       showToast(successText, 'success');
       setShowModal(false);
-      setNamaPasien(''); setNoTelp(''); setTotalKunjungan(5); setHargaPaket(1500000);
+      setNamaPasien(''); setNoTelp(''); setTotalKunjungan(5); setHargaPaket(1500000); setMetodePembayaran('cash');
       await loadData();
     } catch (err) {
       const errorText = getFriendlyErrorMessage(err, 'Maaf, paket baru belum berhasil dibuat. Silakan coba lagi.');
@@ -275,6 +286,7 @@ export function PaketPage({ onNavigate }) {
     setEditHargaPaket(String(pkt.harga_paket || ''));
     setEditTotalKunjungan(String(pkt.total_kunjungan || ''));
     setEditTanggalBeli(pkt.tanggal_beli ? formatDateLocal(pkt.tanggal_beli) : '');
+    setEditMetodePembayaran(pkt.metode_pembayaran || 'cash');
     setEditStatusPaket(pkt.status_paket || 'aktif');
     setErrorMsg('');
     setShowEditModal(true);
@@ -315,6 +327,7 @@ export function PaketPage({ onNavigate }) {
         total_kunjungan: total,
         harga_paket: harga,
         tanggal_beli: editTanggalBeli,
+        metode_pembayaran: editMetodePembayaran,
         status_paket: sisa <= 0 ? 'selesai' : 'aktif',
         terpakai,
         sisa_kunjungan: sisa,
@@ -781,11 +794,17 @@ export function PaketPage({ onNavigate }) {
                   <span>Terpakai: {currentTerpakai}x</span>
                   <span>Beli: {currentPaket.tanggal_beli ? formatDateLocal(currentPaket.tanggal_beli) : '-'}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-primary/20 text-xs">
+                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-primary/20 text-xs">
                   <div>
                     <span className="text-muted-foreground block">Harga Paket</span>
                     <span className="font-black text-foreground">
                       Rp {Number(currentPaket.harga_paket).toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                  <div className="text-center">
+                    <span className="text-muted-foreground block">Metode Bayar</span>
+                    <span className="font-black text-foreground capitalize">
+                      {currentPaket.metode_pembayaran === 'transfer' ? 'Transfer' : 'Cash'}
                     </span>
                   </div>
                   <div className="text-right">
@@ -926,6 +945,25 @@ export function PaketPage({ onNavigate }) {
                   />
                 </div>
 
+                <div>
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <Wallet className="size-4 sm:size-5 text-primary" />
+                    Metode Pembayaran Paket
+                  </label>
+                  <Select value={metodePembayaran} onValueChange={setMetodePembayaran}>
+                    <SelectTrigger className="w-full h-12 sm:h-13 px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs touch-input">
+                      <SelectValue placeholder="Pilih metode..." />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl z-50">
+                      <SelectItem value="cash">Cash (Tunai)</SelectItem>
+                      <SelectItem value="transfer">Transfer Bank</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground font-medium mt-1">
+                    *Metode ini otomatis digunakan pada catatan kunjungan pertama.
+                  </p>
+                </div>
+
                 <div className="flex items-center gap-2.5 pt-2">
                   <Button
                     type="button"
@@ -1058,6 +1096,23 @@ export function PaketPage({ onNavigate }) {
                     onChange={setEditTanggalBeli}
                     placeholder="Pilih tanggal..."
                   />
+                </div>
+
+                {/* Metode Pembayaran */}
+                <div>
+                  <label className="flex items-center gap-2 text-sm sm:text-base font-bold text-foreground mb-1.5">
+                    <Wallet className="size-4 sm:size-5 text-primary" />
+                    Metode Pembayaran Paket
+                  </label>
+                  <Select value={editMetodePembayaran} onValueChange={setEditMetodePembayaran}>
+                    <SelectTrigger className="w-full h-12 sm:h-13 px-4 border-2 border-input font-bold text-base md:text-lg rounded-xl bg-background shadow-xs touch-input">
+                      <SelectValue placeholder="Pilih metode..." />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl z-50">
+                      <SelectItem value="cash">Cash (Tunai)</SelectItem>
+                      <SelectItem value="transfer">Transfer Bank</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Status Paket (Otomatis) */}
