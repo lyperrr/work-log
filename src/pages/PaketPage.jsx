@@ -60,6 +60,8 @@ export function PaketPage({ onNavigate }) {
   const [editTotalKunjungan, setEditTotalKunjungan] = useState('');
   const [editTanggalBeli, setEditTanggalBeli] = useState('');
   const [editStatusPaket, setEditStatusPaket] = useState('aktif');
+  const [editNamaPasien, setEditNamaPasien] = useState('');
+  const [editNoTelp, setEditNoTelp] = useState('');
 
   // Edit kunjungan state
   const [editingKunjungan, setEditingKunjungan] = useState(null);
@@ -86,6 +88,7 @@ export function PaketPage({ onNavigate }) {
 
   const currentEditKunjungan = editingKunjungan || activeEditingKunjungan;
   const [deleteKunjunganId, setDeleteKunjunganId] = useState(null);
+  const [deletePaketTarget, setDeletePaketTarget] = useState(null);
 
   // Detail drawer
   const [selectedPaket, setSelectedPaket] = useState(null);
@@ -250,6 +253,8 @@ export function PaketPage({ onNavigate }) {
   const handleOpenEditModal = (pkt, e) => {
     if (e) e.stopPropagation();
     setEditPaketData(pkt);
+    setEditNamaPasien(pkt.nama_pasien || '');
+    setEditNoTelp(pkt.no_telp || '');
     setEditHargaPaket(String(pkt.harga_paket || ''));
     setEditTotalKunjungan(String(pkt.total_kunjungan || ''));
     setEditTanggalBeli(pkt.tanggal_beli ? formatDateLocal(pkt.tanggal_beli) : '');
@@ -265,7 +270,13 @@ export function PaketPage({ onNavigate }) {
     const total = Number(editTotalKunjungan);
     const terpakai = Number(editPaketData.terpakai || 0);
     const harga = Number(editHargaPaket);
+    const newNama = editNamaPasien.trim();
+    const newTelp = editNoTelp.trim();
 
+    if (!newNama) {
+      setErrorMsg('Nama pasien wajib diisi.');
+      return;
+    }
     if (!total || total <= 0) {
       setErrorMsg('Total kunjungan / sesi harus lebih dari 0.');
       return;
@@ -280,7 +291,10 @@ export function PaketPage({ onNavigate }) {
     setErrorMsg('');
 
     try {
+      // 1. Update package record
       await api.updatePaket(editPaketData.paket_id, {
+        nama_pasien: newNama,
+        no_telp: newTelp,
         total_kunjungan: total,
         harga_paket: harga,
         tanggal_beli: editTanggalBeli,
@@ -289,13 +303,40 @@ export function PaketPage({ onNavigate }) {
         sisa_kunjungan: sisa,
       });
 
-      showToast('Data paket berhasil diperbarui!', 'success');
+      // 2. Automatically update all visit records under this package if patient name or phone changed
+      const isPatientInfoChanged =
+        newNama !== editPaketData.nama_pasien || newTelp !== (editPaketData.no_telp || '');
+
+      if (isPatientInfoChanged) {
+        const associatedVisits = (kunjunganList || []).filter(
+          (k) => k.paket_id === editPaketData.paket_id
+        );
+
+        if (associatedVisits.length > 0) {
+          await Promise.all(
+            associatedVisits.map((v) =>
+              api.updateKunjungan(v.kunjungan_id, {
+                nama_pasien: newNama,
+                no_telp: newTelp,
+                tanggal_kunjungan: v.tanggal_kunjungan ? formatDateLocal(v.tanggal_kunjungan) : '',
+                biaya: Number(v.biaya || 0),
+                metode_pembayaran: (v.metode_pembayaran || 'cash').toLowerCase(),
+                status: (v.status || 'menunggu').toLowerCase(),
+              })
+            )
+          );
+        }
+      }
+
+      showToast('Data paket & seluruh catatan kunjungan terkait berhasil diperbarui!', 'success');
       setShowEditModal(false);
       await loadData();
 
       if (selectedPaket && selectedPaket.paket_id === editPaketData.paket_id) {
         setSelectedPaket((prev) => ({
           ...prev,
+          nama_pasien: newNama,
+          no_telp: newTelp,
           total_kunjungan: total,
           harga_paket: harga,
           tanggal_beli: editTanggalBeli,
@@ -306,6 +347,32 @@ export function PaketPage({ onNavigate }) {
       }
     } catch (err) {
       setErrorMsg(getFriendlyErrorMessage(err, 'Maaf, data paket belum berhasil diperbarui. Silakan coba lagi.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleOpenDeletePaketModal = (pkt, e) => {
+    if (e) e.stopPropagation();
+    setDeletePaketTarget(pkt);
+  };
+
+  const handleConfirmDeletePaket = async () => {
+    if (!deletePaketTarget || saving) return;
+    setSaving(true);
+    try {
+      await api.deletePaket(deletePaketTarget.paket_id);
+      showToast(`Paket ${deletePaketTarget.paket_id} berhasil dihapus!`, 'success');
+      if (selectedPaket && selectedPaket.paket_id === deletePaketTarget.paket_id) {
+        setSelectedPaket(null);
+      }
+      if (editPaketData && editPaketData.paket_id === deletePaketTarget.paket_id) {
+        setShowEditModal(false);
+      }
+      setDeletePaketTarget(null);
+      await loadData();
+    } catch (err) {
+      showToast(getFriendlyErrorMessage(err, 'Gagal menghapus paket. Silakan coba lagi.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -508,6 +575,14 @@ export function PaketPage({ onNavigate }) {
                       >
                         <Pencil className="size-4 text-primary" />
                       </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleOpenDeletePaketModal(pkt, e)}
+                        className="p-1.5 rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                        title="Hapus Paket"
+                      >
+                        <Trash2 className="size-4 text-destructive" />
+                      </button>
                       <Badge variant={isAktif ? 'success' : 'secondary'} className="uppercase">
                         {isAktif ? 'Aktif' : 'Selesai'}
                       </Badge>
@@ -586,44 +661,36 @@ export function PaketPage({ onNavigate }) {
           >
             {/* Modal Header */}
             <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card">
-              <div className="flex-1 min-w-0 pr-2">
-                <CardTitle className="text-base sm:text-lg md:text-xl font-black flex items-center gap-2.5">
-                  <Package className="size-5 sm:size-6 text-primary shrink-0" />
-                  <span className="truncate">{currentPaket.nama_pasien}</span>
-                </CardTitle>
-                <p className="text-xs text-muted-foreground font-mono mt-0.5">{currentPaket.paket_id}</p>
+              <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                <Package className="size-5 sm:size-6 text-primary shrink-0" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-base sm:text-lg md:text-xl font-black text-foreground truncate">
+                      {currentPaket.nama_pasien}
+                    </CardTitle>
+                    <Badge
+                      variant={
+                        currentPaket.status_paket === 'aktif' && Number(currentPaket.sisa_kunjungan) > 0
+                          ? 'success' : 'secondary'
+                      }
+                      className="uppercase font-bold text-[10px] sm:text-xs shrink-0"
+                    >
+                      {currentPaket.status_paket === 'aktif' && Number(currentPaket.sisa_kunjungan) > 0
+                        ? 'Aktif' : 'Selesai'}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-mono mt-0.5">{currentPaket.paket_id}</p>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <Badge
-                  variant={
-                    currentPaket.status_paket === 'aktif' && Number(currentPaket.sisa_kunjungan) > 0
-                      ? 'success' : 'secondary'
-                  }
-                  className="uppercase font-bold text-xs shrink-0"
-                >
-                  {currentPaket.status_paket === 'aktif' && Number(currentPaket.sisa_kunjungan) > 0
-                    ? 'Aktif' : 'Selesai'}
-                </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleOpenEditModal(currentPaket)}
-                  className="shrink-0 font-bold h-9 text-xs sm:text-sm rounded-xl gap-1.5"
-                >
-                  <Pencil className="size-3.5 text-primary shrink-0" />
-                  <span className="hidden sm:inline">Edit Paket</span>
-                  <span className="sm:hidden">Edit</span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSelectedPaket(null)}
-                  className="text-muted-foreground font-black text-xl size-9 rounded-xl hover:bg-secondary shrink-0"
-                >
-                  ✕
-                </Button>
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSelectedPaket(null)}
+                className="text-muted-foreground font-black text-xl size-9 rounded-xl hover:bg-secondary shrink-0"
+              >
+                ✕
+              </Button>
             </CardHeader>
 
             {/* Scrollable content */}
@@ -631,9 +698,35 @@ export function PaketPage({ onNavigate }) {
 
               {/* Paket Summary Card */}
               <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-3">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Phone className="size-3.5" />
-                  {currentPaket.no_telp || 'Tanpa no telp'}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold">
+                    <Phone className="size-3.5 text-primary" />
+                    {currentPaket.no_telp || 'Tanpa no telp'}
+                  </div>
+
+                  {/* Action Buttons moved into summary card */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenEditModal(currentPaket)}
+                      className="font-bold h-8 text-xs rounded-xl gap-1.5 bg-background shadow-2xs"
+                    >
+                      <Pencil className="size-3.5 text-primary shrink-0" />
+                      <span>Edit Paket</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => handleOpenDeletePaketModal(currentPaket, e)}
+                      className="font-bold h-8 text-xs rounded-xl gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10 bg-background shadow-2xs"
+                    >
+                      <Trash2 className="size-3.5 shrink-0" />
+                      <span>Hapus</span>
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex justify-between items-center text-sm font-bold">
                   <span className="text-muted-foreground">Sisa Kunjungan:</span>
@@ -867,17 +960,24 @@ export function PaketPage({ onNavigate }) {
               )}
 
               <form onSubmit={handleSaveEditPaket} className="space-y-4 sm:space-y-5">
-                {/* Patient Info Card */}
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-secondary/60 border border-border space-y-1">
-                  <div className="text-xs font-bold text-muted-foreground">Pasien</div>
-                  <div className="font-black text-foreground text-base sm:text-lg flex items-center gap-2">
-                    <User className="size-4 sm:size-5 text-primary" />
-                    {editPaketData.nama_pasien}
+                {/* Patient Autocomplete Input */}
+                <div className="space-y-2 p-3.5 sm:p-4 rounded-2xl bg-secondary/60 border border-border">
+                  <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
+                    Informasi Pasien Pemilik Paket
                   </div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1.5 pt-0.5">
-                    <Phone className="size-3.5" />
-                    {editPaketData.no_telp || 'Tanpa no telp'}
-                  </div>
+                  <PatientAutocomplete
+                    value={editNamaPasien}
+                    onChange={setEditNamaPasien}
+                    onSelectPatient={(p) => {
+                      setEditNamaPasien(p.nama_pasien || '');
+                      setEditNoTelp(String(p.no_telp || ''));
+                    }}
+                    phoneValue={editNoTelp}
+                    onPhoneChange={setEditNoTelp}
+                  />
+                  <p className="text-[11px] text-muted-foreground font-medium pt-1">
+                    *Mengubah nama pasien akan otomatis memperbarui seluruh catatan kunjungan yang terikat dengan paket ini.
+                  </p>
                 </div>
 
                 <PackageCalculator
@@ -940,28 +1040,44 @@ export function PaketPage({ onNavigate }) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 pt-2">
+                <div className="flex items-center justify-between gap-2.5 pt-2">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     disabled={saving}
-                    onClick={() => setShowEditModal(false)}
-                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 ext-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
+                    onClick={(e) => {
+                      setShowEditModal(false);
+                      handleOpenDeletePaketModal(editPaketData, e);
+                    }}
+                    className="text-destructive hover:bg-destructive/10 font-bold h-12 text-sm rounded-xl sm:rounded-2xl gap-1.5 px-3 shrink-0"
                   >
-                    <X className="size-4 shrink-0 text-muted-foreground" />
-                    <span>Batal</span>
+                    <Trash2 className="size-4 shrink-0" />
+                    <span className="hidden sm:inline">Hapus Paket</span>
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={saving}
-                    className="flex-1 h-12 sm:h-13 text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
-                  >
-                    {saving ? (
-                      <><Spinner className="size-4 sm:size-5 shrink-0" /><span className="truncate">Menyimpan...</span></>
-                    ) : (
-                      <><CheckCircle2 className="size-4 sm:size-5 shrink-0" /><span className="truncate">Simpan Perubahan</span></>
-                    )}
-                  </Button>
+
+                  <div className="flex items-center gap-2 flex-1 justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={saving}
+                      onClick={() => setShowEditModal(false)}
+                      className="px-4 h-12 text-sm font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
+                    >
+                      <X className="size-4 shrink-0 text-muted-foreground" />
+                      <span>Batal</span>
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={saving}
+                      className="flex-1 h-12 text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
+                    >
+                      {saving ? (
+                        <><Spinner className="size-4 sm:size-5 shrink-0" /><span className="truncate">Menyimpan...</span></>
+                      ) : (
+                        <><CheckCircle2 className="size-4 sm:size-5 shrink-0" /><span className="truncate">Simpan Perubahan</span></>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </form>
             </CardContent>
@@ -978,6 +1094,20 @@ export function PaketPage({ onNavigate }) {
         title="Hapus Catatan Kunjungan"
         description="Apakah Anda yakin ingin menghapus data kunjungan ini? Tindakan ini tidak dapat dibatalkan."
         confirmText="Ya, Hapus"
+        cancelText="Batal"
+        variant="destructive"
+        icon={Trash2}
+        isLoading={saving}
+      />
+
+      {/* ─── Delete Paket Confirmation Modal ─── */}
+      <ConfirmModal
+        isOpen={Boolean(deletePaketTarget)}
+        onClose={() => setDeletePaketTarget(null)}
+        onConfirm={handleConfirmDeletePaket}
+        title="Hapus Paket Kunjungan"
+        description={`Apakah Anda yakin ingin menghapus Paket (${deletePaketTarget?.paket_id || ''}) atas nama ${deletePaketTarget?.nama_pasien || ''}? Data paket akan dihapus.`}
+        confirmText="Ya, Hapus Paket"
         cancelText="Batal"
         variant="destructive"
         icon={Trash2}
@@ -1022,15 +1152,19 @@ export function PaketPage({ onNavigate }) {
                     <User className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Nama Pasien
                   </label>
-                  <Input
-                    type="text"
-                    value={currentEditKunjungan.nama_pasien || ''}
-                    onChange={(e) =>
-                      updateEditingKunjungan({ ...currentEditKunjungan, nama_pasien: e.target.value })
-                    }
-                    className="font-bold h-12 rounded-xl"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      value={currentEditKunjungan.nama_pasien || ''}
+                      readOnly
+                      disabled
+                      className="font-bold h-12 rounded-xl bg-secondary/80 text-muted-foreground cursor-not-allowed pr-10"
+                    />
+                    <Lock className="size-4 text-muted-foreground absolute right-3.5 top-1/2 -translate-y-1/2" />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1 font-medium">
+                    Nama pasien terkunci karena kunjungan ini terikat dengan Paket Kunjungan.
+                  </p>
                 </div>
 
                 <div>

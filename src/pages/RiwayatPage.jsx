@@ -535,15 +535,33 @@ export function RiwayatPage() {
                     <User className="size-4 sm:size-4.5 text-primary shrink-0" />
                     Nama Pasien
                   </label>
-                  <Input
-                    type="text"
-                    value={currentEdit.nama_pasien || ''}
-                    onChange={(e) =>
-                      updateEditingItem({ ...currentEdit, nama_pasien: e.target.value })
-                    }
-                    className="font-bold h-12 rounded-xl"
-                    required
-                  />
+                  {currentEdit.paket_id ? (
+                    <div>
+                      <div className="relative">
+                        <Input
+                          type="text"
+                          value={currentEdit.nama_pasien || ''}
+                          readOnly
+                          disabled
+                          className="font-bold h-12 rounded-xl bg-secondary/80 text-muted-foreground cursor-not-allowed pr-10"
+                        />
+                        <Lock className="size-4 text-muted-foreground absolute right-3.5 top-1/2 -translate-y-1/2" />
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1 font-medium">
+                        Nama pasien terkunci karena kunjungan ini terikat dengan Paket Kunjungan.
+                      </p>
+                    </div>
+                  ) : (
+                    <Input
+                      type="text"
+                      value={currentEdit.nama_pasien || ''}
+                      onChange={(e) =>
+                        updateEditingItem({ ...currentEdit, nama_pasien: e.target.value })
+                      }
+                      className="font-bold h-12 rounded-xl"
+                      required
+                    />
+                  )}
                 </div>
 
                 <div>

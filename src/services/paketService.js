@@ -62,5 +62,12 @@ export const paketService = {
     if (!res.success) throw new Error(res.message || 'Gagal memperbarui paket');
     return res.data;
   },
+
+  /** Hapus paket kunjungan berdasarkan ID. */
+  deletePaket: async (userId, paketId) => {
+    const res = await apiPost('deletePaket', userId, { paket_id: paketId });
+    if (!res.success) throw new Error(res.message || 'Gagal menghapus paket');
+    return res.data;
+  },
 };
 
