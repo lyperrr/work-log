@@ -209,7 +209,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 pb-24 sm:pb-8 animate-in fade-in-50">
+    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 pb-36 sm:pb-8 animate-in fade-in-50">
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">

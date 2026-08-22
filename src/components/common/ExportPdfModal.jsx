@@ -145,112 +145,122 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
 
         {/* Modal Scrollable Body */}
         <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+2rem))]">
-          {/* Filter Periode Buttons & Print Trigger */}
-          <div className="space-y-3 bg-secondary/50 p-3.5 sm:p-4 rounded-2xl border border-border/80 no-print">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Filter Periode & Cetak Action Section */}
+          <div className="space-y-4 bg-secondary/50 p-3.5 sm:p-4 rounded-2xl border border-border/80 no-print">
+            <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <Filter className="size-3.5 text-primary" />
                 Pilih Periode Laporan:
               </label>
+
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setPeriodType('1_minggu')}
+                  className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                    periodType === '1_minggu'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
+                  }`}
+                >
+                  <Zap className="size-3.5 shrink-0" />
+                  <span>1 Minggu</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPeriodType('bulan_ini')}
+                  className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                    periodType === 'bulan_ini'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
+                  }`}
+                >
+                  <CalendarDays className="size-3.5 shrink-0" />
+                  <span>Bulan Ini</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPeriodType('bulan_lalu')}
+                  className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                    periodType === 'bulan_lalu'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
+                  }`}
+                >
+                  <History className="size-3.5 shrink-0" />
+                  <span>Bulan Lalu</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPeriodType('tahun_ini')}
+                  className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                    periodType === 'tahun_ini'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
+                  }`}
+                >
+                  <CalendarCheck className="size-3.5 shrink-0" />
+                  <span>Tahun Ini</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPeriodType('custom')}
+                  className={`py-2 px-2 rounded-xl font-bold text-xs col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 transition-all ${
+                    periodType === 'custom'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
+                  }`}
+                >
+                  <Search className="size-3.5 shrink-0" />
+                  <span>Custom Date</span>
+                </button>
+              </div>
+
+              {/* Custom Date Pickers */}
+              {periodType === 'custom' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div>
+                    <span className="text-xs font-bold text-muted-foreground mb-1 block">Tanggal Mulai:</span>
+                    <DatePicker
+                      value={customStartDate}
+                      onChange={setCustomStartDate}
+                      placeholder="Pilih tanggal awal..."
+                    />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-muted-foreground mb-1 block">Tanggal Akhir:</span>
+                    <DatePicker
+                      value={customEndDate}
+                      onChange={setCustomEndDate}
+                      placeholder="Pilih tanggal akhir..."
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Pembatas & Tombol Ekspor PDF Berwarna Merah */}
+            <div className="pt-3 border-t border-border/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+              <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+                <Printer className="size-3.5 text-rose-500 shrink-0" />
+                <span>Dokumen PDF Siap Dicetak / Disimpan</span>
+              </span>
+
               <Button
-                variant="default"
+                type="button"
+                variant="destructive"
                 size="sm"
                 onClick={handlePrint}
-                className="font-bold shadow-md bg-primary text-primary-foreground gap-1.5 rounded-xl h-8 px-3 text-xs shrink-0"
+                className="font-black bg-rose-600 hover:bg-rose-700 text-white shadow-md gap-2 rounded-xl h-11 sm:h-9 px-4 text-xs sm:text-sm justify-center border border-rose-700/30 active:scale-98 transition-all shrink-0"
               >
-                <Printer className="size-3.5" />
+                <Printer className="size-4 shrink-0" />
                 <span>Cetak / Simpan PDF</span>
               </Button>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
-              <button
-                type="button"
-                onClick={() => setPeriodType('1_minggu')}
-                className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
-                  periodType === '1_minggu'
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
-                }`}
-              >
-                <Zap className="size-3.5 shrink-0" />
-                <span>1 Minggu</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPeriodType('bulan_ini')}
-                className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
-                  periodType === 'bulan_ini'
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
-                }`}
-              >
-                <CalendarDays className="size-3.5 shrink-0" />
-                <span>Bulan Ini</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPeriodType('bulan_lalu')}
-                className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
-                  periodType === 'bulan_lalu'
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
-                }`}
-              >
-                <History className="size-3.5 shrink-0" />
-                <span>Bulan Lalu</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPeriodType('tahun_ini')}
-                className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
-                  periodType === 'tahun_ini'
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
-                }`}
-              >
-                <CalendarCheck className="size-3.5 shrink-0" />
-                <span>Tahun Ini</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPeriodType('custom')}
-                className={`py-2 px-2 rounded-xl font-bold text-xs col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 transition-all ${
-                  periodType === 'custom'
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
-                }`}
-              >
-                <Search className="size-3.5 shrink-0" />
-                <span>Custom Date</span>
-              </button>
-            </div>
-
-            {/* Custom Date Pickers */}
-            {periodType === 'custom' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <div>
-                  <span className="text-xs font-bold text-muted-foreground mb-1 block">Tanggal Mulai:</span>
-                  <DatePicker
-                    value={customStartDate}
-                    onChange={setCustomStartDate}
-                    placeholder="Pilih tanggal awal..."
-                  />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-muted-foreground mb-1 block">Tanggal Akhir:</span>
-                  <DatePicker
-                    value={customEndDate}
-                    onChange={setCustomEndDate}
-                    placeholder="Pilih tanggal akhir..."
-                  />
-                </div>
-              </div>
-            )}
           </div>
 
           {/* ─── LIVE PRINTABLE PDF REPORT PREVIEW AREA ─── */}

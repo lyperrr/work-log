@@ -430,7 +430,7 @@ export function PaketPage({ onNavigate }) {
 
   // ─── Render ───────────────────────────────────────────────────
   return (
-    <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-8 animate-in fade-in-50">
+    <div className="space-y-4 sm:space-y-6 pb-36 sm:pb-8 animate-in fade-in-50">
 
       {/* Header */}
       <Card>
