@@ -8,7 +8,8 @@ export const paketService = {
   getPaketList: async (userId) => {
     const res = await apiGet('getPaket', { user_id: userId });
     if (!res.success) throw new Error(res.message || 'Gagal mengambil data paket');
-    return res.data || [];
+    const list = res.data || [];
+    return list.filter((p) => !p.is_deleted && String(p.is_deleted).toLowerCase() !== 'true');
   },
 
   /** Ambil paket aktif berdasarkan pasien_id (filter client-side). */

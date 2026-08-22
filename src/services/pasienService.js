@@ -23,7 +23,7 @@ export const pasienService = {
           no_telp: isPhoneErr ? '' : phone,
         };
       })
-      .filter((p) => p.nama_pasien && p.nama_pasien.trim().length > 0);
+      .filter((p) => p.nama_pasien && p.nama_pasien.trim().length > 0 && !p.is_deleted && String(p.is_deleted).toLowerCase() !== 'true');
   },
 
   /** Search pasien berdasarkan nama. */

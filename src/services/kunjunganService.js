@@ -12,12 +12,14 @@ export const kunjunganService = {
     const params = { user_id: userId, ...filters };
     const res = await apiGet('getKunjungan', params);
     if (!res.success) throw new Error(res.message || 'Gagal mengambil data kunjungan');
-    return (res.data || []).map((k) => ({
-      ...k,
-      info_paket: k.paket_info
-        ? `Paket (${k.paket_info.terpakai}/${k.paket_info.total_kunjungan})`
-        : null,
-    }));
+    return (res.data || [])
+      .filter((k) => !k.is_deleted && String(k.is_deleted).toLowerCase() !== 'true')
+      .map((k) => ({
+        ...k,
+        info_paket: k.paket_info
+          ? `Paket (${k.paket_info.terpakai}/${k.paket_info.total_kunjungan})`
+          : null,
+      }));
   },
 
   /** Catat kunjungan baru. Jika paket_id diisi, GAS otomatis deduct sisa. */
