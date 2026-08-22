@@ -5,35 +5,27 @@ import { useAnimatePresence } from '../../hooks/useAnimatePresence';
 import { DatePicker } from './DatePicker';
 import { Button } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import { Input } from '../ui/input';
-import { Badge } from '../ui/badge';
 import { formatDateLocal } from '../../lib/utils';
 import {
   FileText,
   Printer,
-  Settings,
-  ChevronDown,
-  ChevronUp,
   Filter,
+  Zap,
+  CalendarDays,
+  History,
+  CalendarCheck,
+  Search,
+  X,
 } from 'lucide-react';
 
 export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
   const { shouldRender, isMounted } = useAnimatePresence(isOpen, 250);
-  const { kopSurat, setKopSurat } = useSettings();
+  const { kopSurat } = useSettings();
 
   // Period state: '1_minggu' | 'bulan_ini' | 'bulan_lalu' | 'tahun_ini' | 'custom'
   const [periodType, setPeriodType] = useState('bulan_ini');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
-
-  // Editable KOP Surat form state
-  const [showKopSettings, setShowKopSettings] = useState(false);
-  const [tempKop, setTempKop] = useState(kopSurat);
-
-  const handleSaveKop = () => {
-    setKopSurat(tempKop);
-    setShowKopSettings(false);
-  };
 
   // ─── Filter Data Based on Selected Period ─────────────────────────────
   const { filteredList, dateLabel, startDateStr, endDateStr } = useMemo(() => {
@@ -140,108 +132,101 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
             : 'translate-y-full sm:translate-y-6 opacity-0 sm:scale-95'
         }`}
       >
-        {/* ─── Modal Header ─── */}
-        <CardHeader className="flex flex-row items-center justify-between border-b border-border p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] shrink-0 bg-card no-print">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <FileText className="size-6 text-primary shrink-0" />
-            <div>
-              <CardTitle className="text-base sm:text-lg md:text-xl font-black">
-                Cetak Laporan PDF (Ber-KOP Surat)
-              </CardTitle>
-              <p className="text-xs text-muted-foreground font-medium truncate">
-                Pilih periode &amp; cetak/simpan laporan resmi PDF
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handlePrint}
-              className="font-bold shadow-md bg-primary text-primary-foreground gap-1.5 rounded-xl h-9 px-3 text-xs sm:text-sm"
-            >
-              <Printer className="size-4" />
-              <span>Cetak / Simpan PDF</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="text-muted-foreground font-black text-xl size-9 rounded-xl hover:bg-secondary"
-            >
-              ✕
-            </Button>
-          </div>
+        {/* Modal Header */}
+        <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pt-[max(1.25rem,env(safe-area-inset-top))] border-b border-border bg-card shrink-0 no-print">
+          <CardTitle className="text-base sm:text-lg md:text-xl font-black flex items-center gap-2.5">
+            <FileText className="size-5 sm:size-6 text-primary shrink-0" />
+            <span>Cetak Laporan PDF</span>
+          </CardTitle>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full shrink-0">
+            <X className="size-5 text-muted-foreground" />
+          </Button>
         </CardHeader>
 
-        {/* ─── Modal Scrollable Body ─── */}
+        {/* Modal Scrollable Body */}
         <CardContent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+2rem))]">
-          {/* ─── Filter Periode Buttons ─── */}
-          <div className="space-y-2 bg-secondary/50 p-3.5 rounded-2xl border border-border/80 no-print">
-            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Filter className="size-3.5 text-primary" />
-              Pilih Periode Laporan:
-            </label>
+          {/* Filter Periode Buttons & Print Trigger */}
+          <div className="space-y-3 bg-secondary/50 p-3.5 sm:p-4 rounded-2xl border border-border/80 no-print">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Filter className="size-3.5 text-primary" />
+                Pilih Periode Laporan:
+              </label>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handlePrint}
+                className="font-bold shadow-md bg-primary text-primary-foreground gap-1.5 rounded-xl h-8 px-3 text-xs shrink-0"
+              >
+                <Printer className="size-3.5" />
+                <span>Cetak / Simpan PDF</span>
+              </Button>
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
               <button
                 type="button"
                 onClick={() => setPeriodType('1_minggu')}
-                className={`py-2 px-2.5 rounded-xl font-bold text-xs transition-all ${
+                className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
                   periodType === '1_minggu'
                     ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-background hover:bg-secondary text-muted-foreground hover:text-foreground border border-input'
+                    : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
                 }`}
               >
-                ⚡ 1 Minggu (7 Hari)
+                <Zap className="size-3.5 shrink-0" />
+                <span>1 Minggu</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPeriodType('bulan_ini')}
-                className={`py-2 px-2.5 rounded-xl font-bold text-xs transition-all ${
+                className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
                   periodType === 'bulan_ini'
                     ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-background hover:bg-secondary text-muted-foreground hover:text-foreground border border-input'
+                    : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
                 }`}
               >
-                📅 Bulan Ini
+                <CalendarDays className="size-3.5 shrink-0" />
+                <span>Bulan Ini</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPeriodType('bulan_lalu')}
-                className={`py-2 px-2.5 rounded-xl font-bold text-xs transition-all ${
+                className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
                   periodType === 'bulan_lalu'
                     ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-background hover:bg-secondary text-muted-foreground hover:text-foreground border border-input'
+                    : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
                 }`}
               >
-                📆 Bulan Lalu
+                <History className="size-3.5 shrink-0" />
+                <span>Bulan Lalu</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPeriodType('tahun_ini')}
-                className={`py-2 px-2.5 rounded-xl font-bold text-xs transition-all ${
+                className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
                   periodType === 'tahun_ini'
                     ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-background hover:bg-secondary text-muted-foreground hover:text-foreground border border-input'
+                    : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
                 }`}
               >
-                🗓️ Tahun Ini
+                <CalendarCheck className="size-3.5 shrink-0" />
+                <span>Tahun Ini</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPeriodType('custom')}
-                className={`py-2 px-2.5 rounded-xl font-bold text-xs col-span-2 sm:col-span-1 transition-all ${
+                className={`py-2 px-2 rounded-xl font-bold text-xs col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 transition-all ${
                   periodType === 'custom'
                     ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-background hover:bg-secondary text-muted-foreground hover:text-foreground border border-input'
+                    : 'bg-card hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/80'
                 }`}
               >
-                🔍 Custom Date
+                <Search className="size-3.5 shrink-0" />
+                <span>Custom Date</span>
               </button>
             </div>
 
@@ -263,92 +248,6 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
                     onChange={setCustomEndDate}
                     placeholder="Pilih tanggal akhir..."
                   />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ─── KOP Surat Settings Accordion ─── */}
-          <div className="border border-border rounded-2xl overflow-hidden bg-background no-print">
-            <button
-              type="button"
-              onClick={() => setShowKopSettings(!showKopSettings)}
-              className="w-full px-4 py-3 bg-secondary/40 hover:bg-secondary/70 flex items-center justify-between font-bold text-xs sm:text-sm text-foreground transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Settings className="size-4 text-primary" />
-                Pengaturan KOP Surat &amp; Penanggung Jawab
-              </span>
-              {showKopSettings ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-            </button>
-
-            {showKopSettings && (
-              <div className="p-4 space-y-3 bg-card border-t border-border">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-foreground mb-1 block">Nama Klinik / Praktik</label>
-                    <Input
-                      value={tempKop.namaKlinik}
-                      onChange={(e) => setTempKop({ ...tempKop, namaKlinik: e.target.value })}
-                      placeholder="Nama Klinik / Tempat Praktek"
-                      className="font-bold text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-foreground mb-1 block">Sub-judul / Spesialisasi</label>
-                    <Input
-                      value={tempKop.subKlinik}
-                      onChange={(e) => setTempKop({ ...tempKop, subKlinik: e.target.value })}
-                      placeholder="Spesialisasi / Keterangan"
-                      className="text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-foreground mb-1 block">Alamat Lengkap</label>
-                  <Input
-                    value={tempKop.alamatKlinik}
-                    onChange={(e) => setTempKop({ ...tempKop, alamatKlinik: e.target.value })}
-                    placeholder="Alamat Klinik"
-                    className="text-xs"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-foreground mb-1 block">Kontak / Telp / WA</label>
-                    <Input
-                      value={tempKop.kontakKlinik}
-                      onChange={(e) => setTempKop({ ...tempKop, kontakKlinik: e.target.value })}
-                      placeholder="No Telp & Email"
-                      className="text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-foreground mb-1 block">Kota Penerbit</label>
-                    <Input
-                      value={tempKop.kotaPenerbit}
-                      onChange={(e) => setTempKop({ ...tempKop, kotaPenerbit: e.target.value })}
-                      placeholder="Kota (contoh: Jakarta)"
-                      className="text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-foreground mb-1 block">Nama Penanggung Jawab</label>
-                    <Input
-                      value={tempKop.penanggungJawab}
-                      onChange={(e) => setTempKop({ ...tempKop, penanggungJawab: e.target.value })}
-                      placeholder="Nama Penanggung Jawab"
-                      className="font-bold text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end pt-2">
-                  <Button size="sm" onClick={handleSaveKop} className="font-bold text-xs">
-                    Simpan Pengaturan KOP Surat
-                  </Button>
                 </div>
               </div>
             )}

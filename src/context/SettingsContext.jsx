@@ -8,7 +8,7 @@ const defaultKopSurat = {
   alamatKlinik: 'Jl. Raya utama No. 123, Jakarta',
   kontakKlinik: 'Telp/WA: 0812-3456-7890 | Email: info@kliniksehat.com',
   kotaPenerbit: 'Jakarta',
-  penanggungJawab: 'dr. Willy Permana',
+  penanggungJawab: 'Nama Penanggung Jawab',
 };
 
 export function SettingsProvider({ children }) {

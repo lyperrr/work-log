@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { usePrivacy } from '../context/PrivacyContext';
 import { useSettings } from '../context/SettingsContext';
@@ -206,6 +206,53 @@ export function DashboardPage({ onNavigate }) {
     };
   });
 
+  const [chartMode, setChartMode] = useState('daily'); // 'daily' | 'monthly'
+
+  // Monthly Revenue Comparison Data for the last 6 months
+  const monthlyChartData = useMemo(() => {
+    const months = [];
+    const now = new Date();
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yearMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const monthLabel = d.toLocaleDateString('id-ID', { month: 'short' });
+
+      // Revenue from lunas visits
+      const visitRev = lunasVisits
+        .filter((k) => getCleanDate(k.tanggal_kunjungan).startsWith(yearMonth))
+        .reduce((sum, k) => sum + (Number(k.biaya) || 0), 0);
+
+      // Revenue from paket sales
+      const paketRev = paketList
+        .filter((p) => getCleanDate(p.tanggal_beli).startsWith(yearMonth))
+        .reduce((sum, p) => sum + (Number(p.harga_paket) || 0), 0);
+
+      const visitCount = lunasVisits.filter((k) => getCleanDate(k.tanggal_kunjungan).startsWith(yearMonth)).length;
+      const paketCount = paketList.filter((p) => getCleanDate(p.tanggal_beli).startsWith(yearMonth)).length;
+
+      months.push({
+        month: monthLabel,
+        yearMonth,
+        visitTotal: visitRev,
+        paketTotal: paketRev,
+        total: visitRev + paketRev,
+        visitCount,
+        paketCount,
+        isCurrentMonth: yearMonth === currentYearMonth,
+      });
+    }
+
+    return months;
+  }, [lunasVisits, paketList, currentYearMonth]);
+
+  // Calculate Month-over-Month Growth %
+  const currentMonthData = monthlyChartData[monthlyChartData.length - 1] || {};
+  const prevMonthData = monthlyChartData[monthlyChartData.length - 2] || {};
+  const monthGrowthPercent = prevMonthData.total > 0
+    ? Math.round(((currentMonthData.total - prevMonthData.total) / prevMonthData.total) * 100)
+    : 0;
+
   return (
     <div className="space-y-4 sm:space-y-6 pb-24 sm:pb-8 animate-in fade-in-50">
 
@@ -394,27 +441,90 @@ export function DashboardPage({ onNavigate }) {
         </div>
       </div>
 
-      {/* Income Trend Chart */}
+      {/* Income Trend & Monthly Comparison Chart */}
       <Card className="border-2 border-border rounded-3xl shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-black flex items-center gap-2">
-            <TrendingUp className="size-5 text-primary" />
-            Grafik Pemasukan 7 Hari Terakhir
-          </CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2">
+          <div>
+            <CardTitle className="text-lg font-black flex items-center gap-2">
+              <TrendingUp className="size-5 text-primary" />
+              {chartMode === 'daily' ? 'Grafik Pemasukan 7 Hari Terakhir' : 'Perbandingan Pendapatan (6 Bulan)'}
+            </CardTitle>
+            {chartMode === 'monthly' && (
+              <p className="text-xs text-muted-foreground font-medium mt-0.5 flex items-center gap-1.5">
+                <span>Tren 6 bulan terakhir</span>
+                {prevMonthData.total > 0 && (
+                  <Badge
+                    variant={monthGrowthPercent >= 0 ? 'success' : 'destructive'}
+                    className="text-[10px] py-0 font-bold"
+                  >
+                    {monthGrowthPercent >= 0 ? `+${monthGrowthPercent}%` : `${monthGrowthPercent}%`} vs bulan lalu
+                  </Badge>
+                )}
+              </p>
+            )}
+          </div>
+
+          {/* Mode Switcher Toggle */}
+          <div className="flex items-center p-1 bg-secondary rounded-2xl border border-border/80 text-xs font-bold shrink-0 self-stretch sm:self-auto justify-center">
+            <button
+              type="button"
+              onClick={() => setChartMode('daily')}
+              className={`px-3 py-1.5 rounded-xl transition-all ${
+                chartMode === 'daily'
+                  ? 'bg-card text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              7 Hari Terakhir
+            </button>
+            <button
+              type="button"
+              onClick={() => setChartMode('monthly')}
+              className={`px-3 py-1.5 rounded-xl transition-all ${
+                chartMode === 'monthly'
+                  ? 'bg-card text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Perbandingan 6 Bulan
+            </button>
+          </div>
         </CardHeader>
+
         <CardContent>
           <div className="h-56 w-full min-w-0 pt-2 min-h-55">
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={chartData}>
-                <XAxis dataKey="day" stroke="#888888" fontSize={12} tickLine={false} />
+              <BarChart data={chartMode === 'daily' ? chartData : monthlyChartData}>
+                <XAxis
+                  dataKey={chartMode === 'daily' ? 'day' : 'month'}
+                  stroke="#888888"
+                  fontSize={12}
+                  tickLine={false}
+                />
                 <YAxis stroke="#888888" fontSize={10} tickFormatter={(v) => `${v / 1000}k`} width={35} />
                 <Tooltip
-                  formatter={(value) => [`Rp ${Number(value || 0).toLocaleString('id-ID')}`, 'Pemasukan']}
-                  contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '12px', borderColor: 'var(--border)' }}
+                  formatter={(value) => [
+                    hideIncome ? '••••••' : `Rp ${Number(value || 0).toLocaleString('id-ID')}`,
+                    'Total Pemasukan',
+                  ]}
+                  contentStyle={{
+                    backgroundColor: 'var(--card)',
+                    borderRadius: '12px',
+                    borderColor: 'var(--border)',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                  }}
                 />
                 <Bar dataKey="total" radius={[8, 8, 0, 0]}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill="oklch(0.52 0.105 223.128)" />
+                  {(chartMode === 'daily' ? chartData : monthlyChartData).map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        chartMode === 'monthly' && entry.isCurrentMonth
+                          ? 'oklch(0.62 0.19 145)'
+                          : 'oklch(0.52 0.105 223.128)'
+                      }
+                    />
                   ))}
                 </Bar>
               </BarChart>
