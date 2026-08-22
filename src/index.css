@@ -129,7 +129,10 @@
     @apply font-sans antialiased;
   }
   body {
-    @apply bg-background text-foreground min-h-screen;
+    @apply bg-background text-foreground min-h-screen w-full overflow-x-hidden;
+  }
+  #root {
+    @apply min-h-screen w-full;
   }
 }
 

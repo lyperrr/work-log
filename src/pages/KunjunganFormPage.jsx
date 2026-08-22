@@ -209,8 +209,8 @@ export function KunjunganFormPage({ onSaved, prefill }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 pb-36 sm:pb-8 animate-in fade-in-50">
-      <Card>
+    <div className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6 pb-44 sm:pb-12 animate-in fade-in-50 min-w-0">
+      <Card className="w-full max-w-full overflow-hidden">
         <CardHeader>
           <div className="flex items-center gap-3">
             <PlusCircle className="size-6 sm:size-7 shrink-0 text-primary" />
@@ -219,13 +219,13 @@ export function KunjunganFormPage({ onSaved, prefill }) {
                 Catat Kunjungan Baru
               </CardTitle>
               <p className="text-xs sm:text-sm text-muted-foreground font-medium">
-                Isi formulir berikut untuk mencatat sesi kunjungan pasien & pembayaran
+                Isi formulir berikut untuk mencatat sesi kunjungan pasien &amp; pembayaran
               </p>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
+        <CardContent className="pt-4 space-y-4 sm:space-y-6">
           {errorMsg && (
             <Alert variant="destructive" className="rounded-2xl border-2">
               <AlertCircle className="h-5 w-5" />
@@ -255,7 +255,6 @@ export function KunjunganFormPage({ onSaved, prefill }) {
             </div>
           )}
 
-
           {successMsg && (
             <Alert className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-2 border-emerald-500/30 rounded-2xl">
               <CheckCircle2 className="h-5 w-5 text-emerald-600" />
@@ -282,26 +281,28 @@ export function KunjunganFormPage({ onSaved, prefill }) {
                   Gunakan Paket Aktif Pasien Ini?
                 </label>
                 <Select value={selectedPaketId} onValueChange={setSelectedPaketId}>
-                  <SelectTrigger className="w-full h-auto min-h-13 py-2 px-3 sm:px-4 bg-card border-2 border-primary/40 font-bold text-sm sm:text-base md:text-lg rounded-xl text-left">
+                  <SelectTrigger className="w-full h-auto min-h-13 py-2.5 px-3 sm:px-4 bg-card border-2 border-primary/40 font-bold text-sm sm:text-base md:text-lg rounded-xl text-left touch-input">
                     <SelectValue placeholder="Pilih paket..." />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl max-w-[calc(100vw-2rem)] sm:max-w-lg">
-                    <SelectItem value="none" className="py-2.5">
-                      <span className="font-bold text-xs sm:text-sm md:text-base text-foreground">
-                        Tidak Menggunakan Paket (Bayar Mandiri / Eceran)
-                      </span>
+                  <SelectContent className="rounded-2xl z-50">
+                    <SelectItem value="none" className="py-2.5 px-3">
+                      <div className="flex flex-col text-left min-w-0">
+                        <span className="font-bold text-xs sm:text-sm text-foreground whitespace-normal leading-snug">
+                          Tidak Menggunakan Paket (Bayar Mandiri / Eceran)
+                        </span>
+                      </div>
                     </SelectItem>
                     {activePaketList.map((pkt) => {
                       const patientName = pkt.nama_pasien || namaPasien || 'Pasien';
                       return (
-                        <SelectItem key={pkt.paket_id} value={pkt.paket_id} className="py-2.5">
-                          <div className="flex flex-col gap-1 w-full text-left">
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-mono text-primary font-bold text-[11px] sm:text-xs bg-primary/15 px-2 py-0.5 rounded-md border border-primary/20 shrink-0">
+                        <SelectItem key={pkt.paket_id} value={pkt.paket_id} className="py-2.5 px-3">
+                          <div className="flex flex-col gap-1 w-full min-w-0 text-left">
+                            <div className="flex items-center justify-between gap-1.5 min-w-0">
+                              <span className="font-mono text-primary font-bold text-[11px] sm:text-xs bg-primary/15 px-1.5 py-0.5 rounded-md border border-primary/20 shrink-0">
                                 {pkt.paket_id}
                               </span>
-                              <span className="text-[11px] sm:text-xs font-extrabold text-primary shrink-0">
-                                Sisa <span className="font-black text-primary">{pkt.sisa_kunjungan}</span> dari {pkt.total_kunjungan} Sesi
+                              <span className="text-[11px] sm:text-xs font-extrabold text-primary shrink-0 truncate">
+                                Sisa <span className="font-black text-primary">{pkt.sisa_kunjungan}</span>/{pkt.total_kunjungan} Sesi
                               </span>
                             </div>
                             <span className="text-xs sm:text-sm font-black text-foreground truncate mt-0.5">
@@ -415,8 +416,9 @@ export function KunjunganFormPage({ onSaved, prefill }) {
                   Status Pembayaran
                 </label>
                 {selectedPaketId !== 'none' ? (
-                  <div className="h-13 px-4 flex items-center font-bold text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/30">
-                    <CheckCircle2 className="size-4.5 mr-2 shrink-0" /> Lunas (Terbayar Paket)
+                  <div className="min-h-13 py-2.5 px-3.5 flex items-center font-bold text-xs sm:text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/30 whitespace-normal leading-snug">
+                    <CheckCircle2 className="size-4.5 mr-2 shrink-0" />
+                    <span>Lunas (Terbayar Paket)</span>
                   </div>
                 ) : (
                   <Select value={status} onValueChange={setStatus}>
@@ -436,7 +438,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
             <Button
               type="submit"
               disabled={saving}
-              className="w-full h-13 sm:h-14 font-black text-base sm:text-lg md:text-xl rounded-2xl shadow-lg shadow-primary/20 touch-btn mt-2 sm:mt-4 gap-2"
+              className="w-full h-auto min-h-13 py-3 px-4 font-black text-sm sm:text-base md:text-lg rounded-2xl shadow-lg shadow-primary/20 touch-btn mt-2 sm:mt-4 gap-2 whitespace-normal leading-tight text-center justify-center"
             >
               {saving ? (
                 <>

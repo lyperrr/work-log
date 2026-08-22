@@ -254,7 +254,7 @@ export function DashboardPage({ onNavigate }) {
     : 0;
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-36 sm:pb-8 animate-in fade-in-50">
+    <div className="space-y-4 sm:space-y-6 pb-44 sm:pb-12 animate-in fade-in-50">
 
       {/* Welcome Greeting Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 md:p-6 rounded-3xl bg-linear-to-r from-primary/15 via-primary/10 to-cyan-500/10 border border-primary/20 shadow-xs overflow-hidden">

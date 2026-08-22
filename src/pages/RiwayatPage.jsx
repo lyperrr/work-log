@@ -134,7 +134,6 @@ export function RiwayatPage() {
 
   const todayStr = getTodayDateString();
   const currentYearMonth = todayStr.substring(0, 7);
-
   const filteredList = (Array.isArray(kunjunganList) ? kunjunganList : []).filter((k) => {
     if (!k || typeof k !== 'object') return false;
 
@@ -145,31 +144,48 @@ export function RiwayatPage() {
       if (kDate && !kDate.startsWith(currentYearMonth)) return false;
     }
 
+    // Search query: matches nama_pasien, kunjungan_id, paket_id, no_telp, or pasien_id
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       const matchName = (k.nama_pasien || '').toLowerCase().includes(q);
-      const matchId = (k.kunjungan_id || '').toLowerCase().includes(q);
-      if (!matchName && !matchId) return false;
+      const matchKunjunganId = (k.kunjungan_id || '').toLowerCase().includes(q);
+      const matchPaketId = (k.paket_id || '').toLowerCase().includes(q);
+      const matchTelp = (k.no_telp || '').toLowerCase().includes(q);
+      const matchPasienId = (k.pasien_id || '').toLowerCase().includes(q);
+      if (!matchName && !matchKunjunganId && !matchPaketId && !matchTelp && !matchPasienId) {
+        return false;
+      }
     }
 
-    if (statusFilter && statusFilter !== 'semua' && (k.status || '').toLowerCase() !== statusFilter.toLowerCase()) {
-      return false;
+    // Status filter (case-insensitive & space trimmed)
+    if (statusFilter && statusFilter !== 'semua') {
+      const kStatus = (k.status || '').toLowerCase().trim();
+      const targetStatus = statusFilter.toLowerCase().trim();
+      if (kStatus !== targetStatus) return false;
     }
 
-    if (metodeFilter && metodeFilter !== 'semua' && (k.metode_pembayaran || '').toLowerCase() !== metodeFilter.toLowerCase()) {
-      return false;
+    // Metode filter (case-insensitive & space trimmed)
+    if (metodeFilter && metodeFilter !== 'semua') {
+      const kMetode = (k.metode_pembayaran || '').toLowerCase().trim();
+      const targetMetode = metodeFilter.toLowerCase().trim();
+      if (kMetode !== targetMetode) return false;
     }
 
-    if (jenisFilter === 'reguler' && k.paket_id) return false;
-    if (jenisFilter === 'paket' && !k.paket_id) return false;
+    // Jenis filter (reguler vs paket)
+    if (jenisFilter && jenisFilter !== 'semua') {
+      const hasPaket = Boolean(k.paket_id && String(k.paket_id).trim() !== '');
+      if (jenisFilter === 'reguler' && hasPaket) return false;
+      if (jenisFilter === 'paket' && !hasPaket) return false;
+    }
 
-    if (startDate && kDate < startDate) return false;
-    if (endDate && kDate > endDate) return false;
+    // Start date & End date
+    if (startDate && kDate && kDate < startDate) return false;
+    if (endDate && kDate && kDate > endDate) return false;
 
     return true;
   }).sort((a, b) => {
-    const dateA = a.tanggal_kunjungan ? String(a.tanggal_kunjungan).split('T')[0] : '';
-    const dateB = b.tanggal_kunjungan ? String(b.tanggal_kunjungan).split('T')[0] : '';
+    const dateA = a.tanggal_kunjungan ? formatDateLocal(a.tanggal_kunjungan) : '';
+    const dateB = b.tanggal_kunjungan ? formatDateLocal(b.tanggal_kunjungan) : '';
     if (dateA !== dateB) return dateB.localeCompare(dateA);
     return String(b.kunjungan_id || '').localeCompare(String(a.kunjungan_id || ''));
   });
@@ -220,11 +236,11 @@ export function RiwayatPage() {
         metode_pembayaran: editingItem.metode_pembayaran,
         status: editingItem.status,
       });
+      showToast('Data kunjungan berhasil diperbarui!', 'success');
       setEditingItem(null);
       await loadData();
-      showToast('Perubahan data kunjungan berhasil disimpan!', 'success');
     } catch (err) {
-      showToast(getFriendlyErrorMessage(err, 'Maaf, perubahan data belum berhasil disimpan. Silakan coba lagi.'), 'error');
+      showToast(getFriendlyErrorMessage(err, 'Maaf, data kunjungan belum berhasil diperbarui. Silakan coba lagi.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -241,7 +257,7 @@ export function RiwayatPage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-36 sm:pb-8 animate-in fade-in-50">
+    <div className="space-y-4 sm:space-y-6 pb-44 sm:pb-12 animate-in fade-in-50">
 
       {/* Header Card using shadcn Card */}
       <Card>
@@ -260,12 +276,12 @@ export function RiwayatPage() {
           <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
             <Button
               type="button"
-              variant="default"
+              variant="outline"
               onClick={() => setShowExportPdfModal(true)}
-              className="w-full sm:w-auto font-bold bg-primary text-primary-foreground shadow-sm gap-1.5"
+              className="w-full sm:w-auto font-bold gap-1.5 text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/30"
             >
               <Printer className="size-4.5" />
-              Cetak Laporan PDF
+              Cetak / Ekspor PDF
             </Button>
             <Button
               type="button"
@@ -284,7 +300,7 @@ export function RiwayatPage() {
       <ExportPdfModal
         isOpen={showExportPdfModal}
         onClose={() => setShowExportPdfModal(false)}
-        kunjunganList={kunjunganList}
+        kunjunganList={filteredList}
       />
 
       {/* Import Modal */}
