@@ -118,6 +118,7 @@ export function RiwayatPage() {
   useEffect(() => {
     let active = true;
     const fetchData = async () => {
+      if (active) setLoadingData(true);
       try {
         const data = await api.getKunjunganList();
         if (active) setKunjunganList(data || []);

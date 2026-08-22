@@ -116,6 +116,7 @@ export function PaketPage({ onNavigate }) {
 
   // ─── Data Loading ─────────────────────────────────────────────
   const loadData = async () => {
+    setLoadingData(true);
     try {
       const [pakets, kunjungans] = await Promise.all([
         api.getPaketList().catch(() => []),
@@ -133,6 +134,7 @@ export function PaketPage({ onNavigate }) {
   useEffect(() => {
     let active = true;
     const fetchData = async () => {
+      if (active) setLoadingData(true);
       try {
         const [pakets, kunjungans] = await Promise.all([
           api.getPaketList().catch(() => []),
@@ -228,13 +230,38 @@ export function PaketPage({ onNavigate }) {
     setSaving(true);
     try {
       const patientRecord = await api.saveOrGetPasienByName(namaPasien, noTelp);
-      await api.createPaket({
+      const numHarga = Number(hargaPaket);
+      const nilaiPerSesi = Math.round(numHarga / numSessions);
+
+      const createdRes = await api.createPaket({
         pasien_id: patientRecord.pasien_id,
+        nama_pasien: patientRecord.nama_pasien,
+        no_telp: noTelp,
         total_kunjungan: numSessions,
-        harga_paket: Number(hargaPaket),
+        harga_paket: numHarga,
         tanggal_beli: tanggalBeli,
       });
-      const successText = `Paket baru berhasil dibuat untuk ${patientRecord.nama_pasien}!`;
+
+      const newPaketId = createdRes?.paket_id || createdRes?.paket?.paket_id || createdRes?.data?.paket_id;
+
+      // Secondary check: ensure 1st visit note exists on the same purchase date
+      const hasVisitsForNewPaket = newPaketId && (kunjunganList || []).some((k) => k.paket_id === newPaketId);
+      if (!hasVisitsForNewPaket) {
+        await api.createKunjungan({
+          pasien_id: patientRecord.pasien_id,
+          nama_pasien: patientRecord.nama_pasien,
+          no_telp: noTelp,
+          paket_id: newPaketId || '',
+          metode_pembayaran: 'cash',
+          tanggal_kunjungan: tanggalBeli,
+          biaya: nilaiPerSesi,
+          status: 'lunas',
+        }).catch((visitErr) => {
+          console.warn('Auto create visit fallback:', visitErr);
+        });
+      }
+
+      const successText = `Paket baru & 1 catatan kunjungan pertama (${formatDateLocal(tanggalBeli)}) berhasil dibuat untuk ${patientRecord.nama_pasien}!`;
       setSuccessMsg(successText);
       showToast(successText, 'success');
       setShowModal(false);
@@ -1060,44 +1087,28 @@ export function PaketPage({ onNavigate }) {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-2.5 pt-2">
+                <div className="flex items-center gap-2.5 pt-2">
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     disabled={saving}
-                    onClick={(e) => {
-                      setShowEditModal(false);
-                      handleOpenDeletePaketModal(editPaketData, e);
-                    }}
-                    className="text-destructive hover:bg-destructive/10 font-bold h-12 text-sm rounded-xl sm:rounded-2xl gap-1.5 px-3 shrink-0"
+                    onClick={() => setShowEditModal(false)}
+                    className="w-1/3 sm:w-auto px-4 h-12 sm:h-13 text-base font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
                   >
-                    <Trash2 className="size-4 shrink-0" />
-                    <span className="hidden sm:inline">Hapus Paket</span>
+                    <X className="size-4 shrink-0 text-muted-foreground" />
+                    <span>Batal</span>
                   </Button>
-
-                  <div className="flex items-center gap-2 flex-1 justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={saving}
-                      onClick={() => setShowEditModal(false)}
-                      className="px-4 h-12 text-sm font-bold rounded-xl sm:rounded-2xl gap-1.5 shrink-0"
-                    >
-                      <X className="size-4 shrink-0 text-muted-foreground" />
-                      <span>Batal</span>
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={saving}
-                      className="flex-1 h-12 text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
-                    >
-                      {saving ? (
-                        <><Spinner className="size-4 sm:size-5 shrink-0" /><span className="truncate">Menyimpan...</span></>
-                      ) : (
-                        <><CheckCircle2 className="size-4 sm:size-5 shrink-0" /><span className="truncate">Simpan Perubahan</span></>
-                      )}
-                    </Button>
-                  </div>
+                  <Button
+                    type="submit"
+                    disabled={saving}
+                    className="flex-1 h-12 sm:h-13 text-base font-black rounded-xl sm:rounded-2xl shadow-lg gap-1.5 sm:gap-2 whitespace-nowrap min-w-0"
+                  >
+                    {saving ? (
+                      <><Spinner className="size-4 sm:size-5 shrink-0" /><span className="truncate">Menyimpan...</span></>
+                    ) : (
+                      <><CheckCircle2 className="size-4 sm:size-5 shrink-0" /><span className="truncate">Simpan Perubahan</span></>
+                    )}
+                  </Button>
                 </div>
               </form>
             </CardContent>
