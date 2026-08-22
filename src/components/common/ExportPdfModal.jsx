@@ -88,14 +88,18 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
     let totalTransfer = 0;
 
     filteredList.forEach((item) => {
-      const b = Number(item.biaya) || 0;
+      const isPaketVisit = Boolean(item.paket_id && String(item.paket_id).trim() !== '');
+      const b = isPaketVisit ? 0 : (Number(item.biaya) || 0);
+
       totalBiaya += b;
       if (item.status === 'lunas') countLunas++;
       else if (item.status === 'menunggu') countMenunggu++;
       else countBelum++;
 
-      if (item.metode_pembayaran === 'transfer') totalTransfer += b;
-      else totalCash += b;
+      if (!isPaketVisit) {
+        if (item.metode_pembayaran === 'transfer') totalTransfer += b;
+        else totalCash += b;
+      }
     });
 
     return {

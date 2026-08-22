@@ -93,7 +93,7 @@ export function KunjunganCard({
 
           <div className="flex items-center gap-2 shrink-0">
             <PrivacyAmount
-              amount={item.biaya}
+              amount={item.paket_id ? 0 : item.biaya}
               isRevealed={isRevealed}
               onToggle={onTogglePeek}
               className="text-base font-black text-primary tracking-tight"
@@ -112,11 +112,11 @@ export function KunjunganCard({
           <div className="flex items-center gap-2">
             <PrivacyPeekButton isRevealed={isRevealed} onToggle={onTogglePeek} />
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider group-hover/biaya:text-foreground">
-              Biaya:
+              {item.paket_id ? 'Biaya Sesi Paket:' : 'Biaya:'}
             </span>
           </div>
           <PrivacyAmount
-            amount={item.biaya}
+            amount={item.paket_id ? 0 : item.biaya}
             isRevealed={isRevealed}
             onToggle={onTogglePeek}
             className="text-lg sm:text-xl font-black text-primary tracking-tight"
