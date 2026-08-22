@@ -458,7 +458,7 @@ export function ImportModal({
                           <>
                             <td className="p-2.5 text-muted-foreground">{row.tanggal_kunjungan}</td>
                             <td className="p-2.5 font-bold text-primary">Rp {Number(row.biaya).toLocaleString('id-ID')}</td>
-                            <td className="p-2.5 uppercase font-bold text-[10px]">{row.metode_pembayaran}</td>
+                            <td className="p-2.5 capitalize font-bold text-[10px]">{row.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Cash (Tunai)'}</td>
                             <td className="p-2.5">
                               <Badge
                                 variant={row.status === 'lunas' ? 'success' : 'warning'}

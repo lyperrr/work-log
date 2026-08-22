@@ -374,15 +374,15 @@ export function ExportPdfModal({ isOpen, onClose, kunjunganList = [] }) {
                           <td className="p-2 border border-gray-300 text-gray-700">
                             {item.no_telp || '-'}
                           </td>
-                          <td className="p-2 border border-gray-300 text-center uppercase font-bold text-gray-800">
-                            {item.metode_pembayaran}
+                          <td className="p-2 border border-gray-300 text-center capitalize font-bold text-gray-800">
+                            {item.metode_pembayaran === 'transfer' ? 'Transfer' : 'Cash'}
                           </td>
                           <td className="p-2 border border-gray-300 text-right font-black text-gray-900">
                             {Number(item.biaya || 0).toLocaleString('id-ID')}
                           </td>
                           <td className="p-2 border border-gray-300 text-center">
                             <span
-                              className={`px-1.5 py-0.5 rounded font-bold uppercase text-[9px] ${
+                              className={`px-1.5 py-0.5 rounded font-bold capitalize text-[9px] ${
                                 item.status === 'lunas'
                                   ? 'bg-emerald-100 text-emerald-800'
                                   : item.status === 'menunggu'

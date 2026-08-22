@@ -69,9 +69,9 @@ export function KunjunganCard({
             </div>
           </div>
 
-          <Badge variant="outline" className="uppercase font-bold text-[10px] sm:text-[11px] tracking-wider shrink-0 bg-background">
+          <Badge variant="outline" className="capitalize font-bold text-[10px] sm:text-[11px] tracking-wider shrink-0 bg-background">
             <CreditCard className="w-3 h-3 text-primary" />
-            {item.metode_pembayaran}
+            {item.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Cash (Tunai)'}
           </Badge>
         </div>
       ) : (
@@ -85,9 +85,9 @@ export function KunjunganCard({
               <Calendar className="size-3.5 text-primary shrink-0" />
               {formattedDate}
             </span>
-            <span className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground font-medium capitalize">
               <CreditCard className="size-3.5 text-primary shrink-0" />
-              {item.metode_pembayaran}
+              {item.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Cash (Tunai)'}
             </span>
           </div>
 
