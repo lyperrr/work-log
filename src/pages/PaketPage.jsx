@@ -6,7 +6,7 @@ import { useToast } from '../context/ToastContext';
 import { PrivacyAmount, PrivacyPeekButton } from '../components/common/PrivacyAmount';
 import { PatientAutocomplete } from '../components/common/PatientAutocomplete';
 import { PackageCalculator, calculateValuePerSession } from '../components/common/PackageCalculator';
-import { getTodayDateString, formatDateLocal } from '../lib/utils';
+import { getTodayDateString, formatDateLocal, getFriendlyErrorMessage } from '../lib/utils';
 import { DatePicker } from '../components/common/DatePicker';
 import { KunjunganCard } from '../components/common/KunjunganCard';
 import { EmptyState } from '../components/common/EmptyState';
@@ -121,7 +121,7 @@ export function PaketPage({ onNavigate }) {
       setPaketList(sortDesc(pakets, 'paket_id'));
       setKunjunganList(sortDesc(kunjungans, 'kunjungan_id'));
     } catch (err) {
-      showToast(err.message || 'Gagal memuat data', 'error');
+      showToast(getFriendlyErrorMessage(err, 'Gagal memuat data paket'), 'error');
     } finally {
       setLoadingData(false);
     }
@@ -140,7 +140,7 @@ export function PaketPage({ onNavigate }) {
           setKunjunganList(sortDesc(kunjungans, 'kunjungan_id'));
         }
       } catch (err) {
-        if (active) showToast(err.message || 'Gagal memuat data', 'error');
+        if (active) showToast(getFriendlyErrorMessage(err, 'Gagal memuat data paket'), 'error');
       } finally {
         if (active) setLoadingData(false);
       }
@@ -178,7 +178,7 @@ export function PaketPage({ onNavigate }) {
       setPendingKunjunganStatus((prev) => {
         const n = { ...prev }; delete n[kunjunganId]; return n;
       });
-      showToast(err.message || 'Gagal memperbarui status pembayaran', 'error');
+      showToast(getFriendlyErrorMessage(err, 'Gagal memperbarui status pembayaran'), 'error');
     } finally {
       setUpdatingKunjunganId(null);
       setPendingKunjunganStatus((prev) => {
@@ -238,7 +238,7 @@ export function PaketPage({ onNavigate }) {
       setNamaPasien(''); setNoTelp(''); setTotalKunjungan(5); setHargaPaket(1500000);
       await loadData();
     } catch (err) {
-      const errorText = err.message || 'Gagal membuat paket baru.';
+      const errorText = getFriendlyErrorMessage(err, 'Gagal membuat paket baru.');
       setErrorMsg(errorText);
       showToast(errorText, 'error');
     } finally {
@@ -305,7 +305,7 @@ export function PaketPage({ onNavigate }) {
         }));
       }
     } catch (err) {
-      setErrorMsg(err.message || 'Gagal memperbarui paket');
+      setErrorMsg(getFriendlyErrorMessage(err, 'Gagal memperbarui paket'));
     } finally {
       setSaving(false);
     }
@@ -328,7 +328,7 @@ export function PaketPage({ onNavigate }) {
       showToast('Perubahan kunjungan berhasil disimpan', 'success');
       await loadData();
     } catch (err) {
-      showToast(err.message || 'Gagal menyimpan perubahan kunjungan', 'error');
+      showToast(getFriendlyErrorMessage(err, 'Gagal menyimpan perubahan kunjungan'), 'error');
     } finally {
       setSaving(false);
     }
@@ -343,7 +343,7 @@ export function PaketPage({ onNavigate }) {
       showToast('Kunjungan berhasil dihapus', 'success');
       await loadData();
     } catch (err) {
-      showToast(err.message || 'Gagal menghapus kunjungan', 'error');
+      showToast(getFriendlyErrorMessage(err, 'Gagal menghapus kunjungan'), 'error');
     } finally {
       setSaving(false);
     }

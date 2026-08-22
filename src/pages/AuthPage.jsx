@@ -9,6 +9,7 @@ import { Spinner } from '../components/ui/spinner';
 
 import { LogIn, UserPlus, Lock, Mail, User, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { IosInstallPrompt } from '../components/common/IosInstallPrompt';
+import { getFriendlyErrorMessage } from '../lib/utils';
 
 export function AuthPage() {
   const { login, register } = useAuth();
@@ -49,7 +50,7 @@ export function AuthPage() {
         await register(cleanUsername, cleanEmail, cleanPassword);
       }
     } catch (err) {
-      setErrorMsg(err.message || 'Terjadi kesalahan');
+      setErrorMsg(getFriendlyErrorMessage(err, 'Gagal memproses data otentikasi'));
     } finally {
       setLoadingAction(null);
     }

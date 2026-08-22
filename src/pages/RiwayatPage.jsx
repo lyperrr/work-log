@@ -10,7 +10,7 @@ import { ImportModal } from '../components/common/ImportModal';
 import { ExportPdfModal } from '../components/common/ExportPdfModal';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 import { useAnimatePresence } from '../hooks/useAnimatePresence';
-import { getTodayDateString, formatDateLocal } from '../lib/utils';
+import { getTodayDateString, formatDateLocal, getFriendlyErrorMessage } from '../lib/utils';
 import { DatePicker } from '../components/common/DatePicker';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -109,7 +109,7 @@ export function RiwayatPage() {
       const data = await api.getKunjunganList();
       setKunjunganList(data || []);
     } catch (err) {
-      showToast(err.message || 'Gagal memuat data kunjungan', 'error');
+      showToast(getFriendlyErrorMessage(err, 'Gagal memuat data kunjungan'), 'error');
     } finally {
       setLoadingData(false);
     }
@@ -122,7 +122,7 @@ export function RiwayatPage() {
         const data = await api.getKunjunganList();
         if (active) setKunjunganList(data || []);
       } catch (err) {
-        if (active) showToast(err.message || 'Gagal memuat data kunjungan', 'error');
+        if (active) showToast(getFriendlyErrorMessage(err, 'Gagal memuat data kunjungan'), 'error');
       } finally {
         if (active) setLoadingData(false);
       }
@@ -185,7 +185,7 @@ export function RiwayatPage() {
     } catch (err) {
       // Revert optimistic update on failure
       setPendingStatus((prev) => { const n = { ...prev }; delete n[id]; return n; });
-      showToast(err.message || 'Gagal memperbarui status', 'error');
+      showToast(getFriendlyErrorMessage(err, 'Gagal memperbarui status'), 'error');
     } finally {
       setUpdatingId(null);
       setPendingStatus((prev) => { const n = { ...prev }; delete n[id]; return n; });
@@ -200,7 +200,7 @@ export function RiwayatPage() {
       await loadData();
       showToast('Catatan kunjungan berhasil dihapus', 'success');
     } catch (err) {
-      showToast(err.message || 'Gagal menghapus catatan', 'error');
+      showToast(getFriendlyErrorMessage(err, 'Gagal menghapus catatan'), 'error');
     } finally {
       setSaving(false);
       setDeleteTargetId(null);
@@ -223,7 +223,7 @@ export function RiwayatPage() {
       await loadData();
       showToast('Perubahan kunjungan berhasil disimpan', 'success');
     } catch (err) {
-      showToast(err.message || 'Gagal menyimpan perubahan', 'error');
+      showToast(getFriendlyErrorMessage(err, 'Gagal menyimpan perubahan'), 'error');
     } finally {
       setSaving(false);
     }

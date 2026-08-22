@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { getTodayDateString } from '../lib/utils';
+import { getTodayDateString, getFriendlyErrorMessage } from '../lib/utils';
 import { PatientAutocomplete } from '../components/common/PatientAutocomplete';
 import { DatePicker } from '../components/common/DatePicker';
 import { Button } from '../components/ui/button';
@@ -200,7 +200,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
         setTimeout(() => { onSaved(); }, 1200);
       }
     } catch (err) {
-      const errorText = err.message || 'Gagal menyimpan catatan kunjungan.';
+      const errorText = getFriendlyErrorMessage(err, 'Gagal menyimpan catatan kunjungan.');
       setErrorMsg(errorText);
       showToast(errorText, 'error');
     } finally {

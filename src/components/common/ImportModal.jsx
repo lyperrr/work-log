@@ -6,6 +6,7 @@ import { Badge } from '../ui/badge';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Spinner } from '../ui/spinner';
 import { useAnimatePresence } from '../../hooks/useAnimatePresence';
+import { getFriendlyErrorMessage } from '../../lib/utils';
 import {
   Upload,
   FileSpreadsheet,
@@ -234,9 +235,10 @@ export function ImportModal({
       if (onImportSuccess) onImportSuccess();
       onClose();
     } catch (err) {
-      setParsingError(err.message || 'Gagal memproses impor data.');
+      const friendlyErr = getFriendlyErrorMessage(err, 'Gagal memproses impor data.');
+      setParsingError(friendlyErr);
       if (showToast) {
-        showToast(err.message || 'Gagal memproses impor', 'error');
+        showToast(friendlyErr, 'error');
       }
     } finally {
       setImporting(false);
