@@ -103,11 +103,8 @@ export function KunjunganFormPage({ onSaved, prefill }) {
       const firstVisit = pkgVisits.length > 0 ? pkgVisits[0] : null;
 
       if (targetPaket && Number(targetPaket.total_kunjungan) > 0) {
-        const perSessionVal = Math.round(
-          Number(targetPaket.harga_paket || 0) / Number(targetPaket.total_kunjungan)
-        );
         const timer = setTimeout(() => {
-          setBiaya(perSessionVal);
+          setBiaya(0);
           setStatus('lunas');
           if (firstVisit && firstVisit.metode_pembayaran) {
             setMetodePembayaran(firstVisit.metode_pembayaran);
@@ -176,7 +173,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
         nama_pasien: patientRecord?.nama_pasien || namaPasien,
         no_telp: patientRecord?.no_telp || noTelp,
         tanggal_kunjungan: tanggalKunjungan,
-        biaya: Number(biaya),
+        biaya: usePaket ? 0 : Number(biaya),
         metode_pembayaran: metodePembayaran,
         status: status,
         paket_id: usePaket || '',

@@ -123,16 +123,18 @@ export function DashboardPage({ onNavigate }) {
 
   // Kunjungan dengan status 'lunas' (case-insensitive)
   const lunasVisits = displayKunjunganList.filter((k) => (k.status || '').toLowerCase() === 'lunas');
+  // Kunjungan reguler (non-paket) untuk kalkulasi pemasukan agar tidak double counting dengan harga paket
+  const regularLunasVisits = lunasVisits.filter((k) => !k.paket_id);
 
-  const todayVisitIncome = lunasVisits
+  const todayVisitIncome = regularLunasVisits
     .filter((k) => getCleanDate(k.tanggal_kunjungan) === todayStr)
     .reduce((sum, k) => sum + (Number(k.biaya) || 0), 0);
 
-  const weekVisitIncome = lunasVisits
+  const weekVisitIncome = regularLunasVisits
     .filter((k) => getCleanDate(k.tanggal_kunjungan) >= startOfWeek)
     .reduce((sum, k) => sum + (Number(k.biaya) || 0), 0);
 
-  const monthVisitIncome = lunasVisits
+  const monthVisitIncome = regularLunasVisits
     .filter((k) => getCleanDate(k.tanggal_kunjungan) >= startOfMonth)
     .reduce((sum, k) => sum + (Number(k.biaya) || 0), 0);
 
@@ -192,7 +194,7 @@ export function DashboardPage({ onNavigate }) {
       ? dateStr
       : d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
 
-    const visitTotal = lunasVisits
+    const visitTotal = regularLunasVisits
       .filter((k) => getCleanDate(k.tanggal_kunjungan) === dateStr)
       .reduce((sum, k) => sum + (Number(k.biaya) || 0), 0);
 
@@ -208,7 +210,11 @@ export function DashboardPage({ onNavigate }) {
 
   const [chartMode, setChartMode] = useState('daily'); // 'daily' | 'monthly'
 
-  // Monthly Revenue Comparison Data for the last 6 months
+  // Monthly Revenue Comparison Data for the last 6 months (menggunakan data histori lengkap tanpa terpotong dataScope)
+  const allRegularLunasVisits = useMemo(() => {
+    return (kunjunganList || []).filter((k) => !k.paket_id && (k.status || '').toLowerCase() === 'lunas');
+  }, [kunjunganList]);
+
   const monthlyChartData = useMemo(() => {
     const months = [];
     const now = new Date();
@@ -218,18 +224,18 @@ export function DashboardPage({ onNavigate }) {
       const yearMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const monthLabel = d.toLocaleDateString('id-ID', { month: 'short' });
 
-      // Revenue from lunas visits
-      const visitRev = lunasVisits
+      // Pemasukan dari seluruh kunjungan reguler (tanpa paket_id) pada bulan tersebut
+      const visitRev = allRegularLunasVisits
         .filter((k) => getCleanDate(k.tanggal_kunjungan).startsWith(yearMonth))
         .reduce((sum, k) => sum + (Number(k.biaya) || 0), 0);
 
-      // Revenue from paket sales
-      const paketRev = paketList
+      // Pemasukan dari penjualan paket pada bulan tersebut
+      const paketRev = (paketList || [])
         .filter((p) => getCleanDate(p.tanggal_beli).startsWith(yearMonth))
         .reduce((sum, p) => sum + (Number(p.harga_paket) || 0), 0);
 
-      const visitCount = lunasVisits.filter((k) => getCleanDate(k.tanggal_kunjungan).startsWith(yearMonth)).length;
-      const paketCount = paketList.filter((p) => getCleanDate(p.tanggal_beli).startsWith(yearMonth)).length;
+      const visitCount = allRegularLunasVisits.filter((k) => getCleanDate(k.tanggal_kunjungan).startsWith(yearMonth)).length;
+      const paketCount = (paketList || []).filter((p) => getCleanDate(p.tanggal_beli).startsWith(yearMonth)).length;
 
       months.push({
         month: monthLabel,
@@ -244,7 +250,7 @@ export function DashboardPage({ onNavigate }) {
     }
 
     return months;
-  }, [lunasVisits, paketList, currentYearMonth]);
+  }, [allRegularLunasVisits, paketList, currentYearMonth]);
 
   // Calculate Month-over-Month Growth %
   const currentMonthData = monthlyChartData[monthlyChartData.length - 1] || {};
