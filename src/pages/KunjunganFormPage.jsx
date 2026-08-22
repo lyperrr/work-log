@@ -171,7 +171,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
 
       const usePaket = selectedPaketId !== 'none' ? selectedPaketId : null;
 
-      const newKunjungan = await api.createKunjungan({
+      await api.createKunjungan({
         pasien_id: patientRecord?.pasien_id || '',
         nama_pasien: patientRecord?.nama_pasien || namaPasien,
         no_telp: patientRecord?.no_telp || noTelp,
@@ -182,8 +182,8 @@ export function KunjunganFormPage({ onSaved, prefill }) {
         paket_id: usePaket || '',
       });
 
-      let successText = `Catatan kunjungan (${newKunjungan?.kunjungan_id || 'baru'}) berhasil disimpan untuk ${patientRecord?.nama_pasien || namaPasien}!`;
-      if (usePaket) successText += ` 1 kunjungan dipotong dari paket ${usePaket}.`;
+      let successText = `Data kunjungan berhasil disimpan untuk ${patientRecord?.nama_pasien || namaPasien}!`;
+      if (usePaket) successText += ' 1 sesi telah dipotong dari paket aktif.';
 
       setSuccessMsg(successText);
       showToast(successText, 'success');
@@ -200,7 +200,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
         setTimeout(() => { onSaved(); }, 1200);
       }
     } catch (err) {
-      const errorText = getFriendlyErrorMessage(err, 'Gagal menyimpan catatan kunjungan.');
+      const errorText = getFriendlyErrorMessage(err, 'Maaf, catatan kunjungan belum berhasil disimpan. Silakan periksa koneksi lalu coba lagi.');
       setErrorMsg(errorText);
       showToast(errorText, 'error');
     } finally {

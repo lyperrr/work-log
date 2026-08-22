@@ -109,7 +109,7 @@ export function RiwayatPage() {
       const data = await api.getKunjunganList();
       setKunjunganList(data || []);
     } catch (err) {
-      showToast(getFriendlyErrorMessage(err, 'Gagal memuat data kunjungan'), 'error');
+      showToast(getFriendlyErrorMessage(err, 'Maaf, data riwayat kunjungan belum dapat dimuat saat ini.'), 'error');
     } finally {
       setLoadingData(false);
     }
@@ -122,7 +122,7 @@ export function RiwayatPage() {
         const data = await api.getKunjunganList();
         if (active) setKunjunganList(data || []);
       } catch (err) {
-        if (active) showToast(getFriendlyErrorMessage(err, 'Gagal memuat data kunjungan'), 'error');
+        if (active) showToast(getFriendlyErrorMessage(err, 'Maaf, data riwayat kunjungan belum dapat dimuat saat ini.'), 'error');
       } finally {
         if (active) setLoadingData(false);
       }
@@ -181,11 +181,11 @@ export function RiwayatPage() {
     try {
       await api.updateKunjunganStatus(id, newStatus);
       await loadData();
-      showToast(`Status pembayaran diubah ke '${newStatus}'`, 'success');
+      showToast('Status pembayaran berhasil diperbarui!', 'success');
     } catch (err) {
       // Revert optimistic update on failure
       setPendingStatus((prev) => { const n = { ...prev }; delete n[id]; return n; });
-      showToast(getFriendlyErrorMessage(err, 'Gagal memperbarui status'), 'error');
+      showToast(getFriendlyErrorMessage(err, 'Maaf, status pembayaran belum berhasil diperbarui. Silakan coba lagi.'), 'error');
     } finally {
       setUpdatingId(null);
       setPendingStatus((prev) => { const n = { ...prev }; delete n[id]; return n; });
@@ -198,9 +198,9 @@ export function RiwayatPage() {
     try {
       await api.deleteKunjungan(deleteTargetId);
       await loadData();
-      showToast('Catatan kunjungan berhasil dihapus', 'success');
+      showToast('Catatan kunjungan berhasil dihapus!', 'success');
     } catch (err) {
-      showToast(getFriendlyErrorMessage(err, 'Gagal menghapus catatan'), 'error');
+      showToast(getFriendlyErrorMessage(err, 'Maaf, catatan kunjungan belum berhasil dihapus. Silakan coba lagi.'), 'error');
     } finally {
       setSaving(false);
       setDeleteTargetId(null);
@@ -221,9 +221,9 @@ export function RiwayatPage() {
       });
       setEditingItem(null);
       await loadData();
-      showToast('Perubahan kunjungan berhasil disimpan', 'success');
+      showToast('Perubahan data kunjungan berhasil disimpan!', 'success');
     } catch (err) {
-      showToast(getFriendlyErrorMessage(err, 'Gagal menyimpan perubahan'), 'error');
+      showToast(getFriendlyErrorMessage(err, 'Maaf, perubahan data belum berhasil disimpan. Silakan coba lagi.'), 'error');
     } finally {
       setSaving(false);
     }

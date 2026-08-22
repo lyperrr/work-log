@@ -36,10 +36,10 @@ export function getTodayDateString() {
 }
 
 /**
- * Translates raw technical/developer error messages into clear, friendly Indonesian user-facing messages.
- * Prevents technical strings like 'Failed to fetch', 'Unexpected token < in JSON', '500 Internal Server Error' from showing to users.
+ * Translates technical error terms (like 'server', 'fetch', '500', 'JSON', 'script')
+ * into simple, friendly Indonesian messages that any everyday user can easily understand.
  */
-export function getFriendlyErrorMessage(err, defaultMessage = 'Terjadi kendala pada sistem. Silakan coba beberapa saat lagi.') {
+export function getFriendlyErrorMessage(err, defaultMessage = 'Maaf, terjadi kendala saat memproses data. Silakan coba lagi.') {
   if (!err) return defaultMessage;
 
   const rawMsg = (typeof err === 'string' ? err : err?.message || '').toString().trim();
@@ -49,53 +49,60 @@ export function getFriendlyErrorMessage(err, defaultMessage = 'Terjadi kendala p
     return defaultMessage;
   }
 
-  // Network & Connectivity errors
+  // Internet connection lost / network error
   if (
     lower.includes('failed to fetch') ||
     lower.includes('networkerror') ||
     lower.includes('network error') ||
     lower.includes('offline') ||
-    lower.includes('load failed')
+    lower.includes('load failed') ||
+    lower.includes('internet')
   ) {
-    return 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba beberapa saat lagi.';
+    return 'Koneksi terputus. Mohon periksa jaringan internet Anda lalu coba lagi.';
   }
 
-  // JSON parsing / HTML response error (e.g. GAS returning 500 error page or HTML)
+  // Invalid JSON or backend error page
   if (
     lower.includes('unexpected token') ||
     lower.includes('json') ||
     lower.includes('syntaxerror') ||
     lower.includes('is not valid json')
   ) {
-    return 'Respon dari server tidak valid. Silakan coba beberapa saat lagi.';
+    return 'Data belum dapat dimuat saat ini. Silakan coba beberapa saat lagi.';
   }
 
-  // HTTP Errors / Server Errors
-  if (lower.includes('500') || lower.includes('internal server error')) {
-    return 'Terjadi gangguan pada server. Silakan coba beberapa saat lagi.';
-  }
-
-  if (lower.includes('404') || lower.includes('not found')) {
-    return 'Layanan server tidak ditemukan.';
-  }
-
-  if (lower.includes('401') || lower.includes('unauthorized') || lower.includes('forbidden')) {
-    return 'Sesi Anda telah berakhir. Silakan masuk kembali.';
-  }
-
-  // Script or GAS specific error strings that might leak developer terminology
+  // 500 / Internal Server Error / Script Error
   if (
+    lower.includes('500') ||
+    lower.includes('internal server error') ||
     lower.includes('script error') ||
     lower.includes('execution failed') ||
     lower.includes('google apps script') ||
     lower.includes('typeerror') ||
     lower.includes('referenceerror')
   ) {
-    return 'Gagal memproses data pada server. Silakan coba beberapa saat lagi.';
+    return 'Sistem sedang sibuk. Silakan coba lagi dalam beberapa saat.';
   }
 
-  // If error message is clean human-readable text
-  return rawMsg;
+  // 404 / Page or resource Not Found
+  if (lower.includes('404') || lower.includes('not found')) {
+    return 'Data yang Anda cari tidak ditemukan.';
+  }
+
+  // 401 / Session Expired
+  if (lower.includes('401') || lower.includes('unauthorized') || lower.includes('forbidden')) {
+    return 'Waktu masuk Anda telah habis. Silakan masuk (login) kembali.';
+  }
+
+  // Replace any technical terms in raw message if present
+  let friendly = rawMsg
+    .replace(/server/gi, 'sistem')
+    .replace(/database/gi, 'penyimpanan data')
+    .replace(/fetch/gi, 'pengambilan data')
+    .replace(/API/g, 'layanan')
+    .replace(/endpoint/gi, 'alamat data');
+
+  return friendly;
 }
 
 

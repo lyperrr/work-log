@@ -173,12 +173,12 @@ export function PaketPage({ onNavigate }) {
     try {
       await api.updateKunjunganStatus(kunjunganId, newStatus);
       await loadData();
-      showToast(`Status pembayaran (${kunjunganId}) berhasil diubah ke '${newStatus}'`, 'success');
+      showToast('Status pembayaran berhasil diperbarui!', 'success');
     } catch (err) {
       setPendingKunjunganStatus((prev) => {
         const n = { ...prev }; delete n[kunjunganId]; return n;
       });
-      showToast(getFriendlyErrorMessage(err, 'Gagal memperbarui status pembayaran'), 'error');
+      showToast(getFriendlyErrorMessage(err, 'Maaf, status pembayaran belum berhasil diperbarui. Silakan coba lagi.'), 'error');
     } finally {
       setUpdatingKunjunganId(null);
       setPendingKunjunganStatus((prev) => {
@@ -225,20 +225,20 @@ export function PaketPage({ onNavigate }) {
     setSaving(true);
     try {
       const patientRecord = await api.saveOrGetPasienByName(namaPasien, noTelp);
-      const newPaket = await api.createPaket({
+      await api.createPaket({
         pasien_id: patientRecord.pasien_id,
         total_kunjungan: numSessions,
         harga_paket: Number(hargaPaket),
         tanggal_beli: tanggalBeli,
       });
-      const successText = `Paket (${newPaket.paket_id}) berhasil dibuat untuk ${patientRecord.nama_pasien}!`;
+      const successText = `Paket baru berhasil dibuat untuk ${patientRecord.nama_pasien}!`;
       setSuccessMsg(successText);
       showToast(successText, 'success');
       setShowModal(false);
       setNamaPasien(''); setNoTelp(''); setTotalKunjungan(5); setHargaPaket(1500000);
       await loadData();
     } catch (err) {
-      const errorText = getFriendlyErrorMessage(err, 'Gagal membuat paket baru.');
+      const errorText = getFriendlyErrorMessage(err, 'Maaf, paket baru belum berhasil dibuat. Silakan coba lagi.');
       setErrorMsg(errorText);
       showToast(errorText, 'error');
     } finally {
@@ -289,7 +289,7 @@ export function PaketPage({ onNavigate }) {
         sisa_kunjungan: sisa,
       });
 
-      showToast('Paket berhasil diperbarui!', 'success');
+      showToast('Data paket berhasil diperbarui!', 'success');
       setShowEditModal(false);
       await loadData();
 
@@ -305,7 +305,7 @@ export function PaketPage({ onNavigate }) {
         }));
       }
     } catch (err) {
-      setErrorMsg(getFriendlyErrorMessage(err, 'Gagal memperbarui paket'));
+      setErrorMsg(getFriendlyErrorMessage(err, 'Maaf, data paket belum berhasil diperbarui. Silakan coba lagi.'));
     } finally {
       setSaving(false);
     }
@@ -325,10 +325,10 @@ export function PaketPage({ onNavigate }) {
         status: (editingKunjungan.status || 'menunggu').toLowerCase(),
       });
       setEditingKunjungan(null);
-      showToast('Perubahan kunjungan berhasil disimpan', 'success');
+      showToast('Perubahan data kunjungan berhasil disimpan!', 'success');
       await loadData();
     } catch (err) {
-      showToast(getFriendlyErrorMessage(err, 'Gagal menyimpan perubahan kunjungan'), 'error');
+      showToast(getFriendlyErrorMessage(err, 'Maaf, perubahan data belum berhasil disimpan. Silakan coba lagi.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -340,10 +340,10 @@ export function PaketPage({ onNavigate }) {
     try {
       await api.deleteKunjungan(deleteKunjunganId);
       setDeleteKunjunganId(null);
-      showToast('Kunjungan berhasil dihapus', 'success');
+      showToast('Data kunjungan berhasil dihapus!', 'success');
       await loadData();
     } catch (err) {
-      showToast(getFriendlyErrorMessage(err, 'Gagal menghapus kunjungan'), 'error');
+      showToast(getFriendlyErrorMessage(err, 'Maaf, data kunjungan belum berhasil dihapus. Silakan coba lagi.'), 'error');
     } finally {
       setSaving(false);
     }
