@@ -69,7 +69,7 @@ export function KunjunganCard({
             </div>
           </div>
 
-          <Badge variant="outline" className="capitalize font-bold text-[10px] sm:text-[11px] tracking-wider shrink-0 bg-background">
+          <Badge variant="outline" className="capitalize font-bold text-xs tracking-wider shrink-0 bg-background">
             <CreditCard className="w-3 h-3 text-primary" />
             {item.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Cash (Tunai)'}
           </Badge>
@@ -165,7 +165,7 @@ export function KunjunganCard({
         </div>
 
         {/* 3-Button Toggle Segment */}
-        <div className="grid grid-cols-3 gap-1.5 bg-secondary/90 p-1.5 rounded-2xl border-2 border-border/80">
+        <div className="grid grid-cols-3 gap-1.5 bg-secondary/90 p-0.5 rounded-2xl border-2 border-border/80">
           {/* Menunggu */}
           <button
             type="button"
@@ -182,11 +182,12 @@ export function KunjunganCard({
               }`}
           >
             {isUpdatingThis && effMenunggu ? (
-              <Spinner className="size-3.5 sm:size-4" />
+              <Spinner className="size-5 sm:size-4" />
             ) : (
-              <Clock className="size-3.5 sm:size-4 shrink-0" />
+              <span className='inline-flex items-center gap-0.5'>
+                <Clock className="size-3 sm:size-4 shrink-0" /> Menunggu
+              </span>
             )}
-            <span>Menunggu</span>
           </button>
 
           {/* Lunas */}
@@ -201,15 +202,16 @@ export function KunjunganCard({
                 ? isUpdatingThis
                   ? 'bg-emerald-600 text-white shadow-sm animate-pulse cursor-default'
                   : 'bg-emerald-600 text-white shadow-sm cursor-default'
-                : 'text-muted-foreground hover:text-foreground  hover:bg-background/40 shadow-none bg-transparent'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background hover:border-border border border-transparent cursor-pointer shadow-none bg-transparent'
               }`}
           >
             {isUpdatingThis && effLunas ? (
-              <Spinner className="size-3.5 sm:size-4" />
+              <Spinner className="size-5 sm:size-4" />
             ) : (
-              <CheckCircle2 className="size-3.5 sm:size-4 shrink-0" />
+              <span className='inline-flex items-center gap-0.5'>
+                <CheckCircle2 className="size-3 sm:size-4 shrink-0" /> Lunas
+              </span>
             )}
-            <span>Lunas</span>
           </button>
 
           {/* Belum Bayar */}
@@ -228,11 +230,12 @@ export function KunjunganCard({
               }`}
           >
             {isUpdatingThis && effBelum ? (
-              <Spinner className="size-3.5 sm:size-4" />
+              <Spinner className="size-5 sm:size-4" />
             ) : (
-              <AlertCircle className="size-3.5 sm:size-4 shrink-0" />
+              <span className='inline-flex items-center gap-0.5'>
+                <AlertCircle className="size-3 sm:size-4 shrink-0" /> Belum Bayar
+              </span>
             )}
-            <span>Belum Bayar</span>
           </button>
         </div>
       </div>
