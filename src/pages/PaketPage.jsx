@@ -231,9 +231,8 @@ export function PaketPage({ onNavigate }) {
     try {
       const patientRecord = await api.saveOrGetPasienByName(namaPasien, noTelp);
       const numHarga = Number(hargaPaket);
-      const nilaiPerSesi = Math.round(numHarga / numSessions);
 
-      const createdRes = await api.createPaket({
+      await api.createPaket({
         pasien_id: patientRecord.pasien_id,
         nama_pasien: patientRecord.nama_pasien,
         no_telp: noTelp,
@@ -241,25 +240,6 @@ export function PaketPage({ onNavigate }) {
         harga_paket: numHarga,
         tanggal_beli: tanggalBeli,
       });
-
-      const newPaketId = createdRes?.paket_id || createdRes?.paket?.paket_id || createdRes?.data?.paket_id;
-
-      // Secondary check: ensure 1st visit note exists on the same purchase date
-      const hasVisitsForNewPaket = newPaketId && (kunjunganList || []).some((k) => k.paket_id === newPaketId);
-      if (!hasVisitsForNewPaket) {
-        await api.createKunjungan({
-          pasien_id: patientRecord.pasien_id,
-          nama_pasien: patientRecord.nama_pasien,
-          no_telp: noTelp,
-          paket_id: newPaketId || '',
-          metode_pembayaran: 'cash',
-          tanggal_kunjungan: tanggalBeli,
-          biaya: nilaiPerSesi,
-          status: 'lunas',
-        }).catch((visitErr) => {
-          console.warn('Auto create visit fallback:', visitErr);
-        });
-      }
 
       const successText = `Paket baru & 1 catatan kunjungan pertama (${formatDateLocal(tanggalBeli)}) berhasil dibuat untuk ${patientRecord.nama_pasien}!`;
       setSuccessMsg(successText);
