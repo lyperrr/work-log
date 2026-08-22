@@ -101,6 +101,16 @@ export function PaketPage({ onNavigate }) {
   };
 
   const currentPaket = selectedPaket || activeSelectedPaket;
+  const currentPaketVisits = (kunjunganList || []).filter(
+    (k) => currentPaket && k.paket_id === currentPaket.paket_id
+  );
+  const currentTerpakai = currentPaket
+    ? Math.max(Number(currentPaket.terpakai || 0), currentPaketVisits.length)
+    : 0;
+  const currentSisa = currentPaket
+    ? Math.max(0, Number(currentPaket.total_kunjungan) - currentTerpakai)
+    : 0;
+
   const [updatingKunjunganId, setUpdatingKunjunganId] = useState(null);
   const [pendingKunjunganStatus, setPendingKunjunganStatus] = useState({});
 
@@ -556,11 +566,13 @@ export function PaketPage({ onNavigate }) {
           </div>
         ) : (
           paketList.map((pkt) => {
-            const isAktif = pkt.status_paket === 'aktif' && Number(pkt.sisa_kunjungan) > 0;
-            const progressPercent = Math.round((Number(pkt.terpakai) / Number(pkt.total_kunjungan)) * 100);
-            const valPerSession = calculateValuePerSession(pkt.harga_paket, pkt.total_kunjungan);
             const isPeek = Boolean(peekPaketMap[pkt.paket_id]);
             const relatedCount = kunjunganList.filter((k) => k.paket_id === pkt.paket_id).length;
+            const displayTerpakai = Math.max(Number(pkt.terpakai || 0), relatedCount);
+            const displaySisa = Math.max(0, Number(pkt.total_kunjungan) - displayTerpakai);
+            const isAktif = pkt.status_paket === 'aktif' && displaySisa > 0;
+            const progressPercent = Math.round((displayTerpakai / Number(pkt.total_kunjungan)) * 100);
+            const valPerSession = calculateValuePerSession(pkt.harga_paket, pkt.total_kunjungan);
 
             return (
               <Card
@@ -621,12 +633,12 @@ export function PaketPage({ onNavigate }) {
                     <div className="flex justify-between items-center text-sm font-bold">
                       <span className="text-muted-foreground">Sisa Kunjungan:</span>
                       <span className="text-xl font-black text-primary">
-                        {pkt.sisa_kunjungan} / {pkt.total_kunjungan} Kunjungan
+                        {displaySisa} / {pkt.total_kunjungan} Kunjungan
                       </span>
                     </div>
                     <Progress value={progressPercent} className="h-3" />
                     <div className="flex justify-between text-xs text-muted-foreground font-medium pt-1">
-                      <span>Terpakai: {pkt.terpakai}x</span>
+                      <span>Terpakai: {displayTerpakai}x</span>
                       <span>Beli: {pkt.tanggal_beli ? formatDateLocal(pkt.tanggal_beli) : '-'}</span>
                     </div>
                   </div>
@@ -758,15 +770,15 @@ export function PaketPage({ onNavigate }) {
                 <div className="flex justify-between items-center text-sm font-bold">
                   <span className="text-muted-foreground">Sisa Kunjungan:</span>
                   <span className="text-xl font-black text-primary">
-                    {currentPaket.sisa_kunjungan} / {currentPaket.total_kunjungan} Sesi
+                    {currentSisa} / {currentPaket.total_kunjungan} Sesi
                   </span>
                 </div>
                 <Progress
-                  value={Math.round((Number(currentPaket.terpakai) / Number(currentPaket.total_kunjungan)) * 100)}
+                  value={Math.round((currentTerpakai / Number(currentPaket.total_kunjungan)) * 100)}
                   className="h-2.5"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground font-medium">
-                  <span>Terpakai: {currentPaket.terpakai}x</span>
+                  <span>Terpakai: {currentTerpakai}x</span>
                   <span>Beli: {currentPaket.tanggal_beli ? formatDateLocal(currentPaket.tanggal_beli) : '-'}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-primary/20 text-xs">
