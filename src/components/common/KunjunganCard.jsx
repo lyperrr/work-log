@@ -328,10 +328,18 @@ export function KunjunganCard({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onEdit(item)}
-              className="w-full text-sm font-bold py-2 border-border/80 hover:bg-secondary flex items-center justify-center gap-1.5"
+              disabled={effLunas}
+              onClick={() => !effLunas && onEdit(item)}
+              title={effLunas ? 'Data kunjungan berstatus Lunas dianggap selesai & tidak dapat di-edit' : 'Edit Data'}
+              className={`w-full text-sm font-bold py-2 border-border/80 flex items-center justify-center gap-1.5 ${
+                effLunas ? 'opacity-50 cursor-not-allowed bg-secondary/40 text-muted-foreground' : 'hover:bg-secondary'
+              }`}
             >
-              <Edit className="size-3.5 text-primary" />
+              {effLunas ? (
+                <Lock className="size-3.5 text-muted-foreground shrink-0" />
+              ) : (
+                <Edit className="size-3.5 text-primary shrink-0" />
+              )}
               Edit Data
             </Button>
           )}

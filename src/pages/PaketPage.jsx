@@ -78,6 +78,10 @@ export function PaketPage({ onNavigate }) {
   const { shouldRender: shouldRenderEditKunjunganModal, isMounted: isEditKunjunganModalMounted } = useAnimatePresence(Boolean(editingKunjungan), 250);
 
   const handleOpenEditKunjungan = (k) => {
+    if ((k?.status || '').toLowerCase().trim() === 'lunas') {
+      showToast('Data kunjungan berstatus Lunas dianggap selesai & tidak dapat diubah lagi.', 'error');
+      return;
+    }
     const formatted = {
       ...k,
       tanggal_kunjungan: k.tanggal_kunjungan
