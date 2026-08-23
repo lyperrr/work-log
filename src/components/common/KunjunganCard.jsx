@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Spinner } from '../ui/spinner';
 import { PrivacyAmount, PrivacyPeekButton } from './PrivacyAmount';
 import { ConfirmModal } from './ConfirmModal';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import {
   CreditCard,
   Calendar,
@@ -15,6 +16,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Lock,
+  User,
 } from 'lucide-react';
 
 export function KunjunganCard({
@@ -53,7 +55,7 @@ export function KunjunganCard({
       {/* ─── Header: Patient Info (Optional) & Method Badge ─── */}
       {showPatientName ? (
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-base shrink-0">
               {(item.nama_pasien || 'P').charAt(0).toUpperCase()}
             </div>
@@ -69,9 +71,37 @@ export function KunjunganCard({
                   </Badge>
                 )}
               </div>
-              <h3 className="text-base font-bold text-foreground mt-0.5 truncate">
-                {item.nama_pasien}
-              </h3>
+
+              {/* Popover untuk melihat nama pasien lengkap saat terpotong (clamp/truncate) */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="text-left w-full mt-0.5 group/name focus:outline-none"
+                    title={item.nama_pasien}
+                  >
+                    <h3 className="text-base font-bold text-foreground truncate group-hover/name:text-primary transition-colors">
+                      {item.nama_pasien}
+                    </h3>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  side="bottom"
+                  sideOffset={6}
+                  className="w-auto max-w-[280px] sm:max-w-xs p-3.5 rounded-2xl shadow-xl border-2 border-primary/30 bg-card z-50 animate-in fade-in-50 zoom-in-95"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider">
+                      <User className="size-3.5" />
+                      <span>Nama Lengkap Pasien</span>
+                    </div>
+                    <p className="text-sm sm:text-base font-black text-foreground break-words leading-snug">
+                      {item.nama_pasien}
+                    </p>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
