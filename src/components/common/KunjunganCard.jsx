@@ -43,6 +43,15 @@ export function KunjunganCard({
   const effMenunggu = effectiveStatus === 'menunggu';
   const effBelum = !effLunas && !effMenunggu;
 
+  const displayBiaya =
+    item.biaya != null && Number(item.biaya) > 0
+      ? Number(item.biaya)
+      : item.nilai_per_sesi != null && Number(item.nilai_per_sesi) > 0
+        ? Number(item.nilai_per_sesi)
+        : (item.harga_paket && item.total_kunjungan)
+          ? Math.round(Number(item.harga_paket) / Number(item.total_kunjungan))
+          : Number(item.biaya || 0);
+
   const formattedDate = item.tanggal_kunjungan
     ? String(item.tanggal_kunjungan).split('T')[0]
     : '-';
@@ -129,7 +138,7 @@ export function KunjunganCard({
 
           <div className="flex items-center gap-2 shrink-0">
             <PrivacyAmount
-              amount={item.paket_id ? 0 : item.biaya}
+              amount={displayBiaya}
               isRevealed={isRevealed}
               onToggle={onTogglePeek}
               className="text-base font-black text-primary tracking-tight"
@@ -148,11 +157,11 @@ export function KunjunganCard({
           <div className="flex items-center gap-2">
             <PrivacyPeekButton isRevealed={isRevealed} onToggle={onTogglePeek} />
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider group-hover/biaya:text-foreground">
-              {item.paket_id ? 'Biaya Sesi Paket:' : 'Biaya:'}
+              {item.paket_id ? 'Nilai Sesi Paket:' : 'Biaya:'}
             </span>
           </div>
           <PrivacyAmount
-            amount={item.paket_id ? 0 : item.biaya}
+            amount={displayBiaya}
             isRevealed={isRevealed}
             onToggle={onTogglePeek}
             className="text-lg sm:text-xl font-black text-primary tracking-tight"
