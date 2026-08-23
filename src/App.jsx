@@ -56,13 +56,25 @@ function AppContent() {
         window.history.pushState({ tab }, '', targetPath);
       }
     }
+    // Scroll ke atas halaman seketika saat menu berubah
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   };
+
+  // Auto scroll ke atas setiap kali activeTab / menu berganti (termasuk tombol back/forward browser)
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [activeTab]);
 
   // Handle browser Back / Forward buttons (popstate)
   useEffect(() => {
     const handlePopState = () => {
       const tab = getTabFromPath(window.location.pathname, window.location.hash);
       setActiveTabState(tab);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     };
 
     window.addEventListener('popstate', handlePopState);
