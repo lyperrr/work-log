@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Spinner } from '../ui/spinner';
 import { PrivacyAmount, PrivacyPeekButton } from './PrivacyAmount';
+import { ConfirmModal } from './ConfirmModal';
 import {
   CreditCard,
   Calendar,
@@ -12,6 +14,7 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
+  Lock,
 } from 'lucide-react';
 
 export function KunjunganCard({
@@ -25,11 +28,14 @@ export function KunjunganCard({
   onEdit,
   onDelete,
 }) {
+  const [confirmStatusTarget, setConfirmStatusTarget] = useState(null);
+
   const isUpdatingThis = updatingId === item.kunjungan_id;
+  const rawStatus = (item.status || '').toLowerCase().trim();
   const effectiveStatus =
     isUpdatingThis && pendingStatus[item.kunjungan_id]
-      ? pendingStatus[item.kunjungan_id]
-      : item.status;
+      ? (pendingStatus[item.kunjungan_id] || '').toLowerCase().trim()
+      : rawStatus;
 
   const effLunas = effectiveStatus === 'lunas';
   const effMenunggu = effectiveStatus === 'menunggu';
@@ -160,85 +166,130 @@ export function KunjunganCard({
             variant={effLunas ? 'success' : effMenunggu ? 'warning' : 'destructive'}
             className="capitalize text-xs sm:text-sm font-black px-2.5 py-0.5"
           >
-            {effectiveStatus}
+            {effLunas ? (
+              <span className="flex items-center gap-1">
+                <Lock className="size-3 shrink-0" /> lunas (selesai)
+              </span>
+            ) : (
+              effectiveStatus
+            )}
           </Badge>
         </div>
 
-        {/* 3-Button Toggle Segment */}
-        <div className="grid grid-cols-3 gap-1.5 bg-secondary/90 p-0.5 rounded-2xl border-2 border-border/80">
-          {/* Menunggu */}
-          <button
-            type="button"
-            disabled={Boolean(updatingId) || effMenunggu}
-            onClick={() => {
-              if (effMenunggu) return;
-              onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'menunggu');
-            }}
-            className={`${btnBase} ${effMenunggu
-                ? isUpdatingThis
-                  ? 'bg-amber-500 text-white shadow-sm animate-pulse cursor-default'
-                  : 'bg-amber-500 text-white shadow-sm cursor-default'
+        {effLunas ? (
+          /* Status LUNAS: Locked & Disabled (Cannot be edited) */
+          <div className="p-3 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/30 flex items-center justify-between gap-2 text-emerald-700 dark:text-emerald-300 font-bold text-xs sm:text-sm select-none">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="size-4.5 text-emerald-600 shrink-0" />
+              <span>Pembayaran Lunas (Selesai)</span>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 px-2.5 py-1 rounded-lg border border-emerald-500/30 shrink-0">
+              <Lock className="size-3.5 shrink-0" />
+              <span>Terkunci</span>
+            </div>
+          </div>
+        ) : (
+          /* 3-Button Toggle Segment with Confirmation Prompt */
+          <div className="grid grid-cols-3 gap-1.5 bg-secondary/90 p-0.5 rounded-2xl border-2 border-border/80">
+            {/* Menunggu */}
+            <button
+              type="button"
+              disabled={Boolean(updatingId) || effMenunggu}
+              onClick={() => {
+                if (effMenunggu) return;
+                setConfirmStatusTarget('menunggu');
+              }}
+              className={`${btnBase} ${effMenunggu
+                  ? isUpdatingThis
+                    ? 'bg-amber-500 text-white shadow-sm animate-pulse cursor-default'
+                    : 'bg-amber-500 text-white shadow-sm cursor-default'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background hover:border-border border border-transparent cursor-pointer shadow-none bg-transparent'
+                }`}
+            >
+              {isUpdatingThis && effMenunggu ? (
+                <Spinner className="size-5 sm:size-4" />
+              ) : (
+                <span className='inline-flex items-center gap-0.5'>
+                  <Clock className="size-3 sm:size-4 shrink-0" /> Menunggu
+                </span>
+              )}
+            </button>
+
+            {/* Lunas */}
+            <button
+              type="button"
+              disabled={Boolean(updatingId) || effLunas}
+              onClick={() => {
+                if (effLunas) return;
+                setConfirmStatusTarget('lunas');
+              }}
+              className={`${btnBase} ${effLunas
+                  ? isUpdatingThis
+                    ? 'bg-emerald-600 text-white shadow-sm animate-pulse cursor-default'
+                    : 'bg-emerald-600 text-white shadow-sm cursor-default'
                 : 'text-muted-foreground hover:text-foreground hover:bg-background hover:border-border border border-transparent cursor-pointer shadow-none bg-transparent'
-              }`}
-          >
-            {isUpdatingThis && effMenunggu ? (
-              <Spinner className="size-5 sm:size-4" />
-            ) : (
-              <span className='inline-flex items-center gap-0.5'>
-                <Clock className="size-3 sm:size-4 shrink-0" /> Menunggu
-              </span>
-            )}
-          </button>
+                }`}
+            >
+              {isUpdatingThis && effLunas ? (
+                <Spinner className="size-5 sm:size-4" />
+              ) : (
+                <span className='inline-flex items-center gap-0.5'>
+                  <CheckCircle2 className="size-3 sm:size-4 shrink-0" /> Lunas
+                </span>
+              )}
+            </button>
 
-          {/* Lunas */}
-          <button
-            type="button"
-            disabled={Boolean(updatingId) || effLunas}
-            onClick={() => {
-              if (effLunas) return;
-              onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'lunas');
-            }}
-            className={`${btnBase} ${effLunas
-                ? isUpdatingThis
-                  ? 'bg-emerald-600 text-white shadow-sm animate-pulse cursor-default'
-                  : 'bg-emerald-600 text-white shadow-sm cursor-default'
-              : 'text-muted-foreground hover:text-foreground hover:bg-background hover:border-border border border-transparent cursor-pointer shadow-none bg-transparent'
-              }`}
-          >
-            {isUpdatingThis && effLunas ? (
-              <Spinner className="size-5 sm:size-4" />
-            ) : (
-              <span className='inline-flex items-center gap-0.5'>
-                <CheckCircle2 className="size-3 sm:size-4 shrink-0" /> Lunas
-              </span>
-            )}
-          </button>
-
-          {/* Belum Bayar */}
-          <button
-            type="button"
-            disabled={Boolean(updatingId) || effBelum}
-            onClick={() => {
-              if (effBelum) return;
-              onUpdateStatus && onUpdateStatus(item.kunjungan_id, 'belum bayar');
-            }}
-            className={`${btnBase} ${effBelum
-                ? isUpdatingThis
-                  ? 'bg-rose-600 text-white shadow-sm animate-pulse cursor-default'
-                  : 'bg-rose-600 text-white shadow-sm cursor-default'
-              : 'text-muted-foreground hover:text-foreground hover:bg-background hover:border-border border border-transparent cursor-pointer shadow-none bg-transparent'
-              }`}
-          >
-            {isUpdatingThis && effBelum ? (
-              <Spinner className="size-5 sm:size-4" />
-            ) : (
-              <span className='inline-flex items-center gap-0.5'>
-                <AlertCircle className="size-3 sm:size-4 shrink-0" /> Belum Bayar
-              </span>
-            )}
-          </button>
-        </div>
+            {/* Belum Bayar */}
+            <button
+              type="button"
+              disabled={Boolean(updatingId) || effBelum}
+              onClick={() => {
+                if (effBelum) return;
+                setConfirmStatusTarget('belum bayar');
+              }}
+              className={`${btnBase} ${effBelum
+                  ? isUpdatingThis
+                    ? 'bg-rose-600 text-white shadow-sm animate-pulse cursor-default'
+                    : 'bg-rose-600 text-white shadow-sm cursor-default'
+                : 'text-muted-foreground hover:text-foreground hover:bg-background hover:border-border border border-transparent cursor-pointer shadow-none bg-transparent'
+                }`}
+            >
+              {isUpdatingThis && effBelum ? (
+                <Spinner className="size-5 sm:size-4" />
+              ) : (
+                <span className='inline-flex items-center gap-0.5'>
+                  <AlertCircle className="size-3 sm:size-4 shrink-0" /> Belum Bayar
+                </span>
+              )}
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Status Change Confirmation Modal */}
+      <ConfirmModal
+        isOpen={Boolean(confirmStatusTarget)}
+        onClose={() => setConfirmStatusTarget(null)}
+        onConfirm={() => {
+          if (onUpdateStatus && confirmStatusTarget) {
+            onUpdateStatus(item.kunjungan_id, confirmStatusTarget);
+          }
+          setConfirmStatusTarget(null);
+        }}
+        title="Konfirmasi Perubahan Status"
+        description={`Apakah Anda yakin ingin mengubah status pembayaran ${
+          item.nama_pasien ? `pasien "${item.nama_pasien}"` : `kunjungan (${item.kunjungan_id})`
+        } dari "${effectiveStatus}" menjadi "${confirmStatusTarget}"?${
+          confirmStatusTarget === 'lunas'
+            ? ' Perhatian: Status yang sudah diubah menjadi Lunas akan dikunci & tidak dapat diubah lagi.'
+            : ''
+        }`}
+        confirmText="Ya, Ubah Status"
+        cancelText="Batal"
+        variant={confirmStatusTarget === 'lunas' ? 'primary' : 'primary'}
+        icon={confirmStatusTarget === 'lunas' ? CheckCircle2 : Clock}
+        isLoading={isUpdatingThis}
+      />
 
       {/* ─── Optional Actions (Edit / Delete) ─── */}
       {(onEdit || onDelete) && (
@@ -248,7 +299,7 @@ export function KunjunganCard({
               type="button"
               variant="outline"
               onClick={() => onEdit(item)}
-              className="w-full text-xs font-bold py-2 border-border/80 hover:bg-secondary flex items-center justify-center gap-1.5"
+              className="w-full text-sm font-bold py-2 border-border/80 hover:bg-secondary flex items-center justify-center gap-1.5"
             >
               <Edit className="size-3.5 text-primary" />
               Edit Data
@@ -260,7 +311,7 @@ export function KunjunganCard({
               type="button"
               variant="outline"
               onClick={() => onDelete(item.kunjungan_id)}
-              className="w-full text-xs font-bold py-2 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center gap-1.5"
+              className="w-full text-sm font-bold py-2 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center gap-1.5"
             >
               <Trash2 className="size-3.5" />
               Hapus

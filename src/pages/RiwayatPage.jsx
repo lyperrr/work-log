@@ -224,10 +224,23 @@ export function RiwayatPage() {
     }
   };
 
+  const [confirmEditStatusTarget, setConfirmEditStatusTarget] = useState(null);
+
   const handleSaveEdit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!editingItem || saving) return;
+
+    const originalStatus = (activeEditingItem?.status || '').toLowerCase().trim();
+    const newStatus = (currentEdit.status || '').toLowerCase().trim();
+
+    // Jika status diubah dari status awal, minta konfirmasi terlebih dahulu
+    if (originalStatus !== newStatus && !confirmEditStatusTarget) {
+      setConfirmEditStatusTarget(newStatus);
+      return;
+    }
+
     setSaving(true);
+    setConfirmEditStatusTarget(null);
     try {
       await api.updateKunjungan(editingItem.kunjungan_id, {
         nama_pasien: editingItem.nama_pasien,
@@ -445,7 +458,7 @@ export function RiwayatPage() {
       </div>
 
       {/* Results List Cards - 100% Responsive */}
-      <div className="space-y-4">
+      <div className="grid lg:grid-cols-2 gap-4">
         {loadingData ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -651,6 +664,19 @@ export function RiwayatPage() {
                     <div className="h-12 px-4 flex items-center font-bold text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/30">
                       <CheckCircle2 className="size-4.5 mr-2 shrink-0" /> Lunas (Terbayar Paket)
                     </div>
+                  ) : (activeEditingItem?.status || '').toLowerCase() === 'lunas' ? (
+                    <div>
+                      <div className="h-12 px-4 flex items-center justify-between font-bold text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/30">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="size-4.5 shrink-0 text-emerald-600" />
+                          <span>Lunas (Selesai &amp; Terkunci)</span>
+                        </div>
+                        <Lock className="size-4 text-emerald-600 shrink-0" />
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1 font-medium">
+                        *Status Lunas sudah selesai &amp; tidak dapat diubah lagi.
+                      </p>
+                    </div>
                   ) : (
                     <Select
                       value={currentEdit.status || 'menunggu'}
@@ -711,6 +737,20 @@ export function RiwayatPage() {
         </div>,
         document.body
       )}
+
+      {/* Status Edit Change Confirmation Modal */}
+      <ConfirmModal
+        isOpen={Boolean(confirmEditStatusTarget)}
+        onClose={() => setConfirmEditStatusTarget(null)}
+        onConfirm={() => handleSaveEdit()}
+        title="Konfirmasi Perubahan Status"
+        description={`Apakah Anda yakin ingin mengubah status pembayaran kunjungan ini (${activeEditingItem?.kunjungan_id}) menjadi "${confirmEditStatusTarget}"?${confirmEditStatusTarget === 'lunas' ? ' Perhatian: Status yang sudah diubah menjadi Lunas akan dikunci & tidak dapat diubah lagi.' : ''}`}
+        confirmText="Ya, Ubah & Simpan"
+        cancelText="Batal"
+        variant="primary"
+        icon={confirmEditStatusTarget === 'lunas' ? CheckCircle2 : Clock}
+        isLoading={saving}
+      />
 
     </div>
   );
