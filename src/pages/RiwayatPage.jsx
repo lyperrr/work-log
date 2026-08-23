@@ -317,7 +317,7 @@ export function RiwayatPage() {
       <ExportPdfModal
         isOpen={showExportPdfModal}
         onClose={() => setShowExportPdfModal(false)}
-        kunjunganList={filteredList}
+        kunjunganList={kunjunganList}
       />
 
       {/* Import Modal */}
