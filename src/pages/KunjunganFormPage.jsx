@@ -206,7 +206,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6 pb-44 sm:pb-12 animate-in fade-in-50 min-w-0">
+    <div className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6 pb-52 sm:pb-16 animate-in fade-in-50 min-w-0">
       <Card className="w-full max-w-full overflow-hidden">
         <CardHeader>
           <div className="flex items-center gap-3">

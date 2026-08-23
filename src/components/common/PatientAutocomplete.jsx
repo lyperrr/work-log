@@ -24,58 +24,44 @@ export function PatientAutocomplete({
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('pointerdown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('pointerdown', handleClickOutside);
+    };
   }, []);
 
   const latestSearchRef = useRef('');
-  const onPhoneChangeRef = useRef(onPhoneChange);
-  const onSelectPatientRef = useRef(onSelectPatient);
 
-  useEffect(() => {
-    onPhoneChangeRef.current = onPhoneChange;
-    onSelectPatientRef.current = onSelectPatient;
-  });
-
-  // Debounced search (450ms): hanya panggil API jika value sudah >= 2 karakter
+  // Debounced search (450ms): panggil API jika value >= 2 karakter
   useEffect(() => {
     const query = value.trim();
     latestSearchRef.current = query;
 
     if (query.length < 2) {
-      const resetTimer = setTimeout(() => {
-        if (latestSearchRef.current.length < 2) {
-          setSuggestions([]);
-          setIsOpen(false);
-          setIsNewPatient(false);
-          setLoadingSearch(false);
-        }
-      }, 0);
-      return () => clearTimeout(resetTimer);
+      setSuggestions([]);
+      setIsOpen(false);
+      setIsNewPatient(false);
+      setLoadingSearch(false);
+      return;
     }
+
+    setLoadingSearch(true);
 
     const timer = setTimeout(async () => {
       if (latestSearchRef.current !== query) return;
 
-      setLoadingSearch(true);
       try {
         const matches = await api.searchPasien(query);
         if (latestSearchRef.current !== query) return;
 
-        setSuggestions(matches);
+        const results = matches || [];
+        setSuggestions(results);
         setIsOpen(true);
-        const exactMatch = matches.find(
+        const exactMatch = results.some(
           (p) => p.nama_pasien.toLowerCase().trim() === query.toLowerCase()
         );
         setIsNewPatient(!exactMatch);
-        // Bug fix: when exact match is auto-detected (not clicked), we must
-        // also fill the phone field — previously only onSelectPatient was called
-        // which left noTelp empty and caused "Nomor Telepon wajib diisi" error.
-        if (exactMatch) {
-          const phone = String(exactMatch.no_telp || '');
-          if (onPhoneChangeRef.current) onPhoneChangeRef.current(phone);
-          if (onSelectPatientRef.current) onSelectPatientRef.current(exactMatch);
-          setIsOpen(false);
-        }
       } catch {
         if (latestSearchRef.current === query) {
           setSuggestions([]);
@@ -91,7 +77,26 @@ export function PatientAutocomplete({
   }, [value, api]);
 
   const handleInputChange = (e) => {
-    onChange(e.target.value);
+    const newVal = e.target.value;
+    onChange(newVal);
+
+    if (newVal.trim().length >= 2) {
+      // Hapus data lama seketika agar tidak muncul saat pengguna mengetik huruf baru
+      setSuggestions([]);
+      setLoadingSearch(true);
+      setIsOpen(true);
+    } else {
+      setSuggestions([]);
+      setIsOpen(false);
+      setIsNewPatient(false);
+      setLoadingSearch(false);
+    }
+  };
+
+  const handleInputFocusOrClick = () => {
+    if (value.trim().length >= 2) {
+      setIsOpen(true);
+    }
   };
 
   const handleSelect = (patient) => {
@@ -104,7 +109,7 @@ export function PatientAutocomplete({
   };
 
   return (
-    <div className="space-y-4" ref={containerRef}>
+    <div className="space-y-4 relative" ref={containerRef}>
       <div className="relative">
         <label className="flex items-center gap-2 text-base font-bold text-foreground mb-1.5">
           <User className="size-5 text-primary shrink-0" />
@@ -115,7 +120,8 @@ export function PatientAutocomplete({
             type="text"
             value={value}
             onChange={handleInputChange}
-            onFocus={() => value.trim().length >= 1 && setIsOpen(true)}
+            onFocus={handleInputFocusOrClick}
+            onClick={handleInputFocusOrClick}
             placeholder="Ketik nama pasien (cth: Budi)"
             className="w-full h-13 px-4 text-base md:text-lg border-2 border-input rounded-xl bg-background text-foreground font-bold focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground shadow-xs touch-input"
             required
@@ -129,14 +135,14 @@ export function PatientAutocomplete({
 
         {/* Dropdown Suggestions */}
         {isOpen && (
-          <div className="absolute z-50 left-0 right-0 mt-2 bg-card border-2 border-primary/30 rounded-xl shadow-2xl overflow-hidden max-h-64 overflow-y-auto animate-in fade-in-50 zoom-in-95">
+          <div className="absolute z-50 left-0 right-0 mt-2 bg-card border-2 border-primary/30 rounded-xl shadow-2xl overflow-hidden max-h-48 sm:max-h-60 overflow-y-auto animate-in fade-in-50 zoom-in-95">
             {loadingSearch ? (
               <div className="p-4 text-center text-muted-foreground font-bold flex items-center justify-center gap-2 text-sm">
                 <Spinner className="size-4 text-primary" />
                 <span>Mencari data pasien...</span>
               </div>
             ) : suggestions.length > 0 ? (
-              <ul className="divide-y divide-border">
+              <ul className="divide-y divide-border pb-4">
                 {suggestions.map((p) => {
                   const rawPhone = (p.no_telp || '').toString();
                   const isPhoneErr = rawPhone.startsWith('#ERROR') || rawPhone.startsWith('#REF!') || rawPhone.startsWith('#VALUE!');
@@ -146,8 +152,9 @@ export function PatientAutocomplete({
                     <li key={p.pasien_id}>
                       <button
                         type="button"
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleSelect({ ...p, no_telp: cleanPhone })}
-                        className="w-full text-left px-5 py-4 hover:bg-primary/10 focus:bg-primary/10 transition-colors flex items-center justify-between group touch-btn"
+                        className="w-full text-left px-4 sm:px-5 py-3.5 sm:py-4 hover:bg-primary/10 focus:bg-primary/10 transition-colors flex items-center justify-between group touch-btn"
                       >
                         <div>
                           <div className="font-bold text-base md:text-lg text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
@@ -159,7 +166,7 @@ export function PatientAutocomplete({
                             {cleanPhone || 'Tanpa no. telepon'}
                           </div>
                         </div>
-                        <span className="text-xs bg-primary/10 text-primary font-bold px-3 py-1 rounded-full border border-primary/20">
+                        <span className="text-xs bg-primary/10 text-primary font-bold px-3 py-1 rounded-full border border-primary/20 shrink-0">
                           Pasien Lama
                         </span>
                       </button>

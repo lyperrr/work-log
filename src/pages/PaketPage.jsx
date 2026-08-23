@@ -898,7 +898,7 @@ export function PaketPage({ onNavigate }) {
               </Button>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+2rem))]">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 pb-[max(6rem,calc(env(safe-area-inset-bottom)+5rem))]">
               {errorMsg && (
                 <Alert variant="destructive" className="rounded-2xl border-2">
                   <AlertCircle className="h-5 w-5" />
@@ -1016,7 +1016,7 @@ export function PaketPage({ onNavigate }) {
               </Button>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+2rem))]">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 pb-[max(6rem,calc(env(safe-area-inset-bottom)+5rem))]">
               {errorMsg && (
                 <Alert variant="destructive" className="rounded-2xl border-2">
                   <AlertCircle className="h-5 w-5" />
