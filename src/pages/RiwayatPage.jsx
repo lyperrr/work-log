@@ -110,8 +110,29 @@ export function RiwayatPage() {
   const loadData = async () => {
     setLoadingData(true);
     try {
-      const data = await api.getKunjunganList();
-      setKunjunganList(data || []);
+      const [data, pakets] = await Promise.all([
+        api.getKunjunganList().catch(() => []),
+        api.getPaketList().catch(() => []),
+      ]);
+      const paketMap = {};
+      (pakets || []).forEach((p) => {
+        if (p.paket_id) paketMap[p.paket_id] = p;
+      });
+      const enriched = (data || []).map((k) => {
+        if (k.paket_id && paketMap[k.paket_id]) {
+          const pkt = paketMap[k.paket_id];
+          const calcVal = pkt.total_kunjungan ? Math.round(Number(pkt.harga_paket) / Number(pkt.total_kunjungan)) : 0;
+          return {
+            ...k,
+            harga_paket: pkt.harga_paket,
+            total_kunjungan: pkt.total_kunjungan,
+            nilai_per_sesi: calcVal,
+            biaya: Number(k.biaya) > 0 ? Number(k.biaya) : calcVal,
+          };
+        }
+        return k;
+      });
+      setKunjunganList(enriched);
     } catch (err) {
       showToast(getFriendlyErrorMessage(err, 'Maaf, data riwayat kunjungan belum dapat dimuat saat ini.'), 'error');
     } finally {
@@ -124,8 +145,29 @@ export function RiwayatPage() {
     const fetchData = async () => {
       if (active) setLoadingData(true);
       try {
-        const data = await api.getKunjunganList();
-        if (active) setKunjunganList(data || []);
+        const [data, pakets] = await Promise.all([
+          api.getKunjunganList().catch(() => []),
+          api.getPaketList().catch(() => []),
+        ]);
+        const paketMap = {};
+        (pakets || []).forEach((p) => {
+          if (p.paket_id) paketMap[p.paket_id] = p;
+        });
+        const enriched = (data || []).map((k) => {
+          if (k.paket_id && paketMap[k.paket_id]) {
+            const pkt = paketMap[k.paket_id];
+            const calcVal = pkt.total_kunjungan ? Math.round(Number(pkt.harga_paket) / Number(pkt.total_kunjungan)) : 0;
+            return {
+              ...k,
+              harga_paket: pkt.harga_paket,
+              total_kunjungan: pkt.total_kunjungan,
+              nilai_per_sesi: calcVal,
+              biaya: Number(k.biaya) > 0 ? Number(k.biaya) : calcVal,
+            };
+          }
+          return k;
+        });
+        if (active) setKunjunganList(enriched);
       } catch (err) {
         if (active) showToast(getFriendlyErrorMessage(err, 'Maaf, data riwayat kunjungan belum dapat dimuat saat ini.'), 'error');
       } finally {

@@ -813,13 +813,13 @@ export function PaketPage({ onNavigate }) {
               </div>
 
               {/* Kunjungan List Header */}
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
                 <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">
                   Kunjungan Terkait ({paketKunjungan.length})
                 </h3>
                 {onNavigate && (
                   <Button
-                    size="sm"
+                    type="button"
                     onClick={() => {
                       // Pass patient & paket context so KunjunganFormPage pre-fills the form.
                       // biaya = nilai per sesi (harga_paket / total_kunjungan)
@@ -835,9 +835,10 @@ export function PaketPage({ onNavigate }) {
                       });
                       setSelectedPaket(null);
                     }}
+                    className="w-full sm:w-auto touch-btn"
                   >
-                    <PlusCircle className="size-3.5" />
-                    Catat Kunjungan
+                    <PlusCircle className="size-4 shrink-0" />
+                    <span>Catat Kunjungan Baru</span>
                   </Button>
                 )}
               </div>
@@ -852,19 +853,33 @@ export function PaketPage({ onNavigate }) {
                 />
               ) : (
                 <div className="space-y-3">
-                  {paketKunjungan.map((item) => (
-                    <KunjunganCard
-                      key={item.kunjungan_id}
-                      item={item}
-                      showPatientName={false}
-                      isRevealed={true}
-                      updatingId={updatingKunjunganId}
-                      pendingStatus={pendingKunjunganStatus}
-                      onUpdateStatus={handleUpdateKunjunganStatus}
-                      onEdit={handleOpenEditKunjungan}
-                      onDelete={(id) => setDeleteKunjunganId(id)}
-                    />
-                  ))}
+                  {paketKunjungan.map((item) => {
+                    const currentNilaiPerSesi = currentPaket?.total_kunjungan
+                      ? Math.round(Number(currentPaket.harga_paket) / Number(currentPaket.total_kunjungan))
+                      : 0;
+
+                    const itemWithFee = {
+                      ...item,
+                      harga_paket: item.harga_paket || currentPaket?.harga_paket,
+                      total_kunjungan: item.total_kunjungan || currentPaket?.total_kunjungan,
+                      nilai_per_sesi: item.nilai_per_sesi || currentNilaiPerSesi,
+                      biaya: Number(item.biaya) > 0 ? Number(item.biaya) : currentNilaiPerSesi,
+                    };
+
+                    return (
+                      <KunjunganCard
+                        key={item.kunjungan_id}
+                        item={itemWithFee}
+                        showPatientName={false}
+                        isRevealed={true}
+                        updatingId={updatingKunjunganId}
+                        pendingStatus={pendingKunjunganStatus}
+                        onUpdateStatus={handleUpdateKunjunganStatus}
+                        onEdit={handleOpenEditKunjungan}
+                        onDelete={(id) => setDeleteKunjunganId(id)}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

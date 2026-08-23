@@ -44,9 +44,27 @@ export function DashboardPage({ onNavigate }) {
     const fetchData = async () => {
       try {
         const [kunjungan, paket] = await Promise.all([
-          api.getKunjunganList(),
-          api.getPaketList(),
+          api.getKunjunganList().catch(() => []),
+          api.getPaketList().catch(() => []),
         ]);
+        const paketMap = {};
+        (paket || []).forEach((p) => {
+          if (p.paket_id) paketMap[p.paket_id] = p;
+        });
+        const enrichedKunjungan = (kunjungan || []).map((k) => {
+          if (k.paket_id && paketMap[k.paket_id]) {
+            const pkt = paketMap[k.paket_id];
+            const calcVal = pkt.total_kunjungan ? Math.round(Number(pkt.harga_paket) / Number(pkt.total_kunjungan)) : 0;
+            return {
+              ...k,
+              harga_paket: pkt.harga_paket,
+              total_kunjungan: pkt.total_kunjungan,
+              nilai_per_sesi: calcVal,
+              biaya: Number(k.biaya) > 0 ? Number(k.biaya) : calcVal,
+            };
+          }
+          return k;
+        });
         const sortDesc = (arr, idKey) =>
           (arr || []).slice().sort((a, b) => {
             const keyA = a.created_at || a[idKey] || '';
@@ -54,7 +72,7 @@ export function DashboardPage({ onNavigate }) {
             return String(keyB).localeCompare(String(keyA));
           });
         if (!cancelled) {
-          setKunjunganList(sortDesc(kunjungan, 'kunjungan_id'));
+          setKunjunganList(sortDesc(enrichedKunjungan, 'kunjungan_id'));
           setPaketList(sortDesc(paket, 'paket_id'));
         }
       } catch (err) {

@@ -173,7 +173,7 @@ export function KunjunganFormPage({ onSaved, prefill }) {
         nama_pasien: patientRecord?.nama_pasien || namaPasien,
         no_telp: patientRecord?.no_telp || noTelp,
         tanggal_kunjungan: tanggalKunjungan,
-        biaya: usePaket ? 0 : Number(biaya),
+        biaya: Number(biaya),
         metode_pembayaran: metodePembayaran,
         status: status,
         paket_id: usePaket || '',
