@@ -103,8 +103,11 @@ export function KunjunganFormPage({ onSaved, prefill }) {
       const firstVisit = pkgVisits.length > 0 ? pkgVisits[0] : null;
 
       if (targetPaket && Number(targetPaket.total_kunjungan) > 0) {
+        const calculatedSesiValue = Math.round(
+          Number(targetPaket.harga_paket || 0) / Number(targetPaket.total_kunjungan || 1)
+        );
         const timer = setTimeout(() => {
-          setBiaya(0);
+          setBiaya(calculatedSesiValue);
           setStatus('lunas');
           if (firstVisit && firstVisit.metode_pembayaran) {
             setMetodePembayaran(firstVisit.metode_pembayaran);
