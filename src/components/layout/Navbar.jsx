@@ -33,28 +33,28 @@ export function Navbar({ activeTab, setActiveTab }) {
   return (
     <>
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 glass-nav border-b border-border/60 shadow-xs pt-safe">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/60 shadow-xs pt-safe">
+        <div className="max-w-4xl mx-auto px-3.5 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
           <div
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group min-w-0"
             onClick={() => setActiveTab('dashboard')}
           >
             <img
               src="/logo-kinesis-corpus.png"
               alt="Logo Kinesis Corpus"
-              className="size-9 object-contain rounded-lg"
+              className="size-8 sm:size-9 object-contain rounded-lg shrink-0"
             />
-            <div>
-              <h1 className="font-black text-lg md:text-xl text-foreground leading-tight tracking-tight">
+            <div className="min-w-0">
+              <h1 className="font-black text-base sm:text-lg md:text-xl text-foreground leading-tight tracking-tight truncate">
                 Kinesis Corpus
               </h1>
-              <p className="text-[11px] text-muted-foreground hidden sm:block font-medium">
+              <p className="text-[11px] text-muted-foreground hidden sm:block font-medium truncate">
                 Freelance & Pemasukan Kunjungan
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {currentUser && (
               <Button
                 type="button"
@@ -62,6 +62,7 @@ export function Navbar({ activeTab, setActiveTab }) {
                 size="icon"
                 onClick={() => setShowLogoutModal(true)}
                 title="Keluar Akun"
+                className="size-9 sm:size-10 rounded-xl"
               >
                 <LogOut className="size-4" />
               </Button>

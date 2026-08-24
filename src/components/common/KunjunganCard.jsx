@@ -114,7 +114,7 @@ export function KunjunganCard({
             </div>
           </div>
 
-          <Badge variant="outline" className="capitalize font-bold text-xs tracking-wider shrink-0 bg-background">
+          <Badge variant="outline" className="capitalize font-bold text-xs tracking-wider shrink-0 bg-background whitespace-nowrap">
             <CreditCard className="w-3 h-3 text-primary" />
             {item.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Cash (Tunai)'}
           </Badge>
@@ -123,14 +123,14 @@ export function KunjunganCard({
         /* Header when Patient Name is hidden (e.g. in Paket Drawer) */
         <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2.5">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] font-mono font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-md border border-border">
+            <span className="text-[10px] font-mono font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-md border border-border shrink-0">
               {item.kunjungan_id}
             </span>
-            <span className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground font-medium whitespace-nowrap">
               <Calendar className="size-3.5 text-primary shrink-0" />
               {formattedDate}
             </span>
-            <span className="flex items-center gap-1 text-xs text-muted-foreground font-medium capitalize">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground font-medium capitalize whitespace-nowrap">
               <CreditCard className="size-3.5 text-primary shrink-0" />
               {item.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Cash (Tunai)'}
             </span>

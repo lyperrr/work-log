@@ -608,31 +608,31 @@ export function DashboardPage({ onNavigate }) {
             displayKunjunganList.slice(0, 4).map((k) => (
               <div
                 key={k.kunjungan_id}
-                className="p-4 rounded-2xl bg-card border border-border/80 hover:border-primary/40 transition-all flex items-center justify-between gap-3 shadow-xs"
+                className="p-3.5 sm:p-4 rounded-2xl bg-card border border-border/80 hover:border-primary/40 transition-all flex items-center justify-between gap-2.5 sm:gap-4 shadow-xs min-w-0"
               >
-                <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-base shrink-0">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                  <div className="size-9 sm:size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-sm sm:text-base shrink-0">
                     {k.nama_pasien?.charAt(0).toUpperCase() || 'P'}
                   </div>
-                  <div>
-                    <div className="font-bold text-base md:text-lg text-foreground flex items-center gap-2 flex-wrap">
-                      {k.nama_pasien}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-sm sm:text-base md:text-lg text-foreground flex items-center gap-1.5 flex-wrap">
+                      <span className="truncate max-w-[140px] sm:max-w-none">{k.nama_pasien}</span>
                       {k.info_paket && (
-                        <Badge variant="secondary" className="bg-primary/15 text-primary font-bold text-xs">
+                        <Badge variant="secondary" className="bg-primary/15 text-primary font-bold text-[10px] sm:text-xs shrink-0 whitespace-nowrap">
                           {k.info_paket}
                         </Badge>
                       )}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 font-medium">
-                      <span>{k.tanggal_kunjungan ? String(k.tanggal_kunjungan).split('T')[0] : '-'}</span>
+                    <div className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5 font-medium flex-wrap">
+                      <span className="whitespace-nowrap">{k.tanggal_kunjungan ? String(k.tanggal_kunjungan).split('T')[0] : '-'}</span>
                       <span>•</span>
-                      <span className="capitalize font-bold">{k.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Cash (Tunai)'}</span>
+                      <span className="capitalize font-bold whitespace-nowrap">{k.metode_pembayaran === 'transfer' ? 'Transfer Bank' : 'Cash (Tunai)'}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="text-right shrink-0 flex flex-col items-end">
-                  <div className="flex items-center gap-1.5 justify-end">
+                <div className="text-right shrink-0 flex flex-col items-end justify-center">
+                  <div className="flex items-center gap-1 justify-end">
                     <PrivacyPeekButton
                       isRevealed={Boolean(peekVisitsMap[k.kunjungan_id])}
                       onToggle={() => toggleVisitPeek(k.kunjungan_id)}
@@ -641,7 +641,7 @@ export function DashboardPage({ onNavigate }) {
                       amount={k.biaya}
                       isRevealed={Boolean(peekVisitsMap[k.kunjungan_id])}
                       onToggle={() => toggleVisitPeek(k.kunjungan_id)}
-                      className="font-black text-base md:text-lg text-foreground"
+                      className="font-black text-sm sm:text-base md:text-lg text-foreground whitespace-nowrap tracking-tight"
                     />
                   </div>
                   <Badge
@@ -652,7 +652,7 @@ export function DashboardPage({ onNavigate }) {
                           ? 'warning'
                           : 'destructive'
                     }
-                    className="capitalize mt-1"
+                    className="capitalize mt-1 text-[10px] sm:text-xs font-bold px-2 py-0.5 whitespace-nowrap"
                   >
                     {k.status}
                   </Badge>
