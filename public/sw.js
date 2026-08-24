@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kinesis-corpus-work-log-pwa-v2';
+const CACHE_NAME = 'kinesis-corpus-work-log-pwa-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -9,7 +9,9 @@ const ASSETS_TO_CACHE = [
   '/icons/apple-touch-icon-152x152.png',
   '/icons/apple-touch-icon-167x167.png',
   '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/icons/icon-512x512.png',
+  '/icons/maskable-192x192.png',
+  '/icons/maskable-512x512.png'
 ];
 
 // ─── Service Worker Installation ───
